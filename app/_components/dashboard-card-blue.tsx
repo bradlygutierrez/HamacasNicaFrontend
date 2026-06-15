@@ -1,4 +1,5 @@
 'use client'
+
 import { LucideIcon } from "lucide-react";
 
 interface dashboardCardProps {
@@ -9,27 +10,20 @@ interface dashboardCardProps {
 
 export default function DashboardCardBlue({ cardTitle, cardScore, icon: Icon }: dashboardCardProps) {
     return (
-        <div>
-             <h2 className="text-bold text-[1.3rem] text-left  text-[var(--color-foreground-secondary)]">
-                        {cardTitle}
-                </h2>
-            <div className="rounded-lg border-1 p-5 flex justify-between items-center w-[18rem] h-[8rem] 
-                 text-[var(--color-foreground-secondary)] bg-[var(--color-foreground)">
+        <div className="space-y-2">
+            <h2 className="text-left text-sm font-semibold text-[var(--color-foreground-secondary)] md:text-base">
+                {cardTitle}
+            </h2>
 
-                {/* Icono */}
-                <div className="text-4xl opacity-80">
+            <div className="flex min-h-[7rem] items-center justify-between rounded-lg border border-white/10 bg-[var(--color-foreground)] p-4 text-[var(--color-foreground-secondary)] shadow-md">
+                <div className="text-3xl opacity-80 md:text-4xl">
                     <Icon />
                 </div>
 
-                {/* Texto */}
                 <div className="flex flex-col items-end">
-                   
-                    <h1 className="text-5xl font-bold">
-                        {cardScore}
-                    </h1>
+                    <h1 className="text-4xl font-bold md:text-5xl">{cardScore}</h1>
                 </div>
             </div>
         </div>
-
     );
 }

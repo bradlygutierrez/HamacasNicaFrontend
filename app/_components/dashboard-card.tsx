@@ -1,5 +1,4 @@
 'use client'
-import { useEffect, useState } from "react";
 
 interface dashboardCardProps {
     //categorySelected:string; 
@@ -9,13 +8,12 @@ interface dashboardCardProps {
 
 export default function DashboardCard({ cardTitle, cardScore }: dashboardCardProps) {
     return (
-        <div className="rounded-lg p-5 flex flex-col items-center w-[18rem] h-[12rem] bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)]">
-            <h2 className="text-[1.5rem]">
+        <div className="flex h-full min-h-[8rem] flex-col items-center justify-center rounded-lg bg-[var(--color-foreground-secondary)] p-5 text-[var(--color-foreground)]">
+            <h2 className="text-center text-base font-medium md:text-xl">
                 {cardTitle}
             </h2 >
-            <h1 className="text-[6rem] font-bold">
+            <h1 className="text-4xl font-bold md:text-6xl">
                 {cardScore}</h1>
         </div>
     );
 }
-

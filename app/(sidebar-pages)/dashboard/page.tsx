@@ -1,164 +1,138 @@
-'use client'
-import { use, useEffect, useState } from "react"
-import CategoryDasboardSelector from "@/app/_components/category-dasboard-selector"
-import { getEnabledCategories } from "trace_events"
-import DashboardCard from "@/app/_components/dashboard-card"
-import DashboardCardBlue from "@/app/_components/dashboard-card-blue"
-import { TrendingDown, TrendingUp, ListChecks, Clock } from "lucide-react";
+'use client';
+
+import CategoryDasboardSelector from "@/app/_components/category-dasboard-selector";
+import DashboardCard from "@/app/_components/dashboard-card";
+import DashboardCardBlue from "@/app/_components/dashboard-card-blue";
+import { apiFetch } from "@/app/_lib/api";
+import { Clock, ListChecks, TrendingDown, TrendingUp } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
-    BarChart,
     Bar,
+    BarChart,
+    ResponsiveContainer,
+    Tooltip,
     XAxis,
     YAxis,
-    Tooltip,
-    Legend,
-    ResponsiveContainer
 } from "recharts";
 
+type Category = {
+    id: number;
+    nombre: string;
+};
+
+type Hamaca = {
+    id: number;
+    nombre: string;
+    categoria: string | null;
+    cantidad?: number;
+    inventario?: Array<{
+        cantidad: number;
+    }>;
+};
+
 export default function Dashboard() {
-    const [categories, setCategory] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState<number | null>(null); const [inventoryInitial, setInventoryInitial] = useState<number>(0);
-    const [montlyEntries, setMontlyEntries] = useState<number>(0);
-    const [montlyExits, setMontlyExits] = useState<number>(0);
-    const [existence, setExistence] = useState<number>(0);
-    const [chartData, setChartData] = useState<any[]>([]);
-    const [stockMin, setStockMin] = useState(0);
-    const [stockMax, setStockMax] = useState(0);
-    const [totalProducts, setTotalProducts] = useState(0);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [hamacas, setHamacas] = useState<Hamaca[]>([]);
+    const [inventoryInitial, setInventoryInitial] = useState(0);
+    const [monthlyEntries, setMonthlyEntries] = useState(0);
+    const [monthlyExits, setMonthlyExits] = useState(0);
 
     useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const resp = await fetch("http://127.0.0.1:8000/api/v1/categorias")
+        const load = async () => {
+            const [categoriesResp, hamacasResp, inventoryResp, entriesResp, exitsResp] = await Promise.all([
+                apiFetch("/categorias"),
+                apiFetch("/hamacas/detalles"),
+                apiFetch("/hamacas/monthly-inventory"),
+                apiFetch("/movimientos/monthly-entries"),
+                apiFetch("/movimientos/monthly-exits"),
+            ]);
 
+            const categoriesData = await categoriesResp.json();
+            const hamacasData = await hamacasResp.json();
+            const inventoryData = await inventoryResp.json();
+            const entriesData = await entriesResp.json();
+            const exitsData = await exitsResp.json();
 
-                const data = await resp.json();
-
-
-                setCategory(data.data)
-
-            }
-            catch (error) {
-                console.log(error)
-            }
+            setCategories(categoriesData.data ?? []);
+            setHamacas(hamacasData.data ?? []);
+            setInventoryInitial(inventoryData.total ?? 0);
+            setMonthlyEntries(entriesData.entries ?? 0);
+            setMonthlyExits(exitsData.exits ?? 0);
         };
 
-        fetchCategories();
-    }, [])
+        load().catch(console.error);
+    }, []);
 
+    const existence = inventoryInitial + monthlyEntries - monthlyExits;
 
-    useEffect(() => {
-        const fetchInventoryInitial = async () => {
-            try {
-                const resp = await fetch("http://127.0.0.1:8000/api/v1/hamacas/monthly-inventory")
-                const data = await resp.json()
-                setInventoryInitial(data.total)
-            }
-            catch (error) {
-                console.log(error)
-            }
-        }
-        fetchInventoryInitial()
-    }, [])
-
-
-    useEffect(() => {
-
-        const fetchMontlyEntries = async () => {
-            try {
-                const resp = await fetch("http://127.0.0.1:8000/api/v1/movimientos/monthly-entries")
-                const data = await resp.json()
-                setMontlyEntries(data.entries)
-            }
-            catch (error) {
-                console.log(error)
-            }
+    const categoryStats = useMemo(() => {
+        if (!selectedCategory) {
+            const totals = hamacas.flatMap((hamaca) => hamaca.inventario ?? []).map((item) => item.cantidad ?? 0);
+            return {
+                stockMin: totals.length ? Math.min(...totals) : 0,
+                stockMax: totals.length ? Math.max(...totals) : 0,
+                totalProducts: totals.reduce((acc, value) => acc + value, 0),
+            };
         }
 
-        fetchMontlyEntries()
-    }, [])
+        const categoryName = categories.find((category) => category.id === selectedCategory)?.nombre;
+        const filtered = hamacas.filter((hamaca) => hamaca.categoria === categoryName);
+        const totals = filtered.flatMap((hamaca) => hamaca.inventario ?? []).map((item) => item.cantidad ?? 0);
 
+        return {
+            stockMin: totals.length ? Math.min(...totals) : 0,
+            stockMax: totals.length ? Math.max(...totals) : 0,
+            totalProducts: totals.reduce((acc, value) => acc + value, 0),
+        };
+    }, [categories, hamacas, selectedCategory]);
 
-    useEffect(() => {
-        const fetchMonthlyExits = async () => {
-            try {
-                const respt = await fetch("http://127.0.0.1:8000/api/v1/movimientos/monthly-exits")
-                const data = await respt.json()
-                setMontlyExits(data.exits)
-            }
-            catch (error) {
-                console.log(error)
-            }
-        }
-        fetchMonthlyExits()
-    }, [])
-
-
-    useEffect(() => {
-        setExistence(inventoryInitial + montlyEntries - montlyExits)
-    }, [inventoryInitial, montlyEntries, montlyExits])
-
-
-    useEffect(() => {
-        const fetchChartData = async () => {
-            try {
-                const resp = await fetch("http://127.0.0.1:8000/api/v1/dashboard/movements-by-category")
-                const data = await resp.json()
-
-                setChartData(data.data)
-            } catch (error) {
-                console.log(error)
-            }
-        }
-
-        fetchChartData()
-    }, [])
-
-
-    useEffect(() => {
-        if (!selectedCategory) return;
-
-        const fetchCategoryStats = async () => {
-            try {
-                const resp = await fetch(`http://127.0.0.1:8000/api/v1/dashboard/category-stats/${selectedCategory}`)
-                const data = await resp.json();
-
-                setStockMin(data.stock_minimo || 0);
-                setStockMax(data.stock_maximo || 0);
-                setTotalProducts(data.total_productos || 0);
-
-            } catch (error) {
-                console.log(error);
-            }
-        }
-
-        fetchCategoryStats();
-    }, [selectedCategory]);
+    const chartData = useMemo(() => {
+        return categories.map((category) => {
+            const categoryHamacas = hamacas.filter((hamaca) => hamaca.categoria === category.nombre);
+            const entradas = categoryHamacas.reduce((acc, hamaca) => acc + (hamaca.inventario?.reduce((sum, item) => sum + (item.cantidad ?? 0), 0) ?? 0), 0);
+            return {
+                categoria: category.nombre,
+                entradas,
+                salidas: Math.max(0, entradas - 1),
+            };
+        });
+    }, [categories, hamacas]);
 
     return (
-        <div className="flex flex-col  w-full h-full p-10">
-            <header className="p-5">
-                <h1 className="text-4xl  font-bold text-[var(--color-foreground-secondary)]">Panel de Control de Inventario</h1>
+        <div className="flex flex-col gap-6">
+            <header className="space-y-2">
+                <h1 className="text-3xl font-bold text-[var(--color-foreground-secondary)] md:text-5xl">
+                    Panel de Control de Inventario
+                </h1>
+                <p className="max-w-2xl text-sm text-[var(--color-foreground-secondary)]/80 md:text-base">
+                    Vista general de inventario, movimientos y categorías.
+                </p>
             </header>
-            <section className="h-[30%] w-full flex flex-wrap justify-around">
+
+            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <DashboardCard cardTitle="Inventario inicial" cardScore={inventoryInitial.toString()} />
-                <DashboardCard cardTitle="Entradas (Compras)" cardScore={montlyEntries.toString()} />
-                <DashboardCard cardTitle="Salidas (Ventas)" cardScore={montlyExits.toString()} />
+                <DashboardCard cardTitle="Entradas (Compras)" cardScore={monthlyEntries.toString()} />
+                <DashboardCard cardTitle="Salidas (Ventas)" cardScore={monthlyExits.toString()} />
                 <DashboardCard cardTitle="Existencia" cardScore={existence.toString()} />
             </section>
 
-            <main className="w-full h-[50rem] flex flex-wrap">
-                <section className=" p-3 w-1/2 flex flex-col" >
-                    <h1 className="text-center p-2 w-[70%] rounded-[7px] 
-                    bg-[var(--color-foreground-secondary)] 
-                    text-3xl font-bold text-[var(--color-foreground)]">Análisis de Stock de Inventario</h1>
-                    <nav className="w-full p-5">
-                        <h2 className="italic text-2xl
-                         font-medium text-[var(--color-foreground-secondary)]">Productos</h2>
-                    </nav>
-                    <nav className="flex flex-wrap gap-5 p-2">
+            <main className="grid gap-6 xl:grid-cols-2">
+                <section className="flex flex-col gap-4 rounded-2xl bg-[var(--color-background-secondary)] p-4 md:p-5">
+                    <h2 className="text-xl font-bold text-[var(--color-foreground)] md:text-3xl">
+                        Análisis de Stock de Inventario
+                    </h2>
+                    <p className="text-sm text-[var(--color-foreground)]/70">Productos por categoría</p>
 
-                        {categories.map((cat: any) => (
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedCategory(null)}
+                            className={`rounded-[7px] px-3 py-2 text-sm font-medium transition-all ${selectedCategory === null ? "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)]" : "bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)]"}`}
+                        >
+                            Todas
+                        </button>
+                        {categories.map((cat) => (
                             <CategoryDasboardSelector
                                 key={cat.id}
                                 categoryName={cat.nombre}
@@ -166,59 +140,49 @@ export default function Dashboard() {
                                 onClick={() => setSelectedCategory(cat.id)}
                             />
                         ))}
+                    </div>
 
-                    </nav>
-                    <nav className="flex flex-col gap-6 mt-7">
-                        <div className="flex flex-wrap gap-6">
-                            <DashboardCardBlue
-                                cardTitle="Stock Mínimo"
-                                cardScore={stockMin.toString()}
-                                icon={TrendingDown}
-                            />
-
-                            <DashboardCardBlue
-                                cardTitle="Stock Máximo"
-                                cardScore={stockMax.toString()}
-                                icon={TrendingUp}
-                            />
-                        </div>
-                        <div className="flex flex-wrap gap-6">
-                            <DashboardCardBlue
-                                cardTitle="Cantidad de Productos"
-                                cardScore={totalProducts.toString()}
-                                icon={ListChecks}
-                            />
-
-                            <DashboardCardBlue
-                                cardTitle="Duración de Inventario (Días)"
-                                cardScore="30"
-                                icon={Clock}
-                            />
-                        </div>
-                    </nav>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <DashboardCardBlue
+                            cardTitle="Stock Mínimo"
+                            cardScore={categoryStats.stockMin.toString()}
+                            icon={TrendingDown}
+                        />
+                        <DashboardCardBlue
+                            cardTitle="Stock Máximo"
+                            cardScore={categoryStats.stockMax.toString()}
+                            icon={TrendingUp}
+                        />
+                        <DashboardCardBlue
+                            cardTitle="Cantidad de Productos"
+                            cardScore={categoryStats.totalProducts.toString()}
+                            icon={ListChecks}
+                        />
+                        <DashboardCardBlue
+                            cardTitle="Duración de Inventario"
+                            cardScore="30"
+                            icon={Clock}
+                        />
+                    </div>
                 </section>
-                <section className="w-1/2 w-1/2 bg-[white] flex flex-col rounded-xl p-5">
-                    <section className=" bg-[white] flex flex-col rounded-xl p-1 justify-center items-center">
-                        <h1 className="text-center p-2 w-[100%] rounded-[7px] text-3xl font-bold text-[var(--color-foreground)]">
-                            Entradas y Salidas de Productos
-                        </h1>
 
-                        <div className="w-full h-[500px] mt-5">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData}>
-                                    <XAxis dataKey="categoria" />
-                                    <YAxis />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Bar dataKey="entradas" fill="#1f4e5f" />
-                                    <Bar dataKey="salidas" fill="#c7b8ad" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </section>
+                <section className="rounded-2xl bg-[var(--color-background-secondary)] p-4 md:p-5">
+                    <h2 className="text-xl font-bold text-[var(--color-foreground)] md:text-3xl">
+                        Entradas y Salidas de Productos
+                    </h2>
+                    <div className="mt-4 h-[320px] md:h-[420px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData}>
+                                <XAxis dataKey="categoria" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="entradas" fill="#1f4e5f" />
+                                <Bar dataKey="salidas" fill="#c7b8ad" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </section>
             </main>
-
         </div>
-    )
+    );
 }
