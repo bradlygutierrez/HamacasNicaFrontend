@@ -1,43 +1,178 @@
+'use client'
 import { Camera } from "lucide-react";
 import CustomInput from "./customInput";
 
+export interface UserFormData {
+    imgUrl: string | null;
+    nombre: string;
+    correo: string;
+    password: string;
+    confirmar: string;
+    rol: string;
+}
 
 interface AddUserCardProps {
     onClick: () => void;
-    inputRef ?: React.RefObject<HTMLInputElement | null>;
+    inputRef?: React.RefObject<HTMLInputElement | null>;
     preview: string | null;
     handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    formData: UserFormData;
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    handleSubmit: (e: React.FormEvent) => void;
+    response: string | null;
+    title?: string;
+    buttonText?: string;
+    onClose?: () => void;
 }
 
-export default function AddUserCard({ onClick, inputRef, preview, handleFileChange }: AddUserCardProps) {
+const ROLES = [
+    { value: "admin", label: "Admin" },
+    { value: "vendedor", label: "Vendedor" },
+    { value: "almacenista", label: "Almacenista" },
+    { value: "socio", label: "Socio" }
+];
+
+export default function AddUserCard({
+    onClick,
+    inputRef,
+    preview,
+    handleFileChange,
+    formData,
+    handleChange,
+    handleSubmit,
+    response,
+    title = "Crear usuario",
+    buttonText = "Crear",
+    onClose,
+}: AddUserCardProps) {
+
     return (
-        <div className="flex flex-col mt-[5rem] w-[23vw] rounded-lg h-[65vh] bg-[var(--color-background-secondary)] overflow-visible shadow-xl">
-            <div className="relative top-[-4rem] mx-auto w-[12rem] h-[12rem] rounded-[80%] bg-[var(--color-foreground-secondary)] shadow-xl cursor-pointer" onClick={onClick}>
+        <div className="
+            w-full max-w-md mx-auto
+            bg-[var(--color-foreground-secondary)] rounded-xl shadow-xl
+            p-5 md:p-6
+            flex flex-col gap-4
+            mt-10
+        ">
 
-                {preview ? (
-                    <img
-                        src={preview}
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <Camera
-                        className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 text-[var(--color-foreground)]"
-                        aria-hidden="true"
-                    />
+            {/* HEADER */}
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-[var(--color-foreground)] md:text-2xl">
+                    {title}
+                </h2>
+
+                {onClose && (
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="text-xl font-bold"
+                    >
+                        ×
+                    </button>
                 )}
-
-                <input type="file" className="hidden" ref={inputRef} onChange={handleFileChange} accept="image/*" />
             </div>
 
-            <form action="" className="h-[50%] flex flex-col gap-7 items-center justify-end">
+            {/* AVATAR */}
+            <div
+                onClick={onClick}
+                className="
+                    mx-auto
+                    w-24 h-24 md:w-32 md:h-32
+                    rounded-full
+                    bg-[var(--color-background-secondary)]
+                    flex items-center justify-center
+                    cursor-pointer
+                    overflow-hidden
+                "
+            >
+                {preview ? (
+                    <img src={preview} className="w-full h-full object-cover" alt="Vista previa" />
+                ) : (
+                    <Camera className="w-10 h-10 md:w-10 md:h-10 text-[var(--color-foreground)]" />
+                )}
 
-                <CustomInput customPlaceholder={"usuario"} type="text" />
-                <CustomInput customPlaceholder={"contraseña"} type="password" />
-                <button className="rounded-full bg-[var(--color-buttons)] text-[var(--color-foreground-secondary)] font-bold text-xl cursor-pointer mt-4 w-[50%] h-[3rem]">
-                    Crear
+                <input
+                    type="file"
+                    className="hidden"
+                    ref={inputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                />
+            </div>
+
+            {/* FORM */}
+            <form
+                onSubmit={handleSubmit}
+                className="flex flex-col items-center gap-4 w-full"
+            >
+                <CustomInput
+                    customPlaceholder="usuario"
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleChange}
+                />
+
+                <CustomInput
+                    customPlaceholder="contraseña"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                />
+
+                <CustomInput
+                    customPlaceholder="confirmar contraseña"
+                    type="password"
+                    name="confirmar"
+                    value={formData.confirmar}
+                    onChange={handleChange}
+                />
+
+                <CustomInput
+                    customPlaceholder="correo electrónico"
+                    type="email"
+                    name="correo"
+                    value={formData.correo}
+                    onChange={handleChange}
+                />
+
+                <select
+                    name="rol"
+                    value={formData.rol}
+                    onChange={handleChange}
+                    className="w-full p-3 rounded-md border border-gray-300"
+                >
+                    <option value="">Seleccionar rol</option>
+                    {ROLES.map((rol) => (
+                        <option key={rol.value} value={rol.value}>
+                            {rol.label}
+                        </option>
+                    ))}
+                </select>
+
+                {/* BOTÓN */}
+                <button
+                    className="
+                        w-full h-12
+                        rounded-lg
+                        bg-[var(--color-buttons)]
+                        text-[var(--color-foreground-secondary)]
+                        font-bold
+                        text-base md:text-lg
+                        mt-2
+                    "
+                >
+                    {buttonText}
                 </button>
+
+                {/* RESPUESTA */}
+                {response && (
+                    <p className="text-center text-sm text-red-500">
+                        {response}
+                    </p>
+                )}
             </form>
         </div>
     );
-
 }

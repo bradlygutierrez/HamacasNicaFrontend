@@ -1,5 +1,4 @@
 'use client'
-import { useEffect, useState } from "react";
 
 interface categorySelectorProps {
     categoryName: string;
@@ -14,16 +13,17 @@ export default function CategoryDasboardSelector({
 }: categorySelectorProps) {
 
     return (
-        <div
+        <button
+            type="button"
             onClick={onClick}
             className={`
-                text-center p-1 w-[30%] rounded-[7px] text-2xl font-medium border-2 cursor-pointer transition-all
+                text-center px-3 py-2 w-1/2 md:w-[30%] rounded-[7px] text-base md:text-xl font-medium border-2 cursor-pointer transition-all
                 ${isSelected
                     ? "bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)]"
                     : "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)] border-gray-300 hover:bg-gray-200"}
             `}
         >
             {categoryName}
-        </div>
+        </button>
     );
 }
