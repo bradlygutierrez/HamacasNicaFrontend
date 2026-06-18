@@ -65,7 +65,11 @@ export default function EntradasPage() {
   }, []);
 
   useEffect(() => {
-    loadData().catch(console.error);
+    const timeoutId = window.setTimeout(() => {
+      loadData().catch(console.error);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadData]);
 
   const rows = useMemo<EntradaRow[]>(() => {

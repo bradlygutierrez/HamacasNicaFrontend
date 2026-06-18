@@ -1,6 +1,10 @@
 'use client';
 
 import { apiFetch } from '@/app/_lib/api';
+import {
+  buildEntradaInventarioPayload,
+  buildEntradaMovimientoPayload,
+} from '@/app/_lib/entradas';
 import { Plus, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -30,7 +34,7 @@ type FormData = {
   cantidad: string;
   fecha: string;
   ubicacion_id: string;
-  color_id: string;
+  color_ids: string[];
 };
 
 type Props = {
@@ -45,7 +49,7 @@ const EMPTY_FORM: FormData = {
   cantidad: '',
   fecha: new Date().toISOString().slice(0, 10),
   ubicacion_id: '',
-  color_id: '',
+  color_ids: [],
 };
 
 export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
@@ -131,15 +135,47 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
     setError('');
   }
 
+  function handleColorToggle(colorId: number) {
+    const value = String(colorId);
+
+    setForm((prev) => {
+      const isSelected = prev.color_ids.includes(value);
+
+      return {
+        ...prev,
+        color_ids: isSelected
+          ? prev.color_ids.filter((selectedId) => selectedId !== value)
+          : [...prev.color_ids, value],
+      };
+    });
+
+    setError('');
+  }
+
   function validate() {
     if (!form.hamaca_id) return 'Seleccioná un producto.';
     if (!form.usuario_id) return 'Seleccioná un usuario.';
     if (!form.cantidad || Number(form.cantidad) < 1) return 'La cantidad debe ser mayor a 0.';
     if (!form.fecha) return 'Seleccioná una fecha.';
     if (!form.ubicacion_id) return 'Seleccioná una ubicación.';
-    if (!form.color_id) return 'Seleccioná un color.';
+    if (form.color_ids.length === 0) return 'Seleccioná al menos un color.';
 
     return '';
+  }
+
+  function getValidationMessage(data: unknown) {
+    if (!data || typeof data !== 'object') return 'Datos inválidos.';
+
+    const payload = data as {
+      message?: unknown;
+      errors?: Record<string, unknown[]>;
+    };
+
+    const firstError = payload.errors
+      ? Object.values(payload.errors).flat()[0]
+      : payload.message;
+
+    return String(firstError ?? 'Datos inválidos.');
   }
 
   async function handleSubmit() {
@@ -158,27 +194,59 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          hamaca_id: Number(form.hamaca_id),
-          usuario_id: Number(form.usuario_id),
-          ubicacion_id: Number(form.ubicacion_id),
-          color_ids: [Number(form.color_id)],
-          cantidad: Number(form.cantidad),
-        }),
+        body: JSON.stringify(
+          buildEntradaInventarioPayload({
+            hamacaId: Number(form.hamaca_id),
+            usuarioId: Number(form.usuario_id),
+            ubicacionId: Number(form.ubicacion_id),
+            colorIds: form.color_ids.map(Number),
+            cantidad: Number(form.cantidad),
+          })
+        ),
       });
 
-      if (response.status === 422) {
-        const data = await response.json();
-        const firstError = data.errors
-          ? Object.values(data.errors).flat()[0]
-          : data.message;
+      const data = await response.json().catch(() => null);
 
-        setError(String(firstError ?? 'Datos inválidos.'));
+      if (response.status === 422) {
+        setError(getValidationMessage(data));
         return;
       }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
+      }
+
+      const inventarioHamacaId = Number(data?.data?.id);
+
+      if (!Number.isFinite(inventarioHamacaId) || inventarioHamacaId <= 0) {
+        throw new Error('La API no devolvió el inventario creado.');
+      }
+
+      const movimientoResponse = await apiFetch('/movimientos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(
+          buildEntradaMovimientoPayload({
+            inventarioHamacaId,
+            usuarioId: Number(form.usuario_id),
+            ubicacionDestinoId: Number(form.ubicacion_id),
+            cantidad: Number(form.cantidad),
+            fecha: form.fecha,
+          })
+        ),
+      });
+
+      const movimientoData = await movimientoResponse.json().catch(() => null);
+
+      if (movimientoResponse.status === 422) {
+        setError(getValidationMessage(movimientoData));
+        return;
+      }
+
+      if (!movimientoResponse.ok) {
+        throw new Error(`HTTP ${movimientoResponse.status}`);
       }
 
       setForm({
@@ -274,19 +342,31 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               ))}
             </select>
 
-            <select
-              name="color_id"
-              value={form.color_id}
-              onChange={handleChange}
-              className="h-[46px] w-full border border-black bg-[#f7f7f7] px-7 text-xl text-[#08264d] outline-none"
-            >
-              <option value="">Color</option>
-              {colores.map((color) => (
-                <option key={color.id} value={color.id}>
-                  {color.nombre}
-                </option>
-              ))}
-            </select>
+            <fieldset className="w-full border border-black bg-[#f7f7f7] px-5 py-3 text-[#08264d]">
+              <legend className="px-2 text-lg font-semibold">
+                Colores
+              </legend>
+              <div className="grid max-h-[150px] gap-2 overflow-y-auto sm:grid-cols-2">
+                {colores.map((color) => {
+                  const colorId = String(color.id);
+
+                  return (
+                    <label
+                      key={color.id}
+                      className="flex min-h-[34px] items-center gap-3 text-lg"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form.color_ids.includes(colorId)}
+                        onChange={() => handleColorToggle(color.id)}
+                        className="h-5 w-5 accent-[#155b72]"
+                      />
+                      <span>{color.nombre}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
 
             {error && (
               <p className="rounded-md bg-red-100 px-3 py-2 text-sm font-semibold text-red-700">
