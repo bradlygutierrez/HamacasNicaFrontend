@@ -1,29 +1,25 @@
-'use client'
-
-interface categorySelectorProps {
-    categoryName: string;
-    isSelected: boolean;
-    onClick: () => void;
-}
+type Props = {
+  categoryName: string;
+  isSelected: boolean;
+  onClick: () => void;
+};
 
 export default function CategoryProductsSelector({
-    categoryName,
-    isSelected,
-    onClick
-}: categorySelectorProps) {
-
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`
-                text-center px-3 py-2 w-full sm:w-auto md:w-[15%] rounded-[7px] text-sm md:text-lg font-medium border-2 cursor-pointer transition-all
-                ${isSelected
-                    ? "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)]"
-                    : "bg-[var(--color-background-secondary)] text-[var(--color-foreground)]  border-gray-300 hover:bg-gray-200"}
-            `}
-        >
-            {categoryName}
-        </button>
-    );
+  categoryName,
+  isSelected,
+  onClick,
+}: Props) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-[44px] w-full rounded-[8px] px-4 text-base font-semibold shadow-md transition sm:w-auto sm:min-w-[260px] sm:text-lg ${
+        isSelected
+          ? "bg-[#123852] text-white"
+          : "bg-[#f7f7f7] text-[#08264d]"
+      }`}
+    >
+      {categoryName}
+    </button>
+  );
 }
