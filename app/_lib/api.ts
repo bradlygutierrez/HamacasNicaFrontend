@@ -1,8 +1,10 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1";
+export const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1"
+).replace(/\/$/, "");
 
 export function apiUrl(path: string): string {
-  return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${API_BASE_URL}${cleanPath}`;
 }
 
 export function getStoredToken(): string | null {
@@ -16,11 +18,12 @@ export function getStoredToken(): string | null {
 export function authHeaders(init?: HeadersInit, includeAccept = true): Headers {
   const headers = new Headers(init);
 
-  if (includeAccept) {
+  if (includeAccept && !headers.has("Accept")) {
     headers.set("Accept", "application/json");
   }
 
   const token = getStoredToken();
+
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -28,9 +31,18 @@ export function authHeaders(init?: HeadersInit, includeAccept = true): Headers {
   return headers;
 }
 
-export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+export async function apiFetch(
+  path: string,
+  init: RequestInit = {}
+): Promise<Response> {
+  const isFormData =
+    typeof FormData !== "undefined" && init.body instanceof FormData;
+
   const headers = authHeaders(init.headers, true);
-  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+
+  if (isFormData) {
+    headers.delete("Content-Type");
+  }
 
   if (init.body && !isFormData && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");

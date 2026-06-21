@@ -1,25 +1,23 @@
 export type EntradaMovimientoPayload = {
   inventario_hamaca_id: number;
   usuario_id: number;
-  tipo: 'entrada';
+  tipo: "entrada";
   cantidad: number;
   fecha: string;
   ubicacion_destino_id?: number;
 };
 
 export type EntradaInventarioPayload = {
-  hamaca_id: number;
+  hamaca_variante_id: number;
   usuario_id: number;
   ubicacion_id: number;
-  color_ids: number[];
   cantidad: number;
 };
 
 type EntradaInventarioInput = {
-  hamacaId: number;
+  hamacaVarianteId: number;
   usuarioId: number;
   ubicacionId: number;
-  colorIds: number[];
   cantidad: number;
 };
 
@@ -32,17 +30,15 @@ type EntradaMovimientoInput = {
 };
 
 export function buildEntradaInventarioPayload({
-  hamacaId,
+  hamacaVarianteId,
   usuarioId,
   ubicacionId,
-  colorIds,
   cantidad,
 }: EntradaInventarioInput): EntradaInventarioPayload {
   return {
-    hamaca_id: hamacaId,
+    hamaca_variante_id: hamacaVarianteId,
     usuario_id: usuarioId,
     ubicacion_id: ubicacionId,
-    color_ids: colorIds,
     cantidad,
   };
 }
@@ -57,7 +53,7 @@ export function buildEntradaMovimientoPayload({
   const payload: EntradaMovimientoPayload = {
     inventario_hamaca_id: inventarioHamacaId,
     usuario_id: usuarioId,
-    tipo: 'entrada',
+    tipo: "entrada",
     cantidad,
     fecha,
   };

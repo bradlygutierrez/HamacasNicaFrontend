@@ -47,6 +47,7 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialInventarioId?: number | null;
 };
 
 const EMPTY_FORM: FormData = {
@@ -79,7 +80,7 @@ function getValidationMessage(data: unknown) {
   return String(firstError ?? 'Datos inválidos.');
 }
 
-export default function SalidaModal({ isOpen, onClose, onSuccess }: Props) {
+export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventarioId = null }: Props) {
   const [inventarios, setInventarios] = useState<Inventario[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
@@ -125,6 +126,17 @@ export default function SalidaModal({ isOpen, onClose, onSuccess }: Props) {
         }
 
         setInventarios(availableInventarios);
+        if (
+          initialInventarioId &&
+          availableInventarios.some(
+            (inventario: Inventario) => inventario.id === initialInventarioId
+          )
+        ) {
+          setForm((prev) => ({
+            ...prev,
+            inventario_hamaca_id: String(initialInventarioId),
+          }));
+        }
         setUsuarios(loadedUsers);
 
         if (meData.data) {
@@ -140,7 +152,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess }: Props) {
     }
 
     loadCatalogos();
-  }, [isOpen]);
+  }, [isOpen, initialInventarioId]);
 
   const selectedInventario = useMemo(() => {
     return inventarios.find((inventario) => inventario.id === Number(form.inventario_hamaca_id));
