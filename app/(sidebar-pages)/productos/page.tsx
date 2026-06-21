@@ -39,6 +39,7 @@ type BaseHamaca = {
     categoria_id: number;
     tamano_id: number;
     precio: number | string;
+    fotos?: Array<{ id?: number; ruta: string }>;
 };
 
 export default function Productos() {
@@ -69,7 +70,11 @@ export default function Productos() {
     }, []);
 
     useEffect(() => {
-        loadData().catch(console.error);
+        const timeoutId = window.setTimeout(() => {
+            loadData().catch(console.error);
+        }, 0);
+
+        return () => window.clearTimeout(timeoutId);
     }, [loadData]);
 
     const filteredProducts = useMemo(() => {
@@ -96,10 +101,14 @@ export default function Productos() {
 
     function handleEdit(productId: number) {
         const base = baseProducts.find((item) => item.id === productId);
+        const detail = products.find((item) => item.id === productId);
 
         if (!base) return;
 
-        setHamacaToEdit(base);
+        setHamacaToEdit({
+            ...base,
+            fotos: detail?.fotos ?? [],
+        });
         setModalOpen(true);
     }
 
@@ -168,6 +177,7 @@ export default function Productos() {
                             propietario={firstInventory?.usuario?.nombre ?? "Sin propietario"}
                             ubicacion={firstInventory?.ubicacion?.nombre ?? prod.ubicacion ?? "Sin ubicación"}
                             urlImg={prod.fotos?.[0]?.ruta ?? ""}
+                            imageUrls={prod.fotos?.map((foto) => foto.ruta) ?? []}
                             onEdit={() => handleEdit(prod.id)}
                         />
                     );

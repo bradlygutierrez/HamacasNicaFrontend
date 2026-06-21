@@ -2,10 +2,26 @@
 import { sideBarButton } from "./sideBarButton";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiFetch } from "../_lib/api";
 
 function SideBar() {
     const [open, setOpen] = useState(false);
+    const router = useRouter();
     const toggle = () => setOpen((v) => !v);
+
+    async function handleLogout() {
+        try {
+            await apiFetch("/logout", {
+                method: "POST",
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            localStorage.removeItem("token");
+            router.push("/");
+        }
+    }
 
     return (
         <div className={`flex flex-col h-screen sticky p-2 gap-2 top-0 left-0 bg-[var(--color-foreground-secondary)] transition-all duration-300 overflow-hidden ${open ? "w-56" : "w-16"}`}>
@@ -60,6 +76,15 @@ function SideBar() {
                 <div className="flex items-center gap-3">
                     {sideBarButton({ photo: "sales.svg", alt: "Ventas", hrefString: "/ventas" })}
                     <span className={`text-[var(--color-foreground)] transition-all duration-200 ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>Ventas</span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    {sideBarButton({ photo: "exit.svg", alt: "Cerrar sesión", onClick: handleLogout })}
+                    <span className={`text-[var(--color-foreground)] transition-all duration-200 ${open ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"}`}>
+                        <button type="button" onClick={handleLogout}>
+                            Cerrar sesión
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>

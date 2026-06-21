@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/app/_lib/api';
+import {
+  buildFotoPayload,
+  buildHamacaPayload,
+  normalizePhotoRoutes,
+} from '@/app/_lib/hamacas';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -15,6 +20,7 @@ type Hamaca = {
   categoria_id: number;
   tamano_id: number;
   precio: number | string;
+  fotos?: Array<{ id?: number; ruta: string }>;
 };
 
 type FormData = {
@@ -50,6 +56,8 @@ const EMPTY_FORM: FormData = {
   precio: '',
 };
 
+const EMPTY_PHOTOS = [''];
+
 // ─── Componente ──────────────────────────────────────────────────────────────
 
 export default function HamacaModal({
@@ -74,6 +82,8 @@ export default function HamacaModal({
 
   // Formulario y errores
   const [form,    setForm]    = useState<FormData>(EMPTY_FORM);
+  const [photoRoutes, setPhotoRoutes] = useState<string[]>(EMPTY_PHOTOS);
+  const [initialPhotoRoutes, setInitialPhotoRoutes] = useState<string[]>([]);
   const [errors,  setErrors]  = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
 
@@ -112,10 +122,13 @@ export default function HamacaModal({
       setMode('editar');
       setSelectedHamacaId(String(hamacaToEdit.id));
       fillForm(hamacaToEdit);
+      fillPhotos(hamacaToEdit);
     } else {
       setMode('crear');
       setSelectedHamacaId('');
       setForm(EMPTY_FORM);
+      setPhotoRoutes(EMPTY_PHOTOS);
+      setInitialPhotoRoutes([]);
     }
     setErrors({});
   }, [hamacaToEdit, isOpen]);
@@ -132,6 +145,13 @@ export default function HamacaModal({
     });
   }
 
+  function fillPhotos(h: Hamaca) {
+    const routes = h.fotos?.map((foto) => foto.ruta).filter(Boolean) ?? [];
+
+    setPhotoRoutes(routes.length > 0 ? routes : EMPTY_PHOTOS);
+    setInitialPhotoRoutes(routes);
+  }
+
   // ── Cuando se selecciona una hamaca en el select de edición ──────────────
 
   function handleHamacaSelect(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -145,7 +165,10 @@ export default function HamacaModal({
     }
 
     const found = hamacas.find((h) => String(h.id) === id);
-    if (found) fillForm(found);
+    if (found) {
+      fillForm(found);
+      fillPhotos(found);
+    }
   }
 
   // ── Cambio de modo ───────────────────────────────────────────────────────
@@ -153,6 +176,8 @@ export default function HamacaModal({
   function handleModeChange(newMode: Mode) {
     setMode(newMode);
     setForm(EMPTY_FORM);
+    setPhotoRoutes(EMPTY_PHOTOS);
+    setInitialPhotoRoutes([]);
     setSelectedHamacaId('');
     setErrors({});
   }
@@ -165,6 +190,23 @@ export default function HamacaModal({
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
+  }
+
+  function handlePhotoRouteChange(index: number, value: string) {
+    setPhotoRoutes((prev) =>
+      prev.map((route, routeIndex) => (routeIndex === index ? value : route))
+    );
+  }
+
+  function handleAddPhotoRoute() {
+    setPhotoRoutes((prev) => [...prev, '']);
+  }
+
+  function handleRemovePhotoRoute(index: number) {
+    setPhotoRoutes((prev) => {
+      const next = prev.filter((_, routeIndex) => routeIndex !== index);
+      return next.length > 0 ? next : EMPTY_PHOTOS;
+    });
   }
 
   // ── Validación local (espeja las reglas del backend) ─────────────────────
@@ -202,13 +244,13 @@ export default function HamacaModal({
 
     setLoading(true);
 
-    const payload = {
-      nombre:       form.nombre.trim(),
-      descripcion:  form.descripcion.trim() || null,
-      categoria_id: parseInt(form.categoria_id),
-      tamano_id:    parseInt(form.tamano_id),
-      precio:       parseFloat(form.precio),
-    };
+    const payload = buildHamacaPayload({
+      nombre: form.nombre,
+      descripcion: form.descripcion,
+      categoriaId: parseInt(form.categoria_id),
+      tamanoId: parseInt(form.tamano_id),
+      precio: parseFloat(form.precio),
+    });
 
     try {
       let response: Response;
@@ -228,11 +270,12 @@ export default function HamacaModal({
       }
 
       // Errores de validación 422 del servidor
+      const data = await response.json().catch(() => null);
+
       if (response.status === 422) {
-        const data = await response.json();
         const serverErrors: FormErrors = {};
 
-        if (data.errors) {
+        if (data?.errors) {
           Object.entries(data.errors).forEach(([key, msgs]) => {
             serverErrors[key as keyof FormData] = (msgs as string[])[0];
           });
@@ -244,8 +287,39 @@ export default function HamacaModal({
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
+      const savedHamacaId = Number(data?.data?.id ?? selectedHamacaId);
+
+      if (!Number.isFinite(savedHamacaId) || savedHamacaId <= 0) {
+        throw new Error('La API no devolvió la hamaca guardada.');
+      }
+
+      const routesToSave = normalizePhotoRoutes(photoRoutes).filter(
+        (route) => !initialPhotoRoutes.includes(route)
+      );
+
+      await Promise.all(
+        routesToSave.map((route) =>
+          apiFetch('/fotos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(
+              buildFotoPayload({
+                hamacaId: savedHamacaId,
+                ruta: route,
+              })
+            ),
+          }).then((fotoResponse) => {
+            if (!fotoResponse.ok) {
+              throw new Error(`Foto HTTP ${fotoResponse.status}`);
+            }
+          })
+        )
+      );
+
       // Éxito
       setForm(EMPTY_FORM);
+      setPhotoRoutes(EMPTY_PHOTOS);
+      setInitialPhotoRoutes([]);
       setSelectedHamacaId('');
       setErrors({});
       onSuccess();
@@ -263,6 +337,8 @@ export default function HamacaModal({
 
   function handleReset() {
     setForm(EMPTY_FORM);
+    setPhotoRoutes(EMPTY_PHOTOS);
+    setInitialPhotoRoutes([]);
     setErrors({});
     if (mode === 'editar') setSelectedHamacaId('');
   }
@@ -278,7 +354,7 @@ export default function HamacaModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-lg rounded-[14px] bg-[#f0f4f8] shadow-xl overflow-hidden">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[14px] bg-[#f0f4f8] shadow-xl">
 
         {/* Header */}
         <div className="flex items-center justify-between bg-[#1a3a5c] px-6 py-4">
@@ -448,6 +524,50 @@ export default function HamacaModal({
             {errors.precio && (
               <span className="text-[11px] text-red-600">{errors.precio}</span>
             )}
+          </div>
+
+          <div className="flex flex-col gap-2 rounded-lg border border-[#1a3a5c]/15 bg-white/60 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <label className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+                  Fotos
+                </label>
+                <p className="text-[11px] text-[#4a6a8a]">
+                  Agrega una o varias rutas de imagen para esta hamaca.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddPhotoRoute}
+                className="rounded-[7px] bg-[#1a3a5c] px-3 py-2 text-xs font-medium text-white transition hover:bg-[#143050]"
+              >
+                Agregar foto
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {photoRoutes.map((route, index) => (
+                <div key={index} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={route}
+                    onChange={(event) =>
+                      handlePhotoRouteChange(index, event.target.value)
+                    }
+                    placeholder="https://... o /uploads/hamaca.jpg"
+                    className="min-w-0 flex-1 rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] placeholder-[#9ab]/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhotoRoute(index)}
+                    className="rounded-md border border-[#1a3a5c]/25 px-3 text-sm font-medium text-[#1a3a5c] transition hover:bg-[#1a3a5c]/10"
+                    aria-label="Quitar foto"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

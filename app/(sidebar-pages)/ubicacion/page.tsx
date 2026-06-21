@@ -1,10 +1,13 @@
-import SectionPage from "@/app/_components/section-page";
+import CatalogPage from "@/app/_components/catalog-page";
 
 export default function UbicacionPage() {
     return (
-        <SectionPage
+        <CatalogPage
             title="Ubicaciones"
             description="Catálogo de ubicaciones físicas para el inventario."
+            endpoint="/ubicaciones"
+            namePlaceholder="Ej: Mercado"
+            descriptionPlaceholder="Dirección, bodega o referencia física"
         />
     );
 }

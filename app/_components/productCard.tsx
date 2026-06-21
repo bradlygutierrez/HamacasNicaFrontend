@@ -3,6 +3,7 @@ import { Camera, Pencil, Trash } from "lucide-react";
 interface ProductCardProps {
   nombre: string;
   urlImg: string;
+  imageUrls?: string[];
   cantidad: number;
   color: string;
   propietario: string;
@@ -18,9 +19,13 @@ export default function ProductCard({
   propietario,
   ubicacion,
   urlImg,
+  imageUrls = [],
   onEdit,
   onDelete,
 }: ProductCardProps) {
+  const visibleImages = imageUrls.filter(Boolean).slice(0, 4);
+  const remainingImages = Math.max(imageUrls.filter(Boolean).length - visibleImages.length, 0);
+
   return (
     <article className="w-full rounded-[8px] bg-[#e9eef1] p-5 shadow-lg sm:min-h-[600px] sm:p-8">
       <div className="mb-4 flex justify-end gap-4 sm:mb-5 sm:gap-5">
@@ -44,6 +49,28 @@ export default function ProductCard({
           <Camera className="h-14 w-14 text-[#123852] sm:h-16 sm:w-16" />
         )}
       </div>
+
+      {visibleImages.length > 1 ? (
+        <div className="mb-4 grid grid-cols-4 gap-2">
+          {visibleImages.map((imageUrl, index) => (
+            <div
+              key={`${imageUrl}-${index}`}
+              className="relative h-14 overflow-hidden rounded-[8px] bg-[#f7f7f7]"
+            >
+              <img
+                src={imageUrl}
+                alt={`${nombre} foto ${index + 1}`}
+                className="h-full w-full object-cover"
+              />
+              {remainingImages > 0 && index === visibleImages.length - 1 ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#08264d]/70 text-sm font-bold text-white">
+                  +{remainingImages}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       <div className="space-y-3 text-[20px] font-bold sm:text-[26px]">
         <div className="rounded-[8px] bg-[#123852] px-3 py-1 text-center text-white sm:px-4">
