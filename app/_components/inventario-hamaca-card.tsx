@@ -1,4 +1,4 @@
-import { Camera, Eye, LogOut } from "lucide-react";
+import { ArrowRightLeft, Camera, LogOut } from "lucide-react";
 
 type InventarioHamacaCardProps = {
   nombre: string;
@@ -10,6 +10,7 @@ type InventarioHamacaCardProps = {
   imageUrls?: string[];
   onViewPhotos?: () => void;
   onCreateExit?: () => void;
+  onCreateTransfer?: () => void;
 };
 
 export default function InventarioHamacaCard({
@@ -22,6 +23,7 @@ export default function InventarioHamacaCard({
   imageUrls = [],
   onViewPhotos,
   onCreateExit,
+  onCreateTransfer,
 }: InventarioHamacaCardProps) {
   const visibleImages = imageUrls.filter(Boolean);
   const mainImage = visibleImages[0];
@@ -78,13 +80,22 @@ export default function InventarioHamacaCard({
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
+      <div className="mt-5 grid grid-cols-3 gap-3">
         <button
           type="button"
           onClick={onViewPhotos}
           className="flex items-center justify-center gap-2 rounded-[8px] bg-white px-3 py-2 font-semibold text-[#08264d] shadow"
         >
           Fotos
+        </button>
+
+        <button
+          type="button"
+          onClick={onCreateTransfer}
+          className="flex items-center justify-center gap-2 rounded-[8px] bg-[#e8edf3] px-3 py-2 font-semibold text-[#08264d] shadow"
+        >
+          <ArrowRightLeft className="h-5 w-5" />
+          Reubicar
         </button>
 
         <button

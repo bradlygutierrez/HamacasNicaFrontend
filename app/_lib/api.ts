@@ -1,18 +1,21 @@
 export const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000/api/v1"
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1"
 ).replace(/\/$/, "");
 
 export function apiUrl(path: string): string {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  return `${API_BASE_URL}${cleanPath}`;
-}
+  let baseUrl = API_BASE_URL;
 
-export function getStoredToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
+  // Keep local development on one site so SameSite=Lax session cookies work.
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost") {
+      baseUrl = baseUrl.replace("127.0.0.1", "localhost");
+    } else if (window.location.hostname === "127.0.0.1") {
+      baseUrl = baseUrl.replace("localhost", "127.0.0.1");
+    }
   }
 
-  return localStorage.getItem("token");
+  return `${baseUrl}${cleanPath}`;
 }
 
 export function authHeaders(init?: HeadersInit, includeAccept = true): Headers {
@@ -22,13 +25,32 @@ export function authHeaders(init?: HeadersInit, includeAccept = true): Headers {
     headers.set("Accept", "application/json");
   }
 
-  const token = getStoredToken();
+  if (typeof document !== "undefined") {
+    const xsrfCookie = document.cookie
+      .split("; ")
+      .find((cookie) => cookie.startsWith("XSRF-TOKEN="));
 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+    if (xsrfCookie) {
+      headers.set(
+        "X-XSRF-TOKEN",
+        decodeURIComponent(xsrfCookie.slice("XSRF-TOKEN=".length))
+      );
+    }
   }
 
   return headers;
+}
+
+export async function csrfCookie(): Promise<void> {
+  const csrfUrl = `${new URL(apiUrl("/")).origin}/sanctum/csrf-cookie`;
+  const response = await fetch(csrfUrl, {
+    credentials: "include",
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`No se pudo iniciar la protección CSRF (${response.status})`);
+  }
 }
 
 export async function apiFetch(
@@ -48,8 +70,17 @@ export async function apiFetch(
     headers.set("Content-Type", "application/json");
   }
 
-  return fetch(apiUrl(path), {
+  const response = await fetch(apiUrl(path), {
     ...init,
+    credentials: init.credentials ?? "include",
     headers,
   });
+
+  if (response.status === 401) {
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("hamacas:unauthorized"));
+    }
+  }
+
+  return response;
 }

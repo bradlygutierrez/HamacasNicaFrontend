@@ -1,57 +1,27 @@
-export type SalidaMovimientoPayload = {
-  inventario_hamaca_id: number;
-  usuario_id: number;
-  tipo: 'salida';
-  cantidad: number;
-  fecha: string;
-  ubicacion_origen_id?: number;
-};
-
-export type SalidaTransferPayload = {
+export type SalidaPayload = {
   inventario_hamaca_id: number;
   cantidad: number;
+  fecha?: string;
 };
 
-type SalidaTransferInput = {
+type SalidaInput = {
   inventarioHamacaId: number;
   cantidad: number;
+  fecha?: string;
 };
 
-type SalidaMovimientoInput = {
-  inventarioHamacaId: number;
-  usuarioId: number;
-  cantidad: number;
-  fecha: string;
-  ubicacionOrigenId?: number | null;
-};
-
-export function buildSalidaTransferPayload({
+export function buildSalidaPayload({
   inventarioHamacaId,
-  cantidad,
-}: SalidaTransferInput): SalidaTransferPayload {
-  return {
-    inventario_hamaca_id: inventarioHamacaId,
-    cantidad,
-  };
-}
-
-export function buildSalidaMovimientoPayload({
-  inventarioHamacaId,
-  usuarioId,
   cantidad,
   fecha,
-  ubicacionOrigenId,
-}: SalidaMovimientoInput): SalidaMovimientoPayload {
-  const payload: SalidaMovimientoPayload = {
+}: SalidaInput): SalidaPayload {
+  const payload: SalidaPayload = {
     inventario_hamaca_id: inventarioHamacaId,
-    usuario_id: usuarioId,
-    tipo: 'salida',
     cantidad,
-    fecha,
   };
 
-  if (ubicacionOrigenId) {
-    payload.ubicacion_origen_id = ubicacionOrigenId;
+  if (fecha) {
+    payload.fecha = fecha;
   }
 
   return payload;

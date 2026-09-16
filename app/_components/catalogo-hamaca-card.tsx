@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Images, PackageSearch } from "lucide-react";
+import { Camera, Images, PackageSearch, Pencil } from "lucide-react";
 import { useState } from "react";
 
 type CatalogoHamacaCardProps = {
@@ -13,6 +13,7 @@ type CatalogoHamacaCardProps = {
   ubicaciones: string[];
   propietarios: string[];
   imageUrls?: string[];
+  onEdit?: () => void;
   onViewPhotos?: () => void;
   onViewInventory?: () => void;
 };
@@ -27,6 +28,7 @@ export default function CatalogoHamacaCard({
   ubicaciones,
   propietarios,
   imageUrls = [],
+  onEdit,
   onViewPhotos,
   onViewInventory,
 }: CatalogoHamacaCardProps) {
@@ -110,7 +112,16 @@ export default function CatalogoHamacaCard({
         </div>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-3">
+      <div className="mt-5 grid grid-cols-3 gap-3">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="flex items-center justify-center gap-2 rounded-[8px] bg-[#e8edf3] px-3 py-2 font-semibold text-[#08264d] shadow"
+        >
+          <Pencil className="h-5 w-5" />
+          Editar
+        </button>
+
         <button
           type="button"
           onClick={onViewPhotos}

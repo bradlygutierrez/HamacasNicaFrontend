@@ -1,9 +1,10 @@
 'use client';
 
 import { apiFetch } from '@/app/_lib/api';
-import { buildSalidaPayload } from '@/app/_lib/salidas';
-import { Plus, X } from 'lucide-react';
+import { buildTransferenciaPayload } from '@/app/_lib/transferencias';
+import { ArrowRightLeft, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 type Inventario = {
   id: number;
@@ -11,16 +12,10 @@ type Inventario = {
   hamaca?: {
     id: number;
     nombre: string;
-    precio?: number | string;
   };
   ubicacion?: {
     id: number;
     nombre: string;
-  };
-  usuario?: {
-    id: number;
-    nombre: string;
-    rol: string;
   };
   colores?: Array<{
     id: number;
@@ -28,8 +23,14 @@ type Inventario = {
   }>;
 };
 
+type Ubicacion = {
+  id: number;
+  nombre: string;
+};
+
 type FormData = {
   inventario_hamaca_id: string;
+  ubicacion_destino_id: string;
   cantidad: string;
   fecha: string;
 };
@@ -37,12 +38,13 @@ type FormData = {
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: () => void | Promise<void>;
   initialInventarioId?: number | null;
 };
 
 const EMPTY_FORM: FormData = {
   inventario_hamaca_id: '',
+  ubicacion_destino_id: '',
   cantidad: '',
   fecha: new Date().toISOString().slice(0, 10),
 };
@@ -70,8 +72,14 @@ function getValidationMessage(data: unknown) {
   return String(firstError ?? 'Datos inválidos.');
 }
 
-export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventarioId = null }: Props) {
+export default function TransferenciaModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  initialInventarioId = null,
+}: Props) {
   const [inventarios, setInventarios] = useState<Inventario[]>([]);
+  const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,28 +89,35 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
     async function loadCatalogos() {
       try {
-        const inventariosRes = await apiFetch('/inventario-hamacas');
+        const [inventariosRes, ubicacionesRes] = await Promise.all([
+          apiFetch('/inventario-hamacas'),
+          apiFetch('/ubicaciones'),
+        ]);
 
         const inventariosData = await inventariosRes.json();
+        const ubicacionesData = await ubicacionesRes.json();
         const availableInventarios = (inventariosData.data ?? []).filter(
           (inventario: Inventario) => Number(inventario.cantidad) > 0
         );
 
         setInventarios(availableInventarios);
-        if (
-          initialInventarioId &&
-          availableInventarios.some(
-            (inventario: Inventario) => inventario.id === initialInventarioId
-          )
-        ) {
-          setForm((prev) => ({
-            ...prev,
-            inventario_hamaca_id: String(initialInventarioId),
-          }));
-        }
+        setUbicaciones(ubicacionesData.data ?? []);
+        setError('');
+        setForm({
+          ...EMPTY_FORM,
+          inventario_hamaca_id:
+            initialInventarioId &&
+            availableInventarios.some(
+              (inventario: Inventario) => inventario.id === initialInventarioId
+            )
+              ? String(initialInventarioId)
+              : '',
+          fecha: new Date().toISOString().slice(0, 10),
+        });
       } catch (err) {
         console.error(err);
         setError('No se pudieron cargar los datos del formulario.');
+        toast.error('No se pudieron cargar los datos para reubicar.');
       }
     }
 
@@ -113,6 +128,12 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
     return inventarios.find((inventario) => inventario.id === Number(form.inventario_hamaca_id));
   }, [form.inventario_hamaca_id, inventarios]);
 
+  const destinationOptions = useMemo(() => {
+    return ubicaciones.filter(
+      (ubicacion) => ubicacion.id !== selectedInventario?.ubicacion?.id
+    );
+  }, [selectedInventario?.ubicacion?.id, ubicaciones]);
+
   function handleChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
@@ -121,6 +142,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
     setForm((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === 'inventario_hamaca_id' ? { ubicacion_destino_id: '' } : {}),
     }));
 
     setError('');
@@ -128,6 +150,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
   function validate() {
     if (!form.inventario_hamaca_id) return 'Seleccioná un producto del inventario.';
+    if (!form.ubicacion_destino_id) return 'Seleccioná una ubicación destino.';
     if (!form.cantidad || Number(form.cantidad) < 1) return 'La cantidad debe ser mayor a 0.';
     if (!form.fecha) return 'Seleccioná una fecha.';
 
@@ -135,6 +158,10 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
     if (Number(form.cantidad) > Number(selectedInventario.cantidad)) {
       return `Solo hay ${selectedInventario.cantidad} unidades disponibles.`;
+    }
+
+    if (Number(form.ubicacion_destino_id) === selectedInventario.ubicacion?.id) {
+      return 'La ubicación destino debe ser diferente a la ubicación actual.';
     }
 
     return '';
@@ -145,22 +172,22 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
     if (validationError) {
       setError(validationError);
+      toast.error(validationError);
       return;
     }
-
-    if (!selectedInventario) return;
 
     setLoading(true);
 
     try {
-      const response = await apiFetch('/inventario/salidas', {
+      const response = await apiFetch('/inventario/transferencias', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(
-          buildSalidaPayload({
+          buildTransferenciaPayload({
             inventarioHamacaId: Number(form.inventario_hamaca_id),
+            ubicacionDestinoId: Number(form.ubicacion_destino_id),
             cantidad: Number(form.cantidad),
             fecha: form.fecha,
           })
@@ -170,7 +197,9 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
       const data = await response.json().catch(() => null);
 
       if (response.status === 409 || response.status === 422) {
-        setError(getValidationMessage(data));
+        const message = getValidationMessage(data);
+        setError(message);
+        toast.error(message);
         return;
       }
 
@@ -182,13 +211,14 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
         ...EMPTY_FORM,
         fecha: new Date().toISOString().slice(0, 10),
       });
-
       setError('');
+      toast.success('Hamaca reubicada correctamente.');
       await onSuccess();
       onClose();
     } catch (err) {
       console.error(err);
-      setError('No se pudo registrar la salida. Verificá tu sesión, rol y stock.');
+      setError('No se pudo reubicar la hamaca. Verificá tu sesión, rol y stock.');
+      toast.error('No se pudo reubicar la hamaca.');
     } finally {
       setLoading(false);
     }
@@ -205,7 +235,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
     >
       <div className="max-h-[calc(100vh-32px)] w-full max-w-[620px] overflow-y-auto rounded-[10px] bg-[#f7f7f7] px-6 py-6 shadow-xl sm:px-9">
         <h2 className="mb-5 text-3xl font-medium text-black">
-          Agregar Salida
+          Reubicar hamaca
         </h2>
 
         <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
@@ -220,6 +250,20 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               {inventarios.map((inventario) => (
                 <option key={inventario.id} value={inventario.id}>
                   {formatInventarioLabel(inventario)}
+                </option>
+              ))}
+            </select>
+
+            <select
+              name="ubicacion_destino_id"
+              value={form.ubicacion_destino_id}
+              onChange={handleChange}
+              className="h-[46px] w-full border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none sm:px-7 sm:text-xl"
+            >
+              <option value="">Ubicación destino</option>
+              {destinationOptions.map((ubicacion) => (
+                <option key={ubicacion.id} value={ubicacion.id}>
+                  {ubicacion.nombre}
                 </option>
               ))}
             </select>
@@ -245,6 +289,8 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
             {selectedInventario && (
               <div className="rounded-md border border-[#08264d]/30 bg-white px-4 py-3 text-sm font-semibold text-[#08264d]">
+                Ubicación actual: {selectedInventario.ubicacion?.nombre ?? 'Sin ubicación'}
+                <br />
                 Stock disponible: {selectedInventario.cantidad}
               </div>
             )}
@@ -263,8 +309,8 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               disabled={loading}
               className="flex h-[38px] flex-1 items-center justify-center gap-2 rounded-[10px] bg-[#155b72] px-4 text-base font-bold text-white disabled:opacity-60 sm:flex-none"
             >
-              <Plus className="h-5 w-5" />
-              {loading ? 'Guardando' : 'Agregar'}
+              <ArrowRightLeft className="h-5 w-5" />
+              {loading ? 'Guardando' : 'Reubicar'}
             </button>
 
             <button

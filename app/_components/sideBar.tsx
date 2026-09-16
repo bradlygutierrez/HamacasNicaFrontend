@@ -2,105 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { apiFetch } from "../_lib/api";
-
-type UsuarioActual = {
-  id: number;
-  nombre: string;
-  rol?: string;
-  foto?: string | null;
-  foto_url?: string | null;
-  avatar?: string | null;
-  avatar_url?: string | null;
-  imagen?: string | null;
-  picture?: string | null;
-  photo?: string | null;
-};
-
-type NavItem = {
-  label: string;
-  href: string;
-  icon: string;
-  alt: string;
-  customCatalogIcon?: boolean;
-};
+import type { NavItem, UsuarioActual } from "../_lib/permissions";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 const ICON_BOX = "flex h-10 w-10 shrink-0 items-center justify-center";
 const ICON_SIZE = "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain";
-
-const navItems: NavItem[] = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: "/dashboard.svg",
-    alt: "Dashboard",
-  },
-  {
-    label: "Usuarios",
-    href: "/usuarios",
-    icon: "/users.svg",
-    alt: "Usuarios",
-  },
-  {
-    label: "Inventario",
-    href: "/inventario-hamacas",
-    icon: "/products.svg",
-    alt: "Inventario",
-  },
-  {
-    label: "Catálogo Hamacas",
-    href: "/catalogo-hamacas",
-    icon: "",
-    alt: "Catálogo Hamacas",
-    customCatalogIcon: true,
-  },
-  {
-    label: "Entradas",
-    href: "/entradas",
-    icon: "/rightArrow.svg",
-    alt: "Entradas",
-  },
-  {
-    label: "Salidas",
-    href: "/salidas",
-    icon: "/leftArrow.svg",
-    alt: "Salidas",
-  },
-  {
-    label: "Ubicación",
-    href: "/ubicacion",
-    icon: "/location.svg",
-    alt: "Ubicación",
-  },
-  {
-    label: "Colores",
-    href: "/colores",
-    icon: "/colors.svg",
-    alt: "Colores",
-  },
-  {
-    label: "Tamaño",
-    href: "/tamano",
-    icon: "/size.svg",
-    alt: "Tamaño",
-  },
-  {
-    label: "Categoría",
-    href: "/categoria",
-    icon: "/category.svg",
-    alt: "Categoría",
-  },
-  {
-    label: "Ventas",
-    href: "/ventas",
-    icon: "/sales.svg",
-    alt: "Ventas",
-  },
-];
 
 function imageUrl(path?: string | null) {
   if (!path) return "";
@@ -155,32 +65,19 @@ function CatalogIcon() {
   );
 }
 
-function SideBar() {
+type Props = {
+  usuario: UsuarioActual | null;
+  navItems: NavItem[];
+};
+
+function SideBar({ usuario, navItems }: Props) {
   const [open, setOpen] = useState(false);
-  const [usuario, setUsuario] = useState<UsuarioActual | null>(null);
   const [photoError, setPhotoError] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
 
   const userPhoto = useMemo(() => getUserPhoto(usuario), [usuario]);
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const response = await apiFetch("/me");
-
-        if (!response.ok) return;
-
-        const data = await response.json();
-        setUsuario(data.data ?? data);
-      } catch (error) {
-        console.error("Error cargando usuario:", error);
-      }
-    }
-
-    loadUser();
-  }, []);
 
   async function handleLogout() {
     try {
@@ -190,7 +87,6 @@ function SideBar() {
     } catch (error) {
       console.error(error);
     } finally {
-      localStorage.removeItem("token");
       router.push("/");
     }
   }

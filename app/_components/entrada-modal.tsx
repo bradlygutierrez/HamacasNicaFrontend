@@ -1,10 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/app/_lib/api";
-import {
-  buildEntradaInventarioPayload,
-  buildEntradaMovimientoPayload,
-} from "@/app/_lib/entradas";
+import { buildEntradaPayload } from "@/app/_lib/entradas";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -196,15 +193,16 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
     setLoading(true);
 
     try {
-      const response = await apiFetch("/inventario-hamacas", {
+      const response = await apiFetch("/inventario/entradas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          buildEntradaInventarioPayload({
+          buildEntradaPayload({
             hamacaVarianteId: Number(form.hamaca_variante_id),
             usuarioId: Number(form.usuario_id),
             ubicacionId: Number(form.ubicacion_id),
             cantidad: Number(form.cantidad),
+            fecha: form.fecha,
           })
         ),
       });
@@ -218,37 +216,6 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
-      }
-
-      const inventarioHamacaId = Number(data?.data?.id);
-
-      if (!Number.isFinite(inventarioHamacaId) || inventarioHamacaId <= 0) {
-        throw new Error("La API no devolvió el inventario creado.");
-      }
-
-      const movimientoResponse = await apiFetch("/movimientos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          buildEntradaMovimientoPayload({
-            inventarioHamacaId,
-            usuarioId: Number(form.usuario_id),
-            ubicacionDestinoId: Number(form.ubicacion_id),
-            cantidad: Number(form.cantidad),
-            fecha: form.fecha,
-          })
-        ),
-      });
-
-      const movimientoData = await movimientoResponse.json().catch(() => null);
-
-      if (movimientoResponse.status === 422) {
-        setError(getValidationMessage(movimientoData));
-        return;
-      }
-
-      if (!movimientoResponse.ok) {
-        throw new Error(`HTTP ${movimientoResponse.status}`);
       }
 
       setForm({

@@ -4,6 +4,7 @@ import { apiFetch } from "@/app/_lib/api";
 import { buildHamacaPayload } from "@/app/_lib/hamacas";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
+import { toast } from "react-toastify";
 
 type Categoria = {
   id: number;
@@ -221,6 +222,7 @@ export default function HamacaModal({
 
     if (mode === "editar" && !selectedHamacaId) {
       setGeneralError("Selecciona un modelo para editar.");
+      toast.error("Selecciona un modelo para editar.");
       return;
     }
 
@@ -262,6 +264,7 @@ export default function HamacaModal({
 
         setErrors(serverErrors);
         setGeneralError(getValidationMessage(data));
+        toast.error(getValidationMessage(data));
         return;
       }
 
@@ -274,11 +277,17 @@ export default function HamacaModal({
       setErrors({});
       setGeneralError("");
 
+      toast.success(
+        mode === "crear"
+          ? "Modelo creado correctamente."
+          : "Modelo actualizado correctamente."
+      );
       onSuccess();
       onClose();
     } catch (err) {
       console.error("Error guardando modelo:", err);
       setGeneralError("Ocurrió un error al guardar. Intenta de nuevo.");
+      toast.error("Ocurrió un error al guardar. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -287,6 +296,7 @@ export default function HamacaModal({
   async function handleDelete() {
     if (mode !== "editar" || !selectedHamacaId) {
       setGeneralError("Selecciona un modelo para eliminar.");
+      toast.error("Selecciona un modelo para eliminar.");
       return;
     }
 
@@ -321,11 +331,13 @@ export default function HamacaModal({
       setErrors({});
       setGeneralError("");
 
+      toast.success("Modelo eliminado correctamente.");
       onSuccess();
       onClose();
     } catch (error) {
       console.error("Error eliminando modelo:", error);
       setGeneralError("No se pudo eliminar el modelo.");
+      toast.error("No se pudo eliminar el modelo.");
     } finally {
       setLoading(false);
     }

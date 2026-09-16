@@ -4,7 +4,7 @@ import CategoryDasboardSelector from "@/app/_components/category-dasboard-select
 import DashboardCard from "@/app/_components/dashboard-card";
 import DashboardCardBlue from "@/app/_components/dashboard-card-blue";
 import { apiFetch } from "@/app/_lib/api";
-import { Clock, ListChecks, TrendingDown, TrendingUp } from "lucide-react";
+import { ListChecks, TrendingDown, TrendingUp } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
     Bar,
@@ -16,88 +16,88 @@ import {
 } from "recharts";
 
 type Category = {
-    id: number;
-    nombre: string;
+    categoria_id: number;
+    categoria: string;
+    stock: number;
 };
 
-type Hamaca = {
-    id: number;
-    nombre: string;
-    categoria: string | null;
-    cantidad?: number;
-    inventario?: Array<{
-        cantidad: number;
-    }>;
+type CategoryMovement = {
+    categoria_id: number;
+    categoria: string;
+    entradas: number;
+    salidas: number;
+    transferencias: number;
+};
+
+type DashboardSummary = {
+    existencia_actual_total: number;
+    entradas_mes: number;
+    salidas_mes: number;
+    stock_minimo: number;
+    stock_maximo: number;
+    unidades_totales: number;
+    stock_por_categoria: Category[];
+    entradas_salidas_por_categoria: CategoryMovement[];
 };
 
 export default function Dashboard() {
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-    const [hamacas, setHamacas] = useState<Hamaca[]>([]);
-    const [inventoryInitial, setInventoryInitial] = useState(0);
-    const [monthlyEntries, setMonthlyEntries] = useState(0);
-    const [monthlyExits, setMonthlyExits] = useState(0);
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const load = async () => {
-            const [categoriesResp, hamacasResp, inventoryResp, entriesResp, exitsResp] = await Promise.all([
-                apiFetch("/categorias"),
-                apiFetch("/hamacas/detalles"),
-                apiFetch("/hamacas/monthly-inventory"),
-                apiFetch("/movimientos/monthly-entries"),
-                apiFetch("/movimientos/monthly-exits"),
-            ]);
+            const response = await apiFetch("/dashboard/summary");
+            const data = await response.json().catch(() => null);
 
-            const categoriesData = await categoriesResp.json();
-            const hamacasData = await hamacasResp.json();
-            const inventoryData = await inventoryResp.json();
-            const entriesData = await entriesResp.json();
-            const exitsData = await exitsResp.json();
+            if (!response.ok) {
+                throw new Error(data?.message ?? `HTTP ${response.status}`);
+            }
 
-            setCategories(categoriesData.data ?? []);
-            setHamacas(hamacasData.data ?? []);
-            setInventoryInitial(inventoryData.total ?? 0);
-            setMonthlyEntries(entriesData.entries ?? 0);
-            setMonthlyExits(exitsData.exits ?? 0);
+            setSummary(data.data);
         };
 
-        load().catch(console.error);
+        load().catch((err) => {
+            console.error(err);
+            setError("No se pudieron cargar las métricas del dashboard.");
+        });
     }, []);
 
-    const existence = inventoryInitial + monthlyEntries - monthlyExits;
+    const categories = useMemo(() => summary?.stock_por_categoria ?? [], [summary]);
 
     const categoryStats = useMemo(() => {
+        if (!summary) {
+            return { stockMin: 0, stockMax: 0, totalProducts: 0 };
+        }
+
         if (!selectedCategory) {
-            const totals = hamacas.flatMap((hamaca) => hamaca.inventario ?? []).map((item) => item.cantidad ?? 0);
             return {
-                stockMin: totals.length ? Math.min(...totals) : 0,
-                stockMax: totals.length ? Math.max(...totals) : 0,
-                totalProducts: totals.reduce((acc, value) => acc + value, 0),
+                stockMin: summary.stock_minimo,
+                stockMax: summary.stock_maximo,
+                totalProducts: summary.unidades_totales,
             };
         }
 
-        const categoryName = categories.find((category) => category.id === selectedCategory)?.nombre;
-        const filtered = hamacas.filter((hamaca) => hamaca.categoria === categoryName);
-        const totals = filtered.flatMap((hamaca) => hamaca.inventario ?? []).map((item) => item.cantidad ?? 0);
-
+        const category = categories.find((item) => item.categoria_id === selectedCategory);
+        const stock = Number(category?.stock ?? 0);
         return {
-            stockMin: totals.length ? Math.min(...totals) : 0,
-            stockMax: totals.length ? Math.max(...totals) : 0,
-            totalProducts: totals.reduce((acc, value) => acc + value, 0),
+            stockMin: stock,
+            stockMax: stock,
+            totalProducts: stock,
         };
-    }, [categories, hamacas, selectedCategory]);
+    }, [categories, selectedCategory, summary]);
 
     const chartData = useMemo(() => {
-        return categories.map((category) => {
-            const categoryHamacas = hamacas.filter((hamaca) => hamaca.categoria === category.nombre);
-            const entradas = categoryHamacas.reduce((acc, hamaca) => acc + (hamaca.inventario?.reduce((sum, item) => sum + (item.cantidad ?? 0), 0) ?? 0), 0);
-            return {
-                categoria: category.nombre,
-                entradas,
-                salidas: Math.max(0, entradas - 1),
-            };
-        });
-    }, [categories, hamacas]);
+        return (summary?.entradas_salidas_por_categoria ?? []).map((item) => ({
+            categoria: item.categoria,
+            entradas: Number(item.entradas ?? 0),
+            salidas: Number(item.salidas ?? 0),
+        }));
+    }, [summary]);
+
+    if (error) {
+        return <p className="text-sm font-semibold text-red-700">{error}</p>;
+    }
 
     return (
         <div className="flex flex-col gap-6">
@@ -111,10 +111,10 @@ export default function Dashboard() {
             </header>
 
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <DashboardCard cardTitle="Inventario inicial" cardScore={inventoryInitial.toString()} />
-                <DashboardCard cardTitle="Entradas (Compras)" cardScore={monthlyEntries.toString()} />
-                <DashboardCard cardTitle="Salidas (Ventas)" cardScore={monthlyExits.toString()} />
-                <DashboardCard cardTitle="Existencia" cardScore={existence.toString()} />
+                <DashboardCard cardTitle="Existencia actual" cardScore={(summary?.existencia_actual_total ?? 0).toString()} />
+                <DashboardCard cardTitle="Entradas del mes" cardScore={(summary?.entradas_mes ?? 0).toString()} />
+                <DashboardCard cardTitle="Salidas del mes" cardScore={(summary?.salidas_mes ?? 0).toString()} />
+                <DashboardCard cardTitle="Unidades totales" cardScore={(summary?.unidades_totales ?? 0).toString()} />
             </section>
 
             <main className="grid gap-6 xl:grid-cols-2">
@@ -134,15 +134,15 @@ export default function Dashboard() {
                         </button>
                         {categories.map((cat) => (
                             <CategoryDasboardSelector
-                                key={cat.id}
-                                categoryName={cat.nombre}
-                                isSelected={selectedCategory === cat.id}
-                                onClick={() => setSelectedCategory(cat.id)}
+                                key={cat.categoria_id}
+                                categoryName={cat.categoria}
+                                isSelected={selectedCategory === cat.categoria_id}
+                                onClick={() => setSelectedCategory(cat.categoria_id)}
                             />
                         ))}
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         <DashboardCardBlue
                             cardTitle="Stock Mínimo"
                             cardScore={categoryStats.stockMin.toString()}
@@ -157,11 +157,6 @@ export default function Dashboard() {
                             cardTitle="Cantidad de Productos"
                             cardScore={categoryStats.totalProducts.toString()}
                             icon={ListChecks}
-                        />
-                        <DashboardCardBlue
-                            cardTitle="Duración de Inventario"
-                            cardScore="30"
-                            icon={Clock}
                         />
                     </div>
                 </section>

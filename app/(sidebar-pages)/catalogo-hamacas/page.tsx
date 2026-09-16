@@ -8,6 +8,7 @@ import { apiFetch } from "@/app/_lib/api";
 import { Layers, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 type Color = {
   id: number;
@@ -46,6 +47,8 @@ type Hamaca = {
   id: number;
   nombre: string;
   descripcion: string | null;
+  categoria_id: number;
+  tamano_id: number;
   categoria: string | null;
   tamano: string | null;
   precio: string | number;
@@ -87,6 +90,8 @@ export default function CatalogoHamacasPage() {
   const [loading, setLoading] = useState(true);
 
   const [hamacaModalOpen, setHamacaModalOpen] = useState(false);
+  const [selectedHamacaToEdit, setSelectedHamacaToEdit] =
+    useState<Hamaca | null>(null);
   const [varianteModalOpen, setVarianteModalOpen] = useState(false);
 
   const [fotoModalOpen, setFotoModalOpen] = useState(false);
@@ -106,6 +111,7 @@ export default function CatalogoHamacasPage() {
       setHamacas(data.data ?? []);
     } catch (error) {
       console.error("Error cargando catálogo:", error);
+      toast.error("No se pudo cargar el catálogo.");
     } finally {
       setLoading(false);
     }
@@ -134,6 +140,7 @@ export default function CatalogoHamacasPage() {
 
         return {
           key: `${hamaca.id}-${variante.id}`,
+          hamaca,
           hamacaId: hamaca.id,
           varianteId: variante.id,
           nombre: hamaca.nombre,
@@ -266,6 +273,10 @@ export default function CatalogoHamacasPage() {
             ubicaciones={item.ubicaciones}
             propietarios={item.propietarios}
             imageUrls={item.imageUrls}
+            onEdit={() => {
+              setSelectedHamacaToEdit(item.hamaca);
+              setHamacaModalOpen(true);
+            }}
             onViewPhotos={() => {
               setSelectedFotoData({
                 varianteId: item.varianteId,
@@ -284,8 +295,12 @@ export default function CatalogoHamacasPage() {
 
       <HamacaModal
         isOpen={hamacaModalOpen}
-        onClose={() => setHamacaModalOpen(false)}
+        onClose={() => {
+          setHamacaModalOpen(false);
+          setSelectedHamacaToEdit(null);
+        }}
         onSuccess={loadData}
+        hamacaToEdit={selectedHamacaToEdit}
       />
 
       <VarianteModal

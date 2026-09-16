@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
+import { ToastProvider } from "./_components/toast-provider";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +36,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased bg-[var(--color-background)] text-[var(--color-foreground)]`}
       >
         {children}
+        <ToastProvider />
       </body>
     </html>
   );

@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import SalidaModal from "@/app/_components/salida-modal";
 import FotoVarianteModal from "@/app/_components/foto-variante-modal";
+import TransferenciaModal from "@/app/_components/transferencia-modal";
 
 type Color = {
     id: number;
@@ -82,6 +83,8 @@ export default function InventarioHamacasPage() {
     const [loading, setLoading] = useState(true);
     const [salidaModalOpen, setSalidaModalOpen] = useState(false);
     const [selectedInventarioId, setSelectedInventarioId] = useState<number | null>(null);
+    const [transferModalOpen, setTransferModalOpen] = useState(false);
+    const [selectedTransferInventarioId, setSelectedTransferInventarioId] = useState<number | null>(null);
     const [fotoModalOpen, setFotoModalOpen] = useState(false);
     const [selectedFotoData, setSelectedFotoData] = useState<{
         varianteId: number;
@@ -205,6 +208,10 @@ export default function InventarioHamacasPage() {
                                 setSelectedInventarioId(item.id);
                                 setSalidaModalOpen(true);
                             }}
+                            onCreateTransfer={() => {
+                                setSelectedTransferInventarioId(item.id);
+                                setTransferModalOpen(true);
+                            }}
                         />
                     );
                 })}
@@ -227,6 +234,15 @@ export default function InventarioHamacasPage() {
                 onClose={() => {
                     setSalidaModalOpen(false);
                     setSelectedInventarioId(null);
+                }}
+                onSuccess={loadData}
+            />
+            <TransferenciaModal
+                isOpen={transferModalOpen}
+                initialInventarioId={selectedTransferInventarioId}
+                onClose={() => {
+                    setTransferModalOpen(false);
+                    setSelectedTransferInventarioId(null);
                 }}
                 onSuccess={loadData}
             />

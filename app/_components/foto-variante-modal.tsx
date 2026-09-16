@@ -7,6 +7,7 @@ import {
 } from "@/app/_lib/hamacas";
 import { Camera, Copy, Download, Plus, Trash, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 type Foto = {
   id: number;
@@ -249,6 +250,7 @@ export default function FotoVarianteModal({
   async function handleSubmit() {
     if (varianteId === null) {
       setError("No se encontró la variante.");
+      toast.error("No se encontró la variante.");
       return;
     }
 
@@ -257,6 +259,7 @@ export default function FotoVarianteModal({
 
     if (routes.length === 0 && selectedFiles.length === 0) {
       setError("Agrega al menos una foto o una ruta.");
+      toast.error("Agrega al menos una foto o una ruta.");
       return;
     }
 
@@ -269,11 +272,13 @@ export default function FotoVarianteModal({
         ...routes.map((route) => uploadRoute(route, selectedVarianteId)),
       ]);
 
+      toast.success("Fotos guardadas correctamente.");
       onSuccess();
       onClose();
     } catch (err) {
       console.error("Error guardando fotos:", err);
       setError("No se pudieron guardar las fotos.");
+      toast.error("No se pudieron guardar las fotos.");
     } finally {
       setLoading(false);
     }

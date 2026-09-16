@@ -3,6 +3,7 @@
 import { apiFetch } from "@/app/_lib/api";
 import { Plus, Trash, Upload } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 type Hamaca = {
   id: number;
@@ -138,11 +139,13 @@ export default function VarianteModal({ isOpen, onClose, onSuccess }: Props) {
   async function handleSubmit() {
     if (!hamacaId) {
       setError("Selecciona un modelo base.");
+      toast.error("Selecciona un modelo base.");
       return;
     }
 
     if (selectedColorIds.length === 0) {
       setError("Selecciona al menos un color.");
+      toast.error("Selecciona al menos un color.");
       return;
     }
 
@@ -186,6 +189,7 @@ export default function VarianteModal({ isOpen, onClose, onSuccess }: Props) {
           : data?.message;
 
         setError(String(firstError ?? "Datos inválidos."));
+        toast.error(String(firstError ?? "Datos inválidos."));
         return;
       }
 
@@ -193,11 +197,13 @@ export default function VarianteModal({ isOpen, onClose, onSuccess }: Props) {
         throw new Error(data?.message ?? `HTTP ${response.status}`);
       }
 
+      toast.success("Variante creada correctamente.");
       onSuccess();
       onClose();
     } catch (err) {
       console.error("Error creando variante:", err);
       setError("No se pudo crear la variante.");
+      toast.error("No se pudo crear la variante.");
     } finally {
       setLoading(false);
     }

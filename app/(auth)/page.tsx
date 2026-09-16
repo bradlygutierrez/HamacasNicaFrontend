@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "../_lib/api";
+import { apiFetch, csrfCookie } from "../_lib/api";
 
 export default function Home() {
 
@@ -20,6 +20,7 @@ export default function Home() {
     setLoading(true);
 
     try {
+      await csrfCookie();
       const res = await apiFetch("/login", {
         method: "POST",
         body: JSON.stringify({
@@ -36,10 +37,6 @@ export default function Home() {
         return;
       }
 
-      // ✅ Guardar token
-      localStorage.setItem("token", data.access_token);
-
-      // ✅ Redirigir al dashboard
       router.push("/dashboard");
 
     } catch (err) {
@@ -91,7 +88,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={loading}
-            className="text-center flex justify-center items-center text-2xl md:text-3xl font-bold text-[var(--color-foreground-secondary)] bg-[var(--color-buttons)] rounded-full w-[60%] md:w-[40%] h-14 shadow-md hover:bg-[var(--color-buttons-secondary)] transition-colors duration-300 disabled:opacity-50"
+            className="text-center flex shrink-0 justify-center items-center text-2xl md:text-3xl font-bold text-[var(--color-foreground-secondary)] bg-[var(--color-buttons)] rounded-full w-[60%] md:w-[40%] h-14 min-h-14 shadow-md hover:bg-[var(--color-buttons-secondary)] transition-colors duration-300 disabled:opacity-50"
           >
             {loading ? "Cargando..." : "Entrar"}
           </button>

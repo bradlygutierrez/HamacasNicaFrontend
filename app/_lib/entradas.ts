@@ -1,65 +1,35 @@
-export type EntradaMovimientoPayload = {
-  inventario_hamaca_id: number;
-  usuario_id: number;
-  tipo: "entrada";
-  cantidad: number;
-  fecha: string;
-  ubicacion_destino_id?: number;
-};
-
-export type EntradaInventarioPayload = {
+export type EntradaPayload = {
   hamaca_variante_id: number;
   usuario_id: number;
   ubicacion_id: number;
   cantidad: number;
+  fecha?: string;
 };
 
-type EntradaInventarioInput = {
+type EntradaInput = {
   hamacaVarianteId: number;
   usuarioId: number;
   ubicacionId: number;
   cantidad: number;
+  fecha?: string;
 };
 
-type EntradaMovimientoInput = {
-  inventarioHamacaId: number;
-  usuarioId: number;
-  cantidad: number;
-  fecha: string;
-  ubicacionDestinoId?: number | null;
-};
-
-export function buildEntradaInventarioPayload({
+export function buildEntradaPayload({
   hamacaVarianteId,
   usuarioId,
   ubicacionId,
   cantidad,
-}: EntradaInventarioInput): EntradaInventarioPayload {
-  return {
+  fecha,
+}: EntradaInput): EntradaPayload {
+  const payload: EntradaPayload = {
     hamaca_variante_id: hamacaVarianteId,
     usuario_id: usuarioId,
     ubicacion_id: ubicacionId,
     cantidad,
   };
-}
 
-export function buildEntradaMovimientoPayload({
-  inventarioHamacaId,
-  usuarioId,
-  cantidad,
-  fecha,
-  ubicacionDestinoId,
-}: EntradaMovimientoInput): EntradaMovimientoPayload {
-  const payload: EntradaMovimientoPayload = {
-    inventario_hamaca_id: inventarioHamacaId,
-    usuario_id: usuarioId,
-    tipo: "entrada",
-    cantidad,
-    fecha,
-  };
-
-  if (ubicacionDestinoId) {
-    payload.ubicacion_destino_id = ubicacionDestinoId;
+  if (fecha) {
+    payload.fecha = fecha;
   }
 
   return payload;

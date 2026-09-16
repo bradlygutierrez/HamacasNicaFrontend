@@ -68,6 +68,11 @@ export function buildHamacaFotoPayload({
   };
 }
 
+// Compatibility alias for existing callers while the hamaca/variant photo APIs converge.
+export function buildFotoPayload(input: BuildHamacaFotoPayloadInput): HamacaFotoPayload {
+  return buildHamacaFotoPayload(input);
+}
+
 export function buildVarianteFotoPayload({
   hamacaVarianteId,
   ruta,
@@ -77,4 +82,3 @@ export function buildVarianteFotoPayload({
     hamaca_variante_ids: [hamacaVarianteId],
   };
 }
-

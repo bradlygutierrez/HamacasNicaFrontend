@@ -1,9 +1,12 @@
+import type { ReactNode } from "react";
+
 type SectionPageProps = {
     title: string;
     description?: string;
+    children?: ReactNode;
 };
 
-export default function SectionPage({ title, description }: SectionPageProps) {
+export default function SectionPage({ title, description, children }: SectionPageProps) {
     return (
         <div className="space-y-4">
             <header className="space-y-2">
@@ -18,9 +21,11 @@ export default function SectionPage({ title, description }: SectionPageProps) {
             </header>
 
             <section className="rounded-2xl bg-[var(--color-background-secondary)] p-5 text-[var(--color-foreground)]">
-                <p className="text-sm md:text-base">
-                    Módulo en construcción. La navegación ya está activa y esta sección puede conectarse al backend cuando se necesite CRUD completo.
-                </p>
+                {children ?? (
+                    <p className="text-sm md:text-base">
+                        Módulo en construcción. La navegación ya está activa y esta sección puede conectarse al backend cuando se necesite CRUD completo.
+                    </p>
+                )}
             </section>
         </div>
     );
