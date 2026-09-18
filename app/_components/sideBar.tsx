@@ -144,7 +144,7 @@ function SideBar({ usuario, navItems }: Props) {
         className={`z-40 flex flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 font-[var(--font-poppins)] transition-all duration-300 ${
           open
             ? "fixed inset-y-0 left-0 h-screen w-full md:sticky md:w-72 lg:w-80"
-            : "relative left-0 top-0 h-auto w-14 md:sticky md:h-screen md:w-16"
+            : "fixed left-0 top-0 h-auto w-14 md:sticky md:h-screen md:w-16"
         }`}
       >
         <button
