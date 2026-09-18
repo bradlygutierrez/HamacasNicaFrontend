@@ -11,9 +11,21 @@ test('proforma pages and editor use backend pricing and no inventory mutations',
   const editor = readFileSync(resolve(root, 'app/_components/proforma-editor.tsx'), 'utf8');
   assert.match(list, /proformas\?/);
   assert.match(editor, /POST.*proformas\/calcular|\/proformas\/calcular/);
+  assert.match(editor, /proformas\/productos/);
+  assert.match(editor, /selectedClientId/);
+  assert.match(editor, /status/);
   assert.match(editor, /Guardar borrador/);
   assert.match(editor, /Emitir proforma/);
   assert.doesNotMatch(editor, /inventario|movimientos|facturas/);
+});
+
+test('proforma editor protects internal controls by role and supports removing services', () => {
+  const editor = readFileSync(resolve(root, 'app/_components/proforma-editor.tsx'), 'utf8');
+  assert.match(editor, /state === "borrador" && canEdit/);
+  assert.match(editor, /costo_base_unitario_override/);
+  assert.match(editor, /services\.filter/);
+  assert.match(editor, /generalServices\.filter/);
+  assert.match(editor, /readOnly={role !== "admin"}/);
 });
 
 test('proforma routes exist and phase four links are absent', () => {
