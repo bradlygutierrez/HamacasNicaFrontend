@@ -113,7 +113,7 @@ function SideBar({ usuario, navItems }: Props) {
       ) : null}
 
       <aside
-        className={`sticky left-0 top-0 z-40 flex h-screen flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 transition-all duration-300 ${
+        className={`sticky left-0 top-0 z-40 flex h-screen flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 font-[var(--font-poppins)] transition-all duration-300 ${
           open ? "fixed w-72 md:sticky md:w-72 lg:w-80" : "w-14 md:w-16"
         }`}
       >
@@ -128,7 +128,7 @@ function SideBar({ usuario, navItems }: Props) {
           </span>
 
           <span
-            className={`whitespace-nowrap text-base font-semibold text-[var(--color-foreground)] transition-all duration-200 ${
+            className={`whitespace-nowrap text-sm font-semibold text-[var(--color-foreground)] transition-all duration-200 ${
               open
                 ? "translate-x-0 opacity-100"
                 : "pointer-events-none -translate-x-2 opacity-0"
@@ -159,12 +159,12 @@ function SideBar({ usuario, navItems }: Props) {
                 : "pointer-events-none -translate-x-2 opacity-0"
             }`}
           >
-            <p className="truncate text-sm font-semibold text-[var(--color-foreground)]">
+            <p className="truncate text-xs font-semibold text-[var(--color-foreground)]">
               {usuario?.nombre ?? "Usuario"}
             </p>
 
             {usuario?.rol ? (
-              <p className="truncate text-xs capitalize text-[var(--color-foreground)]/70">
+              <p className="truncate text-[11px] capitalize text-[var(--color-foreground)]/70">
                 {usuario.rol}
               </p>
             ) : null}
@@ -198,7 +198,7 @@ function SideBar({ usuario, navItems }: Props) {
                     onClick={() => {
                       if (window.innerWidth < 768) setOpen(false);
                     }}
-                    className={`flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10 ${
+                    className={`flex min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-md px-1 text-sm transition hover:bg-white/10 md:ml-2 md:border-l md:border-[var(--color-foreground)]/10 md:pl-3 ${
                       active ? "bg-white/10" : ""
                     }`}
                     aria-label={item.alt}
@@ -212,7 +212,7 @@ function SideBar({ usuario, navItems }: Props) {
                     </span>
 
                     <span
-                      className={`whitespace-nowrap text-base font-medium text-[var(--color-foreground)] transition-all duration-200 ${
+                      className={`whitespace-nowrap text-sm font-medium text-[var(--color-foreground)] transition-all duration-200 ${
                         open
                           ? "translate-x-0 opacity-100"
                           : "pointer-events-none -translate-x-2 opacity-0"
@@ -230,7 +230,7 @@ function SideBar({ usuario, navItems }: Props) {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-2 flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10"
+          className="mt-2 flex min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-md px-1 text-sm transition hover:bg-white/10"
           aria-label="Cerrar sesión"
         >
           <span className={ICON_BOX}>
@@ -238,7 +238,7 @@ function SideBar({ usuario, navItems }: Props) {
           </span>
 
           <span
-            className={`whitespace-nowrap text-base font-medium text-[var(--color-foreground)] transition-all duration-200 ${
+            className={`whitespace-nowrap text-sm font-medium text-[var(--color-foreground)] transition-all duration-200 ${
               open
                 ? "translate-x-0 opacity-100"
                 : "pointer-events-none -translate-x-2 opacity-0"

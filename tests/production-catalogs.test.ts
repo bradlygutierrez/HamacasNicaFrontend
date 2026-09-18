@@ -37,4 +37,7 @@ test('sidebar groups phase one catalog links without adding future broken routes
   assert.match(sidebar, /collapsedSections/);
   assert.match(sidebar, /aria-expanded/);
   assert.match(sidebar, /toggleSection/);
+  assert.match(sidebar, /font-\[var\(--font-poppins\)\]/);
+  assert.match(sidebar, /md:ml-2 md:border-l/);
+  assert.match(sidebar, /text-sm font-medium/);
 });
