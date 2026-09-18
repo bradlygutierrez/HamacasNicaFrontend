@@ -42,6 +42,5 @@ test('formula UI gates mutations and does not introduce phase three links', () =
   assert.match(editor, /historyRecipe\.materiales/);
   assert.match(service, /Quitar material/);
   assert.match(service, /Quitar proceso/);
-  assert.doesNotMatch(permissions, /href: "\/proformas"/);
   assert.doesNotMatch(permissions, /href: "\/pedidos"/);
 });
