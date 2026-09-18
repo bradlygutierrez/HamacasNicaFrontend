@@ -1,10 +1,5 @@
 const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-const browserApiFallback =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/api/v1`
-    : "http://localhost:8000/api/v1";
-
-export const API_BASE_URL = (configuredApiUrl || browserApiFallback).replace(
+export const API_BASE_URL = (configuredApiUrl || "http://localhost:8000/api/v1").replace(
   /\/$/,
   ""
 );
