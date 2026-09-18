@@ -46,7 +46,7 @@ export default function AsyncCatalogSelector({ endpoint, placeholder, excludedId
         {loading ? <p className="p-2 text-xs text-[#456f89]">Buscando...</p> : null}
         {!loading && available.length === 0 ? <p className="p-2 text-xs text-[#456f89]">Sin resultados.</p> : null}
         {available.map((item) => (
-          <button key={item.id} type="button" onClick={() => { onSelect(item); setSearch(''); }} className="block w-full px-3 py-2 text-left text-sm hover:bg-[#e9eef1]">
+          <button key={item.id} type="button" onClick={() => { onSelect(item); setSearch(''); }} className="block w-full rounded bg-[#123852] px-3 py-2 text-left text-sm text-white hover:bg-[#456f89]">
             {item.nombre}{item.unidad_consumo ? ` · ${item.unidad_consumo}` : ''}
           </button>
         ))}
