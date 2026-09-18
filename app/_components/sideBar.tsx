@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { Fragment } from "react";
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { apiFetch } from "../_lib/api";
 import type { NavItem, UsuarioActual } from "../_lib/permissions";
 
@@ -73,11 +75,19 @@ type Props = {
 function SideBar({ usuario, navItems }: Props) {
   const [open, setOpen] = useState(false);
   const [photoError, setPhotoError] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
   const router = useRouter();
   const pathname = usePathname();
 
   const userPhoto = useMemo(() => getUserPhoto(usuario), [usuario]);
+
+  function toggleSection(section: string) {
+    setCollapsedSections((current) => ({
+      ...current,
+      [section]: !current[section],
+    }));
+  }
 
   async function handleLogout() {
     try {
@@ -162,40 +172,57 @@ function SideBar({ usuario, navItems }: Props) {
         </div>
 
         <nav className="mt-3 flex flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {navItems.map((item) => {
+          {navItems.map((item, index) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const previousItem = navItems[index - 1];
+            const showSection = item.section && item.section !== previousItem?.section;
+            const sectionCollapsed = item.section ? collapsedSections[item.section] === true : false;
 
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => {
-                  if (window.innerWidth < 768) setOpen(false);
-                }}
-                className={`flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10 ${
-                  active ? "bg-white/10" : ""
-                }`}
-                aria-label={item.alt}
-              >
-                <span className={`${ICON_BOX} text-[var(--color-foreground)]`}>
-                  {item.customCatalogIcon ? (
-                    <CatalogIcon />
-                  ) : (
-                    <img src={item.icon} alt={item.alt} className={ICON_SIZE} />
-                  )}
-                </span>
+              <Fragment key={item.href}>
+                {showSection && open ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(item.section ?? "")}
+                    className="flex w-full items-center justify-between px-2 pt-3 pb-1 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--color-foreground)]/50 transition hover:text-[var(--color-foreground)]"
+                    aria-expanded={!sectionCollapsed}
+                  >
+                    <span>{item.section}</span>
+                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${sectionCollapsed ? "-rotate-90" : ""}`} />
+                  </button>
+                ) : null}
+                {!sectionCollapsed ? (
+                  <Link
+                    href={item.href}
+                    onClick={() => {
+                      if (window.innerWidth < 768) setOpen(false);
+                    }}
+                    className={`flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10 ${
+                      active ? "bg-white/10" : ""
+                    }`}
+                    aria-label={item.alt}
+                  >
+                    <span className={`${ICON_BOX} text-[var(--color-foreground)]`}>
+                      {item.customCatalogIcon ? (
+                        <CatalogIcon />
+                      ) : (
+                        <img src={item.icon} alt={item.alt} className={ICON_SIZE} />
+                      )}
+                    </span>
 
-                <span
-                  className={`whitespace-nowrap text-base font-medium text-[var(--color-foreground)] transition-all duration-200 ${
-                    open
-                      ? "translate-x-0 opacity-100"
-                      : "pointer-events-none -translate-x-2 opacity-0"
-                  }`}
-                >
-                  {item.label}
-                </span>
-              </Link>
+                    <span
+                      className={`whitespace-nowrap text-base font-medium text-[var(--color-foreground)] transition-all duration-200 ${
+                        open
+                          ? "translate-x-0 opacity-100"
+                          : "pointer-events-none -translate-x-2 opacity-0"
+                      }`}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                ) : null}
+              </Fragment>
             );
           })}
         </nav>

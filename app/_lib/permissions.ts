@@ -17,6 +17,7 @@ export type NavItem = {
   icon: string;
   alt: string;
   customCatalogIcon?: boolean;
+  section?: string;
   permissionRoutes: string[];
 };
 
@@ -36,20 +37,15 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard",
     icon: "/dashboard.svg",
     alt: "Dashboard",
+    section: "General",
     permissionRoutes: ["/dashboard"],
-  },
-  {
-    label: "Usuarios",
-    href: "/usuarios",
-    icon: "/users.svg",
-    alt: "Usuarios",
-    permissionRoutes: ["/usuarios"],
   },
   {
     label: "Inventario",
     href: "/inventario-hamacas",
     icon: "/products.svg",
     alt: "Inventario",
+    section: "Productos e inventario",
     permissionRoutes: ["/inventario", "/inventario-hamacas"],
   },
   {
@@ -58,6 +54,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "",
     alt: "Catálogo Hamacas",
     customCatalogIcon: true,
+    section: "Productos e inventario",
     permissionRoutes: ["/inventario", "/catalogo-hamacas"],
   },
   {
@@ -65,6 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/entradas",
     icon: "/rightArrow.svg",
     alt: "Entradas",
+    section: "Productos e inventario",
     permissionRoutes: ["/inventario", "/entradas"],
   },
   {
@@ -72,13 +70,47 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/salidas",
     icon: "/leftArrow.svg",
     alt: "Salidas",
+    section: "Productos e inventario",
     permissionRoutes: ["/inventario", "/salidas"],
+  },
+  {
+    label: "Materiales",
+    href: "/materiales",
+    icon: "/products.svg",
+    alt: "Materiales",
+    section: "Producción",
+    permissionRoutes: ["/materiales"],
+  },
+  {
+    label: "Procesos de producción",
+    href: "/procesos-produccion",
+    icon: "/category.svg",
+    alt: "Procesos de producción",
+    section: "Producción",
+    permissionRoutes: ["/procesos-produccion"],
+  },
+  {
+    label: "Ventas",
+    href: "/ventas",
+    icon: "/sales.svg",
+    alt: "Ventas",
+    section: "Comercial",
+    permissionRoutes: ["/ventas"],
+  },
+  {
+    label: "Servicios adicionales",
+    href: "/servicios-adicionales",
+    icon: "/sales.svg",
+    alt: "Servicios adicionales",
+    section: "Comercial",
+    permissionRoutes: ["/servicios-adicionales"],
   },
   {
     label: "Ubicación",
     href: "/ubicacion",
     icon: "/location.svg",
     alt: "Ubicación",
+    section: "Catálogos / configuración",
     permissionRoutes: ["/inventario", "/ubicacion"],
   },
   {
@@ -86,6 +118,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/colores",
     icon: "/colors.svg",
     alt: "Colores",
+    section: "Catálogos / configuración",
     permissionRoutes: ["/inventario", "/colores"],
   },
   {
@@ -93,6 +126,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/tamano",
     icon: "/size.svg",
     alt: "Tamaño",
+    section: "Catálogos / configuración",
     permissionRoutes: ["/inventario", "/tamano"],
   },
   {
@@ -100,14 +134,16 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/categoria",
     icon: "/category.svg",
     alt: "Categoría",
+    section: "Catálogos / configuración",
     permissionRoutes: ["/inventario", "/categoria"],
   },
   {
-    label: "Ventas",
-    href: "/ventas",
-    icon: "/sales.svg",
-    alt: "Ventas",
-    permissionRoutes: ["/ventas"],
+    label: "Usuarios",
+    href: "/usuarios",
+    icon: "/users.svg",
+    alt: "Usuarios",
+    section: "Administración",
+    permissionRoutes: ["/usuarios"],
   },
 ];
 
