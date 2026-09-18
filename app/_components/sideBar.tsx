@@ -144,13 +144,13 @@ function SideBar({ usuario, navItems }: Props) {
         className={`z-40 flex flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 font-[var(--font-poppins)] transition-all duration-300 ${
           open
             ? "fixed inset-y-0 left-0 h-screen w-full md:sticky md:w-72 lg:w-80"
-            : "fixed left-0 top-0 h-auto w-14 md:sticky md:h-screen md:w-16"
+            : "relative left-0 top-0 h-auto w-14 md:sticky md:h-screen md:w-16"
         }`}
       >
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10"
+          className="mb-2 flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10 md:mb-0"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
         >
           <span className={ICON_BOX}>
