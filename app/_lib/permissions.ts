@@ -31,6 +31,42 @@ export type CurrentPermission = {
   } | null;
 };
 
+export type CatalogCapabilities = {
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+};
+
+export function getCatalogCapabilities(
+  pathname: string,
+  usuario: UsuarioActual | null,
+  permissions: CurrentPermission[]
+): CatalogCapabilities {
+  if (usuario?.rol === "admin") {
+    return {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canDelete: true,
+    };
+  }
+
+  const allowed = new Set(
+    permissions
+      .filter((item) => item.pantalla?.ruta === pathname)
+      .map((item) => item.permiso?.slug)
+      .filter((slug): slug is string => Boolean(slug))
+  );
+
+  return {
+    canView: allowed.has("ver"),
+    canCreate: allowed.has("crear"),
+    canEdit: allowed.has("editar"),
+    canDelete: allowed.has("eliminar"),
+  };
+}
+
 export const NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",

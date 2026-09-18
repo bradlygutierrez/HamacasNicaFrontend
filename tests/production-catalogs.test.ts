@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getCatalogCapabilities } from '../app/_lib/permissions.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -23,6 +24,32 @@ test('managed catalog page supports editing, deactivation and validation respons
   assert.match(source, /method: 'DELETE'/);
   assert.match(source, /response\.status === 422/);
   assert.match(source, /toast\.success/);
+});
+
+test('managed catalog page hides mutations when permissions are read-only', () => {
+  const source = readFileSync(resolve(root, 'app/_components/managed-catalog-page.tsx'), 'utf8');
+  const materials = readFileSync(resolve(root, 'app/(sidebar-pages)/materiales/page.tsx'), 'utf8');
+  const permissions = readFileSync(resolve(root, 'app/_lib/permissions.ts'), 'utf8');
+
+  assert.match(source, /canCreate/);
+  assert.match(source, /canEdit/);
+  assert.match(source, /canDelete/);
+  assert.match(source, /useCatalogCapabilities/);
+  assert.match(source, /canCreate \?/);
+  assert.match(source, /canEdit/);
+  assert.match(source, /canDelete &&/);
+  assert.match(materials, /screenPath="\/materiales"/);
+  assert.match(permissions, /getCatalogCapabilities/);
+});
+
+test('catalog capabilities distinguish read-only users from administrators', () => {
+  const readOnly = getCatalogCapabilities('/materiales', { id: 2, nombre: 'Socio', rol: 'socio' }, [
+    { pantalla: { ruta: '/materiales' }, permiso: { slug: 'ver' } },
+  ]);
+  const admin = getCatalogCapabilities('/materiales', { id: 1, nombre: 'Admin', rol: 'admin' }, []);
+
+  assert.deepEqual(readOnly, { canView: true, canCreate: false, canEdit: false, canDelete: false });
+  assert.deepEqual(admin, { canView: true, canCreate: true, canEdit: true, canDelete: true });
 });
 
 test('sidebar groups phase one catalog links without adding future broken routes', () => {

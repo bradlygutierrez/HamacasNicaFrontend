@@ -38,6 +38,7 @@ export default function ServiciosAdicionalesPage() {
       title="Servicios adicionales"
       description="Administra servicios complementarios para productos y pedidos futuros."
       endpoint="/servicios-adicionales"
+      screenPath="/servicios-adicionales"
       fields={fields}
       summaryFields={['alcance', 'metodo_calculo', 'precio_venta_actual', 'costo_actual']}
     />

@@ -2,6 +2,7 @@
 
 import { apiFetch } from '@/app/_lib/api';
 import { getApiValidationMessage } from '@/app/_lib/catalogos';
+import { useCatalogCapabilities } from '@/app/_components/catalog-permissions-provider';
 import { Check, Pencil, Plus, RotateCcw, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -31,6 +32,7 @@ type ManagedCatalogPageProps = {
   endpoint: string;
   fields: CatalogField[];
   summaryFields: string[];
+  screenPath: string;
 };
 
 function emptyForm(fields: CatalogField[]): Record<string, string> {
@@ -48,7 +50,9 @@ export default function ManagedCatalogPage({
   endpoint,
   fields,
   summaryFields,
+  screenPath,
 }: ManagedCatalogPageProps) {
+  const { canCreate, canEdit, canDelete } = useCatalogCapabilities(screenPath);
   const [items, setItems] = useState<CatalogItem[]>([]);
   const [form, setForm] = useState<Record<string, string>>(() => emptyForm(fields));
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
@@ -113,6 +117,8 @@ export default function ManagedCatalogPage({
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
+    if (editingItem ? !canEdit : !canCreate) return;
+
     const missingField = fields.find((field) => field.required && !form[field.key]?.trim());
     if (missingField) {
       setError(`${missingField.label} es obligatorio.`);
@@ -155,6 +161,8 @@ export default function ManagedCatalogPage({
   }
 
   async function handleDeactivate(item: CatalogItem) {
+    if (!canDelete) return;
+
     if (!window.confirm(`¿Desactivar ${item.nombre}?`)) return;
 
     setError('');
@@ -200,19 +208,22 @@ export default function ManagedCatalogPage({
             />
           </div>
 
-          <button
-            type="button"
-            onClick={resetForm}
-            className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#f7f7f7] px-5 text-base font-medium text-black shadow-md sm:w-fit sm:text-lg lg:ml-auto"
-          >
-            <Plus className="h-5 w-5" />
-            Nuevo
-          </button>
+          {canCreate ? (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#f7f7f7] px-5 text-base font-medium text-black shadow-md sm:w-fit sm:text-lg lg:ml-auto"
+            >
+              <Plus className="h-5 w-5" />
+              Nuevo
+            </button>
+          ) : null}
         </div>
       </header>
 
       <main className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
-        <form onSubmit={handleSubmit} className="rounded-[8px] bg-[#e9eef1] p-5 shadow-lg sm:p-6">
+        {canCreate || (editingItem && canEdit) ? (
+          <form onSubmit={handleSubmit} className="rounded-[8px] bg-[#e9eef1] p-5 shadow-lg sm:p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
@@ -268,7 +279,8 @@ export default function ManagedCatalogPage({
               Limpiar
             </button>
           </div>
-        </form>
+          </form>
+        ) : null}
 
         <section className="rounded-[8px] bg-[#e9eef1] p-4 shadow-lg sm:p-5">
           <div className="mb-4">
@@ -290,10 +302,12 @@ export default function ManagedCatalogPage({
                       <p className="text-sm font-semibold text-[#456f89]">{item.codigo || 'Sin código'}</p>
                     </div>
                     <div className="flex shrink-0 gap-1">
-                      <button type="button" onClick={() => startEdit(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10" aria-label={`Editar ${item.nombre}`}>
-                        <Pencil className="h-5 w-5" />
-                      </button>
-                      {item.state !== false ? (
+                      {canEdit ? (
+                        <button type="button" onClick={() => startEdit(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10" aria-label={`Editar ${item.nombre}`}>
+                          <Pencil className="h-5 w-5" />
+                        </button>
+                      ) : null}
+                      {canDelete && item.state !== false ? (
                         <button type="button" onClick={() => handleDeactivate(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-red-100 hover:text-red-700" aria-label={`Desactivar ${item.nombre}`}>
                           <X className="h-5 w-5" />
                         </button>

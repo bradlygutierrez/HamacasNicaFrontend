@@ -17,6 +17,7 @@ export default function MaterialesPage() {
       title="Materiales"
       description="Administra materiales, unidades de compra, consumo, precios y merma para futuras recetas de producción."
       endpoint="/materiales"
+      screenPath="/materiales"
       fields={fields}
       summaryFields={['precio_actual', 'unidad_consumo', 'unidad_compra', 'contenido_por_compra', 'porcentaje_merma']}
     />

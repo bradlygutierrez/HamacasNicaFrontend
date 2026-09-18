@@ -12,6 +12,7 @@ export default function ProcesosProduccionPage() {
       title="Procesos de producción"
       description="Administra los procesos de producción y tipos de mano de obra disponibles."
       endpoint="/procesos-produccion"
+      screenPath="/procesos-produccion"
       fields={fields}
       summaryFields={['codigo', 'descripcion']}
     />
