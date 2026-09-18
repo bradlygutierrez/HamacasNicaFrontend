@@ -4,7 +4,28 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment } from "react";
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  BookOpen,
+  Boxes,
+  BriefcaseBusiness,
+  ChevronDown,
+  CircleUserRound,
+  Hammer,
+  LayoutDashboard,
+  LogOut,
+  MapPin,
+  Menu,
+  Palette,
+  Package,
+  Ruler,
+  Settings2,
+  ShoppingCart,
+  Tags,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { apiFetch } from "../_lib/api";
 import type { NavItem, UsuarioActual } from "../_lib/permissions";
 
@@ -12,7 +33,34 @@ const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 const ICON_BOX = "flex h-10 w-10 shrink-0 items-center justify-center";
-const ICON_SIZE = "h-[28px] w-[28px] max-h-[28px] max-w-[28px] object-contain";
+const NAV_ICON_SIZE = "h-5 w-5 stroke-[1.8]";
+const SECTION_ICON_SIZE = "h-3.5 w-3.5 stroke-[1.8]";
+
+const NAV_ICONS: Record<string, LucideIcon> = {
+  "/dashboard": LayoutDashboard,
+  "/inventario-hamacas": Boxes,
+  "/catalogo-hamacas": BookOpen,
+  "/entradas": ArrowDownToLine,
+  "/salidas": ArrowUpFromLine,
+  "/materiales": Package,
+  "/procesos-produccion": Hammer,
+  "/ventas": ShoppingCart,
+  "/servicios-adicionales": BriefcaseBusiness,
+  "/ubicacion": MapPin,
+  "/colores": Palette,
+  "/tamano": Ruler,
+  "/categoria": Tags,
+  "/usuarios": Users,
+};
+
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  General: LayoutDashboard,
+  "Productos e inventario": Boxes,
+  Producción: Hammer,
+  Comercial: ShoppingCart,
+  "Catálogos / configuración": Settings2,
+  Administración: Users,
+};
 
 function imageUrl(path?: string | null) {
   if (!path) return "";
@@ -44,26 +92,6 @@ function getUserPhoto(usuario: UsuarioActual | null) {
       usuario.picture ??
       usuario.photo ??
       ""
-  );
-}
-
-function CatalogIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-[28px] w-[28px]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.55"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="4.5" y="5" width="15" height="14" rx="2" />
-      <path d="M8 9h8" />
-      <path d="M8 13h5" />
-      <path d="M15.5 16.5l1.3-1.3 2.2 2.2" />
-    </svg>
   );
 }
 
@@ -113,18 +141,20 @@ function SideBar({ usuario, navItems }: Props) {
       ) : null}
 
       <aside
-        className={`sticky left-0 top-0 z-40 flex h-screen flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 font-[var(--font-poppins)] transition-all duration-300 ${
-          open ? "fixed w-72 md:sticky md:w-72 lg:w-80" : "w-14 md:w-16"
+        className={`z-40 flex flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 font-[var(--font-poppins)] transition-all duration-300 ${
+          open
+            ? "fixed inset-y-0 left-0 h-screen w-full md:sticky md:w-72 lg:w-80"
+            : "fixed left-0 top-0 h-auto w-14 md:sticky md:h-screen md:w-16"
         }`}
       >
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
           className="flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10"
-          aria-label="Abrir menú"
+          aria-label={open ? "Cerrar menú" : "Abrir menú"}
         >
           <span className={ICON_BOX}>
-            <img src="/hamburger.svg" alt="Menu" className={ICON_SIZE} />
+            <Menu className={NAV_ICON_SIZE} aria-hidden="true" />
           </span>
 
           <span
@@ -138,7 +168,9 @@ function SideBar({ usuario, navItems }: Props) {
           </span>
         </button>
 
-        <div className="mt-3 flex min-h-[52px] w-full items-center gap-2 rounded-md bg-white/5 px-1">
+        <div
+          className={`${open ? "flex" : "hidden md:flex"} mt-3 min-h-[52px] w-full items-center gap-2 rounded-md bg-white/5 px-1`}
+        >
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10">
             {userPhoto && !photoError ? (
               <img
@@ -148,7 +180,7 @@ function SideBar({ usuario, navItems }: Props) {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <img src="/users.svg" alt="Usuario" className={ICON_SIZE} />
+              <CircleUserRound className="h-6 w-6 stroke-[1.7]" aria-hidden="true" />
             )}
           </div>
 
@@ -171,7 +203,9 @@ function SideBar({ usuario, navItems }: Props) {
           </div>
         </div>
 
-        <nav className="mt-3 flex flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <nav
+          className={`${open ? "flex" : "hidden md:flex"} mt-3 flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+        >
           {navItems.map((item, index) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -188,8 +222,14 @@ function SideBar({ usuario, navItems }: Props) {
                     className="flex w-full items-center justify-between px-2 pt-3 pb-1 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--color-foreground)]/50 transition hover:text-[var(--color-foreground)]"
                     aria-expanded={!sectionCollapsed}
                   >
-                    <span>{item.section}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 transition-transform ${sectionCollapsed ? "-rotate-90" : ""}`} />
+                    <span className="flex items-center gap-1.5">
+                      {(() => {
+                        const SectionIcon = SECTION_ICONS[item.section ?? ""] ?? Settings2;
+                        return <SectionIcon className={SECTION_ICON_SIZE} aria-hidden="true" />;
+                      })()}
+                      <span>{item.section}</span>
+                    </span>
+                    <ChevronDown className={`h-3.5 w-3.5 stroke-[1.8] transition-transform ${sectionCollapsed ? "-rotate-90" : ""}`} />
                   </button>
                 ) : null}
                 {!sectionCollapsed ? (
@@ -204,11 +244,10 @@ function SideBar({ usuario, navItems }: Props) {
                     aria-label={item.alt}
                   >
                     <span className={`${ICON_BOX} text-[var(--color-foreground)]`}>
-                      {item.customCatalogIcon ? (
-                        <CatalogIcon />
-                      ) : (
-                        <img src={item.icon} alt={item.alt} className={ICON_SIZE} />
-                      )}
+                      {(() => {
+                        const NavIcon = NAV_ICONS[item.href] ?? Package;
+                        return <NavIcon className={NAV_ICON_SIZE} aria-hidden="true" />;
+                      })()}
                     </span>
 
                     <span
@@ -230,11 +269,11 @@ function SideBar({ usuario, navItems }: Props) {
         <button
           type="button"
           onClick={handleLogout}
-          className="mt-2 flex min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-md px-1 text-sm transition hover:bg-white/10"
+          className={`${open ? "flex" : "hidden md:flex"} mt-2 min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-md px-1 text-sm transition hover:bg-white/10`}
           aria-label="Cerrar sesión"
         >
           <span className={ICON_BOX}>
-            <img src="/exit.svg" alt="Cerrar sesión" className={ICON_SIZE} />
+            <LogOut className={NAV_ICON_SIZE} aria-hidden="true" />
           </span>
 
           <span

@@ -40,4 +40,9 @@ test('sidebar groups phase one catalog links without adding future broken routes
   assert.match(sidebar, /font-\[var\(--font-poppins\)\]/);
   assert.match(sidebar, /md:ml-2 md:border-l/);
   assert.match(sidebar, /text-sm font-medium/);
+  assert.match(sidebar, /NAV_ICONS/);
+  assert.match(sidebar, /SECTION_ICONS/);
+  assert.match(sidebar, /<SectionIcon/);
+  assert.match(sidebar, /<NavIcon/);
+  assert.match(sidebar, /<LogOut/);
 });
