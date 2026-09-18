@@ -29,6 +29,12 @@ type CategoryMovement = {
     transferencias: number;
 };
 
+type CategoryStats = {
+    stock_minimo: number;
+    stock_maximo: number;
+    unidades_totales: number;
+};
+
 type DashboardSummary = {
     existencia_actual_total: number;
     entradas_mes: number;
@@ -43,6 +49,7 @@ type DashboardSummary = {
 export default function Dashboard() {
     const [summary, setSummary] = useState<DashboardSummary | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+    const [selectedCategoryStats, setSelectedCategoryStats] = useState<CategoryStats | null>(null);
     const [error, setError] = useState("");
 
     useEffect(() => {
@@ -63,6 +70,40 @@ export default function Dashboard() {
         });
     }, []);
 
+    useEffect(() => {
+        if (selectedCategory === null) {
+            return;
+        }
+
+        const loadCategoryStats = async () => {
+            const response = await apiFetch(`/dashboard/categories/${selectedCategory}/stats`);
+            const data = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(data?.message ?? `HTTP ${response.status}`);
+            }
+
+            const stats = data?.data ?? data ?? {};
+
+            setSelectedCategoryStats({
+                stock_minimo: Number(stats.stock_minimo ?? 0),
+                stock_maximo: Number(stats.stock_maximo ?? 0),
+                unidades_totales: Number(stats.unidades_totales ?? 0),
+            });
+        };
+
+        loadCategoryStats().catch((err) => {
+            console.error(err);
+            setSelectedCategoryStats(null);
+            setError("No se pudieron cargar las métricas de la categoría.");
+        });
+    }, [selectedCategory]);
+
+    function handleCategorySelect(categoryId: number | null) {
+        setSelectedCategoryStats(null);
+        setSelectedCategory(categoryId);
+    }
+
     const categories = useMemo(() => summary?.stock_por_categoria ?? [], [summary]);
 
     const categoryStats = useMemo(() => {
@@ -70,7 +111,7 @@ export default function Dashboard() {
             return { stockMin: 0, stockMax: 0, totalProducts: 0 };
         }
 
-        if (!selectedCategory) {
+        if (selectedCategory === null) {
             return {
                 stockMin: summary.stock_minimo,
                 stockMax: summary.stock_maximo,
@@ -78,14 +119,13 @@ export default function Dashboard() {
             };
         }
 
-        const category = categories.find((item) => item.categoria_id === selectedCategory);
-        const stock = Number(category?.stock ?? 0);
+        const stats = selectedCategoryStats;
         return {
-            stockMin: stock,
-            stockMax: stock,
-            totalProducts: stock,
+            stockMin: stats?.stock_minimo ?? 0,
+            stockMax: stats?.stock_maximo ?? 0,
+            totalProducts: stats?.unidades_totales ?? 0,
         };
-    }, [categories, selectedCategory, summary]);
+    }, [selectedCategory, selectedCategoryStats, summary]);
 
     const chartData = useMemo(() => {
         return (summary?.entradas_salidas_por_categoria ?? []).map((item) => ({
@@ -127,7 +167,7 @@ export default function Dashboard() {
                     <div className="flex flex-wrap gap-2">
                         <button
                             type="button"
-                            onClick={() => setSelectedCategory(null)}
+                            onClick={() => handleCategorySelect(null)}
                             className={`rounded-[7px] px-3 py-2 text-sm font-medium transition-all ${selectedCategory === null ? "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)]" : "bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)]"}`}
                         >
                             Todas
@@ -137,7 +177,7 @@ export default function Dashboard() {
                                 key={cat.categoria_id}
                                 categoryName={cat.categoria}
                                 isSelected={selectedCategory === cat.categoria_id}
-                                onClick={() => setSelectedCategory(cat.categoria_id)}
+                                onClick={() => handleCategorySelect(cat.categoria_id)}
                             />
                         ))}
                     </div>
@@ -154,7 +194,7 @@ export default function Dashboard() {
                             icon={TrendingUp}
                         />
                         <DashboardCardBlue
-                            cardTitle="Cantidad de Productos"
+                            cardTitle="Unidades totales"
                             cardScore={categoryStats.totalProducts.toString()}
                             icon={ListChecks}
                         />
@@ -163,7 +203,7 @@ export default function Dashboard() {
 
                 <section className="rounded-2xl bg-[var(--color-background-secondary)] p-4 md:p-5">
                     <h2 className="text-xl font-bold text-[var(--color-foreground)] md:text-3xl">
-                        Entradas y Salidas de Productos
+                        Entradas y Salidas del Mes
                     </h2>
                     <div className="mt-4 h-[320px] md:h-[420px]">
                         <ResponsiveContainer width="100%" height="100%">

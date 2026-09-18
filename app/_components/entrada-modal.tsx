@@ -1,6 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/app/_lib/api";
+import { todayLocalDate } from "@/app/_lib/date";
 import { buildEntradaPayload } from "@/app/_lib/entradas";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -53,7 +54,7 @@ const EMPTY_FORM: FormData = {
   hamaca_variante_id: "",
   usuario_id: "",
   cantidad: "",
-  fecha: new Date().toISOString().slice(0, 10),
+  fecha: todayLocalDate(),
   ubicacion_id: "",
 };
 
@@ -87,31 +88,28 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
         let loadedUsers: Usuario[] = [];
 
         try {
-          const usuariosRes = await apiFetch("/usuarios");
+          const usuariosRes = await apiFetch("/usuarios/propietarios");
+          const usuariosData = await usuariosRes.json().catch(() => null);
 
-          if (usuariosRes.ok) {
-            const usuariosData = await usuariosRes.json();
-            loadedUsers = usuariosData.data ?? [];
+          if (!usuariosRes.ok) {
+            throw new Error(usuariosData?.message ?? "No se pudieron cargar los propietarios.");
           }
+
+          loadedUsers = Array.isArray(usuariosData?.data) ? usuariosData.data : [];
         } catch {
           loadedUsers = [];
-        }
-
-        if (loadedUsers.length === 0 && meData.data) {
-          loadedUsers = [
-            {
-              id: meData.data.id,
-              nombre: meData.data.nombre,
-            },
-          ];
         }
 
         setUsuarios(loadedUsers);
 
         if (meData.data) {
+          const currentUserIsOwner = loadedUsers.some(
+            (usuario) => usuario.id === meData.data.id
+          );
+
           setForm((prev) => ({
             ...prev,
-            usuario_id: String(meData.data.id),
+            usuario_id: currentUserIsOwner ? String(meData.data.id) : "",
           }));
         }
       } catch (err) {
@@ -220,7 +218,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
       setForm({
         ...EMPTY_FORM,
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: todayLocalDate(),
         usuario_id: form.usuario_id,
       });
 

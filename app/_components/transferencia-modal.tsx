@@ -1,6 +1,7 @@
 'use client';
 
 import { apiFetch } from '@/app/_lib/api';
+import { todayLocalDate } from '@/app/_lib/date';
 import { buildTransferenciaPayload } from '@/app/_lib/transferencias';
 import { ArrowRightLeft, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -46,7 +47,7 @@ const EMPTY_FORM: FormData = {
   inventario_hamaca_id: '',
   ubicacion_destino_id: '',
   cantidad: '',
-  fecha: new Date().toISOString().slice(0, 10),
+  fecha: todayLocalDate(),
 };
 
 function formatInventarioLabel(inventario: Inventario) {
@@ -112,7 +113,7 @@ export default function TransferenciaModal({
             )
               ? String(initialInventarioId)
               : '',
-          fecha: new Date().toISOString().slice(0, 10),
+          fecha: todayLocalDate(),
         });
       } catch (err) {
         console.error(err);
@@ -209,7 +210,7 @@ export default function TransferenciaModal({
 
       setForm({
         ...EMPTY_FORM,
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: todayLocalDate(),
       });
       setError('');
       toast.success('Hamaca reubicada correctamente.');

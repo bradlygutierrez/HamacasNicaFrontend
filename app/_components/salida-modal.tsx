@@ -1,6 +1,7 @@
 'use client';
 
 import { apiFetch } from '@/app/_lib/api';
+import { todayLocalDate } from '@/app/_lib/date';
 import { buildSalidaPayload } from '@/app/_lib/salidas';
 import { Plus, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -44,7 +45,7 @@ type Props = {
 const EMPTY_FORM: FormData = {
   inventario_hamaca_id: '',
   cantidad: '',
-  fecha: new Date().toISOString().slice(0, 10),
+  fecha: todayLocalDate(),
 };
 
 function formatInventarioLabel(inventario: Inventario) {
@@ -180,7 +181,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
       setForm({
         ...EMPTY_FORM,
-        fecha: new Date().toISOString().slice(0, 10),
+        fecha: todayLocalDate(),
       });
 
       setError('');
