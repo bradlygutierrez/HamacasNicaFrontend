@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { SideBar } from "../_components/sideBar";
+import { CatalogPermissionsProvider } from "../_components/catalog-permissions-provider";
 import { apiFetch } from "../_lib/api";
 import {
     canAccessPath,
@@ -98,9 +99,11 @@ export default function SidebarLayout({
     return (
         <div className="flex gap-2 min-h-screen">
             <SideBar usuario={usuario} navItems={navItems} />
-            <main className="flex-1">
+            <main className="flex-1 pt-11 md:pt-0">
                 {hasAccess ? (
-                    children
+                    <CatalogPermissionsProvider usuario={usuario} permissions={permissions}>
+                        {children}
+                    </CatalogPermissionsProvider>
                 ) : (
                     <div className="flex min-h-screen flex-col items-center justify-center gap-2 px-4 text-center text-[var(--color-foreground-secondary)]">
                         <h1 className="text-3xl font-bold">Acceso denegado</h1>
