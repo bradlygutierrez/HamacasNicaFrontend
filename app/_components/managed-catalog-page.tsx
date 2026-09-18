@@ -3,6 +3,7 @@
 import { apiFetch } from '@/app/_lib/api';
 import { getApiValidationMessage } from '@/app/_lib/catalogos';
 import { useCatalogCapabilities } from '@/app/_components/catalog-permissions-provider';
+import Link from 'next/link';
 import { Check, Pencil, Plus, RotateCcw, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -33,6 +34,7 @@ type ManagedCatalogPageProps = {
   fields: CatalogField[];
   summaryFields: string[];
   screenPath: string;
+  formulaHrefBase?: string;
 };
 
 function emptyForm(fields: CatalogField[]): Record<string, string> {
@@ -51,6 +53,7 @@ export default function ManagedCatalogPage({
   fields,
   summaryFields,
   screenPath,
+  formulaHrefBase,
 }: ManagedCatalogPageProps) {
   const { canCreate, canEdit, canDelete } = useCatalogCapabilities(screenPath);
   const [items, setItems] = useState<CatalogItem[]>([]);
@@ -302,6 +305,11 @@ export default function ManagedCatalogPage({
                       <p className="text-sm font-semibold text-[#456f89]">{item.codigo || 'Sin código'}</p>
                     </div>
                     <div className="flex shrink-0 gap-1">
+                      {formulaHrefBase && canEdit ? (
+                        <Link href={`${formulaHrefBase}/${item.id}/formula`} className="rounded-full px-2 py-2 text-xs font-bold text-[#08264d] transition hover:bg-[#123852]/10">
+                          Costos
+                        </Link>
+                      ) : null}
                       {canEdit ? (
                         <button type="button" onClick={() => startEdit(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10" aria-label={`Editar ${item.nombre}`}>
                           <Pencil className="h-5 w-5" />

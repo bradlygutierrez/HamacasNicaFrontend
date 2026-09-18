@@ -59,6 +59,7 @@ test('sidebar groups phase one catalog links without adding future broken routes
   assert.match(source, /href: "\/materiales"/);
   assert.match(source, /href: "\/procesos-produccion"/);
   assert.match(source, /href: "\/servicios-adicionales"/);
+  assert.match(source, /href: "\/formulas"/);
   assert.doesNotMatch(source, /href: "\/proformas"/);
   assert.doesNotMatch(source, /href: "\/pedidos"/);
   assert.match(sidebar, /collapsedSections/);
