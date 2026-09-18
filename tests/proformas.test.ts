@@ -19,6 +19,12 @@ test('proforma pages and editor use backend pricing and no inventory mutations',
   assert.match(editor, /Descuento/);
   assert.match(editor, /Costo interno override/);
   assert.match(editor, /currentUserName/);
+  assert.match(editor, /assignedSellerName/);
+  assert.match(editor, /nombre_cliente: manualClient\.nombre/);
+  assert.match(editor, /ruc: manualClient\.ruc/);
+  assert.match(editor, /selectedClientRef/);
+  assert.match(editor, /assignedSellerName \|\| currentUserName/);
+  assert.doesNotMatch(editor, /setSelectedClientId\(null\)/);
   assert.match(editor, /status/);
   assert.match(editor, /Guardar borrador/);
   assert.match(editor, /Emitir proforma/);
