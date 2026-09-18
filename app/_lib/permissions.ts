@@ -126,6 +126,14 @@ export const NAV_ITEMS: NavItem[] = [
     permissionRoutes: ["/procesos-produccion"],
   },
   {
+    label: "Fórmulas",
+    href: "/formulas",
+    icon: "/category.svg",
+    alt: "Fórmulas",
+    section: "Producción",
+    permissionRoutes: ["/formulas"],
+  },
+  {
     label: "Ventas",
     href: "/ventas",
     icon: "/sales.svg",
