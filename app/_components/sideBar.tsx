@@ -141,19 +141,19 @@ function SideBar({ usuario, navItems }: Props) {
       ) : null}
 
       <aside
-        className={`z-40 flex flex-col overflow-hidden bg-[var(--color-foreground-secondary)] p-1 font-[var(--font-poppins)] transition-all duration-300 ${
+        className={`z-40 flex flex-col overflow-hidden bg-[var(--color-foreground-secondary)] font-[var(--font-poppins)] transition-all duration-300 ${
           open
-            ? "fixed inset-y-0 left-0 h-screen w-full md:sticky md:w-72 lg:w-80"
-            : "fixed left-0 top-0 h-auto w-14 md:sticky md:h-screen md:w-16"
+            ? "fixed inset-y-0 left-0 h-screen w-full p-1 md:sticky md:w-72 lg:w-80"
+            : "fixed left-0 top-0 h-auto w-11 p-0.5 md:sticky md:h-screen md:w-16 md:p-1"
         }`}
       >
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="mb-2 flex min-h-[44px] w-full cursor-pointer items-center gap-2 rounded-md px-1 transition hover:bg-white/10 md:mb-0"
+          className="mb-1 flex min-h-9 w-full cursor-pointer items-center gap-2 rounded-md px-0 transition hover:bg-white/10 md:mb-0 md:min-h-[44px] md:px-1"
           aria-label={open ? "Cerrar menú" : "Abrir menú"}
         >
-          <span className={ICON_BOX}>
+          <span className={`${ICON_BOX} h-8 w-8 md:h-10 md:w-10`}>
             <Menu className={NAV_ICON_SIZE} aria-hidden="true" />
           </span>
 

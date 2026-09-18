@@ -98,7 +98,7 @@ export default function SidebarLayout({
     return (
         <div className="flex gap-2 min-h-screen">
             <SideBar usuario={usuario} navItems={navItems} />
-            <main className="flex-1 pt-14 md:pt-0">
+            <main className="flex-1 pt-11 md:pt-0">
                 {hasAccess ? (
                     children
                 ) : (
