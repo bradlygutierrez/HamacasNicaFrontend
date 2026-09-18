@@ -150,6 +150,14 @@ export const NAV_ITEMS: NavItem[] = [
     permissionRoutes: ["/servicios-adicionales"],
   },
   {
+    label: "Proformas",
+    href: "/proformas",
+    icon: "/category.svg",
+    alt: "Proformas",
+    section: "Comercial",
+    permissionRoutes: ["/proformas"],
+  },
+  {
     label: "Ubicación",
     href: "/ubicacion",
     icon: "/location.svg",
