@@ -1,6 +1,13 @@
-export const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1"
-).replace(/\/$/, "");
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+const browserApiFallback =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/api/v1`
+    : "http://localhost:8000/api/v1";
+
+export const API_BASE_URL = (configuredApiUrl || browserApiFallback).replace(
+  /\/$/,
+  ""
+);
 
 export function apiUrl(path: string): string {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
