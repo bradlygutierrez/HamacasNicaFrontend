@@ -17,6 +17,10 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(editor, /\/recetas/);
   assert.match(editor, /\/costos/);
   assert.match(editor, /\/activar/);
+  assert.match(editor, /material\?\.nombre/);
+  assert.match(editor, /proceso\?\.nombre/);
+  assert.match(editor, /Costo estimado con precios actuales/);
+  assert.match(editor, /Observaciones/);
   assert.match(service, /\/formula/);
   assert.match(service, /\/costos/);
   assert.match(selector, /search/);
@@ -34,6 +38,8 @@ test('formula UI gates mutations and does not introduce phase three links', () =
   assert.match(editor, /canDelete/);
   assert.match(service, /canEdit/);
   assert.match(editor, /inspectHistory/);
+  assert.match(editor, /editable = Boolean/);
+  assert.match(editor, /historyRecipe\.materiales/);
   assert.match(service, /Quitar material/);
   assert.match(service, /Quitar proceso/);
   assert.doesNotMatch(permissions, /href: "\/proformas"/);
