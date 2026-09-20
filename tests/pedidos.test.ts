@@ -22,6 +22,9 @@ test("pedido frontend uses conversion, billing and no PDF actions", () => {
   assert.match(detail, /Facturar pedido/);
   assert.match(detail, /facturar/);
   assert.match(detail, /ubicaciones/);
+  assert.match(detail, /usuario_inventario_id/);
+  assert.match(detail, /role === "admin"/);
+  assert.doesNotMatch(detail, /role === "vendedor".*usuario_inventario_id/s);
   assert.doesNotMatch(detail, /PDF|pdf|Descargar/);
   assert.doesNotMatch(permissionsSource(), /href: "\/pedidos\/nuevo"/);
 });
@@ -46,6 +49,8 @@ test("ventas identifies direct and pedido invoices without PDF actions", () => {
   assert.match(ventas, /ventas directas y pedidos/);
   assert.match(ventas, /pedido_numero/);
   assert.match(ventas, /servicios/);
+  assert.match(ventas, /Servicios del producto/);
+  assert.match(ventas, /detalle\.servicios/);
   assert.doesNotMatch(ventas, /Descargar|PDF|pdf/);
 });
 

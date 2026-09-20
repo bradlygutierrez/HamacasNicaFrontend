@@ -10,6 +10,15 @@ type Detalle = {
     cantidad: number;
     precio_unitario: string | number;
     subtotal: string | number;
+    servicios?: Array<{
+        id: number;
+        nombre: string;
+        detalle?: string | null;
+        cantidad: string;
+        precio_unitario: string | number;
+        descuento?: string | number;
+        subtotal: string | number;
+    }>;
 };
 
 type Factura = {
@@ -128,6 +137,7 @@ export default function VentasPage() {
                                                 {detalle.cantidad} x C$ {money(detalle.precio_unitario)}
                                             </p>
                                             <p className="font-semibold">C$ {money(detalle.subtotal)}</p>
+                                            {(detalle.servicios ?? []).length > 0 ? <div className="mt-2 border-t border-black/10 pt-2"><p className="font-semibold">Servicios del producto</p>{detalle.servicios?.map((service) => <div key={service.id} className="mt-1 text-sm"><p>{service.nombre}{service.detalle ? ` · ${service.detalle}` : ""}</p><p>{service.cantidad} x C$ {money(service.precio_unitario)} · C$ {money(service.subtotal)}</p></div>)}</div> : null}
                                         </div>
                                     ))}
                                 </div>
