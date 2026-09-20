@@ -13,14 +13,16 @@ test("pedidos pages and permission navigation exist without a new route", () => 
   assert.match(permissions, /href: "\/pedidos"/);
 });
 
-test("pedido frontend uses conversion, server pagination and no phase five actions", () => {
+test("pedido frontend uses conversion, billing and no PDF actions", () => {
   const listing = readFileSync(resolve(root, "app/(sidebar-pages)/pedidos/page.tsx"), "utf8");
   const detail = readFileSync(resolve(root, "app/(sidebar-pages)/pedidos/[id]/page.tsx"), "utf8");
   const conversion = readFileSync(resolve(root, "app/_components/pedido-conversion-action.tsx"), "utf8");
   assert.match(conversion, /\/pedido/);
   assert.match(listing, /per_page=15/);
-  assert.match(detail, /Pendiente de facturación/);
-  assert.doesNotMatch(detail, /facturar|\/facturas/);
+  assert.match(detail, /Facturar pedido/);
+  assert.match(detail, /facturar/);
+  assert.match(detail, /ubicaciones/);
+  assert.doesNotMatch(detail, /PDF|pdf|Descargar/);
   assert.doesNotMatch(permissionsSource(), /href: "\/pedidos\/nuevo"/);
 });
 
@@ -37,6 +39,14 @@ test("pedido frontend separates internal analysis and operational controls", () 
   assert.match(detail, /costo_compra_real/);
   assert.match(detail, /item\.estado !== "completado"/);
   assert.match(detail, /cancelado/);
+});
+
+test("ventas identifies direct and pedido invoices without PDF actions", () => {
+  const ventas = readFileSync(resolve(root, "app/(sidebar-pages)/ventas/page.tsx"), "utf8");
+  assert.match(ventas, /ventas directas y pedidos/);
+  assert.match(ventas, /pedido_numero/);
+  assert.match(ventas, /servicios/);
+  assert.doesNotMatch(ventas, /Descargar|PDF|pdf/);
 });
 
 function permissionsSource(): string {
