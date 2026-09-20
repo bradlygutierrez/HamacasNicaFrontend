@@ -27,7 +27,7 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(selector, /per_page=20/);
 });
 
-test('formula UI gates mutations and does not introduce phase three links', () => {
+test('formula UI gates mutations and does not introduce phase five links', () => {
   const editor = readFileSync(resolve(root, 'app/(sidebar-pages)/formulas/[hamacaId]/page.tsx'), 'utf8');
   const service = readFileSync(resolve(root, 'app/(sidebar-pages)/servicios-adicionales/[id]/formula/page.tsx'), 'utf8');
   const permissions = readFileSync(resolve(root, 'app/_lib/permissions.ts'), 'utf8');
@@ -42,5 +42,5 @@ test('formula UI gates mutations and does not introduce phase three links', () =
   assert.match(editor, /historyRecipe\.materiales/);
   assert.match(service, /Quitar material/);
   assert.match(service, /Quitar proceso/);
-  assert.doesNotMatch(permissions, /href: "\/pedidos"/);
+  assert.doesNotMatch(permissions, /href: "\/facturar"/);
 });

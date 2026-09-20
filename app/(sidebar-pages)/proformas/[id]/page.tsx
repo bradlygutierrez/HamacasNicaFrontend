@@ -1,2 +1,3 @@
 import ProformaEditor from "@/app/_components/proforma-editor";
-export default function ExistingProformaPage() { return <ProformaEditor />; }
+import PedidoConversionAction from "@/app/_components/pedido-conversion-action";
+export default function ExistingProformaPage() { return <><div className="px-3 pt-3 sm:px-8"><PedidoConversionAction /></div><ProformaEditor /></>; }

@@ -52,7 +52,7 @@ test('catalog capabilities distinguish read-only users from administrators', () 
   assert.deepEqual(admin, { canView: true, canCreate: true, canEdit: true, canDelete: true });
 });
 
-test('sidebar groups phase one catalog links without adding future broken routes', () => {
+test('sidebar groups catalog links without adding future broken routes', () => {
   const source = readFileSync(resolve(root, 'app/_lib/permissions.ts'), 'utf8');
   const sidebar = readFileSync(resolve(root, 'app/_components/sideBar.tsx'), 'utf8');
 
@@ -61,7 +61,7 @@ test('sidebar groups phase one catalog links without adding future broken routes
   assert.match(source, /href: "\/servicios-adicionales"/);
   assert.match(source, /href: "\/formulas"/);
   assert.match(source, /href: "\/proformas"/);
-  assert.doesNotMatch(source, /href: "\/pedidos"/);
+  assert.doesNotMatch(source, /href: "\/facturar"/);
   assert.match(sidebar, /collapsedSections/);
   assert.match(sidebar, /aria-expanded/);
   assert.match(sidebar, /toggleSection/);

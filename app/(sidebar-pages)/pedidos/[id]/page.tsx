@@ -1,0 +1,89 @@
+"use client";
+
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
+import { apiFetch } from "@/app/_lib/api";
+
+type Material = { id: number; nombre: string; cantidad_requerida: string; cantidad_compra_plan: number; unidad_compra: string; estado: string; cantidad_compra_real: string; observaciones?: string; precio_compra_snapshot?: string; costo_consumo_estimado?: string; costo_compra_estimado?: string; costo_compra_real?: string };
+type Process = { id: number; nombre: string; orden: number | null; estado: string; costo_estimado?: string; observaciones?: string };
+type Commercial = { subtotal_productos: string; subtotal_servicios: string; descuento_total: string; base_neta: string; monto_iva: string; monto_ir: string; total: string };
+type Internal = Commercial & { costo_materiales_estimado: string; costo_mano_obra_estimado: string; costo_servicios_base_estimado: string; costo_total_estimado: string; costo_compra_estimado: string; costo_compra_real_total: string; monto_comision_vendedor: string; utilidad_estimada: string };
+type Pedido = { id: number; numero: string; estado: string; proforma_numero: string | null; nombre_cliente: string; direccion?: string; telefono?: string; correo?: string; fecha_pedido: string; fecha_entrega_estimada: string | null; fecha_terminado: string | null; observaciones_internas?: string; detalles: Array<{ nombre: string; cantidad: number; precio_unitario?: string; descuento?: string; subtotal?: string; servicios: Array<{ nombre: string; cantidad: string; precio_unitario?: string; subtotal?: string }> }>; servicios_pedido: Array<{ nombre: string; cantidad: string; precio_unitario?: string; subtotal?: string }>; materiales?: Material[]; procesos?: Process[]; progreso: { materiales_total: number; materiales_listos: number; procesos_total: number; procesos_completados: number }; historial: Array<{ estado_anterior: string | null; estado_nuevo: string; comentario?: string }>; resumen_comercial?: Commercial; analisis_interno?: Internal };
+type MaterialEdit = { estado: string; cantidad_compra_real: string; observaciones: string; costo_compra_real?: string };
+
+export default function PedidoDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const { canEdit } = useCatalogCapabilities("/pedidos");
+  const [role, setRole] = useState("");
+  const [pedido, setPedido] = useState<Pedido | null>(null);
+  const [materialEdits, setMaterialEdits] = useState<Record<number, MaterialEdit>>({});
+  const [deliveryDate, setDeliveryDate] = useState("");
+  const [internalNotes, setInternalNotes] = useState("");
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    const response = await apiFetch("/pedidos/" + id);
+    const data = await response.json().catch(() => null);
+    if (!response.ok) { setError(data?.message ?? "No se pudo cargar el pedido."); return; }
+    const item = data.data as Pedido;
+    setPedido(item);
+    setDeliveryDate(item.fecha_entrega_estimada ?? "");
+    setInternalNotes(item.observaciones_internas ?? "");
+    setMaterialEdits(Object.fromEntries((item.materiales ?? []).map((material) => [material.id, { estado: material.estado, cantidad_compra_real: material.cantidad_compra_real ?? "0", observaciones: material.observaciones ?? "", costo_compra_real: material.costo_compra_real ?? "0" }])));
+  }, [id]);
+
+  useEffect(() => { void (async () => { await load(); const response = await apiFetch("/me"); const data = await response.json().catch(() => null); setRole(data?.data?.rol ?? ""); })(); }, [load]);
+
+  async function status(next: string, comment?: string) {
+    const response = await apiFetch("/pedidos/" + id + "/estado", { method: "POST", body: JSON.stringify({ estado: next, comentario: comment }) });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) { setError(data?.message ?? "No se pudo cambiar el estado."); return; }
+    setPedido(data.data);
+  }
+
+  async function saveMaterial(materialId: number) {
+    const response = await apiFetch("/pedidos/" + id + "/materiales/" + materialId, { method: "PUT", body: JSON.stringify(materialEdits[materialId]) });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) { setError(data?.message ?? "No se pudo actualizar el material."); return; }
+    await load();
+  }
+
+  async function updateLogistics() {
+    const response = await apiFetch("/pedidos/" + id, { method: "PUT", body: JSON.stringify({ fecha_entrega_estimada: deliveryDate || null, observaciones_internas: internalNotes }) });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) { setError(data?.message ?? "No se pudo actualizar la logística."); return; }
+    setPedido(data.data);
+  }
+
+  async function updateProcess(processId: number, next: string) {
+    const response = await apiFetch("/pedidos/" + id + "/procesos/" + processId, { method: "PUT", body: JSON.stringify({ estado: next }) });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) { setError(data?.message ?? "No se pudo actualizar el proceso."); return; }
+    await load();
+  }
+
+  if (!pedido) return <div className="p-6">{error || "Cargando..."}</div>;
+  const materials = pedido.materiales ?? [];
+  const processes = pedido.procesos ?? [];
+  const commercial = ["admin", "socio", "vendedor"].includes(role);
+  const internal = ["admin", "socio"].includes(role);
+  const operate = canEdit && ["admin", "almacenista"].includes(role) && !["terminado", "cancelado"].includes(pedido.estado);
+  const materialsReady = pedido.progreso.materiales_total === pedido.progreso.materiales_listos;
+  const processesDone = pedido.progreso.procesos_total === pedido.progreso.procesos_completados;
+  const setMaterialField = (materialId: number, field: keyof MaterialEdit, value: string) => setMaterialEdits((current) => ({ ...current, [materialId]: { ...current[materialId], [field]: value } }));
+
+  return <div className="w-full bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+    <header className="mb-5 flex flex-wrap items-center justify-between gap-3 text-white"><div><h1 className="text-3xl font-extrabold sm:text-5xl">{pedido.numero}</h1><p className="capitalize">{pedido.estado.replaceAll("_", " ")}</p></div><button onClick={() => router.push("/pedidos")} className="rounded bg-white px-3 py-2 text-sm font-bold">Volver</button></header>
+    {error ? <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]"><main className="space-y-5">
+      <section className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Pedido y cliente</h2><p>{pedido.nombre_cliente}</p><p>{pedido.direccion} · {pedido.telefono} · {pedido.correo}</p><p>Proforma: {pedido.proforma_numero ?? "—"} · Fecha: {pedido.fecha_pedido}</p></section>
+      <section className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Logística</h2><label className="mt-3 block text-sm font-bold">Fecha de entrega estimada<input type="date" value={deliveryDate} onChange={(event) => setDeliveryDate(event.target.value)} disabled={!operate} className="mt-1 w-full rounded bg-white p-2" /></label>{role !== "vendedor" ? <label className="mt-3 block text-sm font-bold">Observaciones internas<textarea value={internalNotes} onChange={(event) => setInternalNotes(event.target.value)} disabled={!operate} className="mt-1 min-h-20 w-full rounded bg-white p-2" /></label> : null}{operate ? <button onClick={() => void updateLogistics()} className="mt-3 rounded bg-[#123852] px-3 py-2 text-sm font-bold text-white">Guardar logística</button> : null}</section>
+      <section className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Productos</h2>{pedido.detalles.map((line, index) => <div key={index} className="mt-3 rounded bg-white p-3"><p className="font-bold">{line.nombre}</p>{commercial ? <p>{line.cantidad} × C$ {line.precio_unitario} · Descuento C$ {line.descuento} · Subtotal C$ {line.subtotal}</p> : <p>Cantidad: {line.cantidad}</p>}{line.servicios.map((service, serviceIndex) => <p className="text-sm" key={serviceIndex}>{service.nombre}: {service.cantidad}{commercial ? ` × C$ ${service.precio_unitario} · C$ ${service.subtotal}` : ""}</p>)}</div>)}<h3 className="mt-4 font-bold">Servicios generales</h3>{pedido.servicios_pedido.map((service, index) => <p key={index}>{service.nombre}: {service.cantidad}{commercial ? ` × C$ ${service.precio_unitario} · C$ ${service.subtotal}` : ""}</p>)}</section>
+      {role !== "vendedor" ? <section className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Materiales</h2>{materials.map((item) => <div key={item.id} className="mt-3 rounded bg-white p-3"><div className="flex flex-wrap justify-between gap-2"><span><strong>{item.nombre}</strong><br />Requerido: {item.cantidad_requerida} · Compra plan: {item.cantidad_compra_plan} {item.unidad_compra}</span><span className="capitalize">{item.estado}</span></div>{internal ? <p className="mt-2 text-sm">Precio snapshot: C$ {item.precio_compra_snapshot} · Consumo: C$ {item.costo_consumo_estimado} · Compra: C$ {item.costo_compra_estimado} · Real: C$ {item.costo_compra_real}</p> : null}{operate ? <div className="mt-3 grid gap-2 sm:grid-cols-2"><select value={materialEdits[item.id]?.estado ?? item.estado} onChange={(event) => setMaterialField(item.id, "estado", event.target.value)} className="rounded border p-2 text-sm"><option value="pendiente">Pendiente</option><option value="parcial">Parcial</option><option value="listo">Listo</option></select><input type="number" min="0" step="0.0001" value={materialEdits[item.id]?.cantidad_compra_real ?? "0"} onChange={(event) => setMaterialField(item.id, "cantidad_compra_real", event.target.value)} placeholder="Cantidad real" className="rounded border p-2 text-sm" />{role === "admin" ? <input type="number" min="0" step="0.01" value={materialEdits[item.id]?.costo_compra_real ?? "0"} onChange={(event) => setMaterialField(item.id, "costo_compra_real", event.target.value)} placeholder="Costo compra real" className="rounded border p-2 text-sm" /> : null}<input value={materialEdits[item.id]?.observaciones ?? ""} onChange={(event) => setMaterialField(item.id, "observaciones", event.target.value)} placeholder="Observaciones" className="rounded border p-2 text-sm" /><button onClick={() => void saveMaterial(item.id)} className="rounded bg-[#456f89] px-3 py-2 text-sm font-bold text-white">Guardar material</button></div> : <p className="mt-2 text-sm">Cantidad real: {item.cantidad_compra_real} · {item.observaciones ?? ""}</p>}</div>)}</section> : null}
+      {role !== "vendedor" ? <section className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Procesos</h2>{processes.map((item) => <div key={item.id} className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded bg-white p-3"><span>{item.orden ?? "—"} · {item.nombre}</span><span className="capitalize">{item.estado}</span>{internal ? <span>C$ {item.costo_estimado}</span> : null}{operate && pedido.estado === "en_produccion" && item.estado !== "completado" ? <button onClick={() => void updateProcess(item.id, item.estado === "pendiente" ? "en_proceso" : "completado")} className="rounded bg-[#456f89] px-2 py-1 text-xs font-bold text-white">Actualizar</button> : null}</div>)}</section> : null}
+      <section className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Historial</h2>{pedido.historial.map((item, index) => <p key={index} className="text-sm">{item.estado_anterior ?? "—"} → {item.estado_nuevo} · {item.comentario ?? ""}</p>)}</section>
+    </main><aside className="rounded bg-[#e9eef1] p-5 shadow-lg"><h2 className="text-xl font-extrabold">Progreso</h2><p>Materiales: {pedido.progreso.materiales_listos}/{pedido.progreso.materiales_total}</p><p>Producción: {pedido.progreso.procesos_completados}/{pedido.progreso.procesos_total}</p>{operate ? <div className="mt-4 space-y-2">{pedido.estado === "pendiente" ? <button onClick={() => void status(pedido.progreso.materiales_total === 0 ? "materiales_listos" : "materiales_pendientes")} className="w-full rounded bg-[#123852] px-3 py-2 text-sm font-bold text-white">{pedido.progreso.materiales_total === 0 ? "Materiales listos / Iniciar producción" : "Iniciar preparación de materiales"}</button> : null}{pedido.estado === "materiales_pendientes" && materialsReady ? <button onClick={() => void status("materiales_listos")} className="w-full rounded bg-[#123852] px-3 py-2 text-sm font-bold text-white">Marcar materiales listos</button> : null}{pedido.estado === "materiales_listos" ? <button onClick={() => void status("en_produccion")} className="w-full rounded bg-[#123852] px-3 py-2 text-sm font-bold text-white">Iniciar producción</button> : null}{pedido.estado === "en_produccion" && processesDone ? <button onClick={() => void status("terminado")} className="w-full rounded bg-[#123852] px-3 py-2 text-sm font-bold text-white">Terminar pedido</button> : null}{role === "admin" && !["terminado", "cancelado"].includes(pedido.estado) ? <button onClick={() => { const reason = window.prompt("Motivo de cancelación"); if (reason) void status("cancelado", reason); }} className="w-full rounded bg-red-700 px-3 py-2 text-sm font-bold text-white">Cancelar pedido</button> : null}</div> : null}{pedido.estado === "terminado" ? <p className="mt-4 rounded bg-white p-3 text-sm">Pendiente de facturación</p> : null}{commercial && pedido.resumen_comercial ? <div className="mt-4 border-t pt-3 text-sm"><h3 className="font-bold">Resumen comercial</h3><p>Base: C$ {pedido.resumen_comercial.base_neta}</p><p>IVA: C$ {pedido.resumen_comercial.monto_iva}</p><p>IR: C$ {pedido.resumen_comercial.monto_ir}</p><p className="font-bold">TOTAL: C$ {pedido.resumen_comercial.total}</p></div> : null}{internal && pedido.analisis_interno ? <div className="mt-4 border-t pt-3 text-sm"><h3 className="font-bold">Análisis interno</h3><p>Costo materiales: C$ {pedido.analisis_interno.costo_materiales_estimado}</p><p>Costo mano de obra: C$ {pedido.analisis_interno.costo_mano_obra_estimado}</p><p>Costo base servicios: C$ {pedido.analisis_interno.costo_servicios_base_estimado}</p><p>Costo producción: C$ {pedido.analisis_interno.costo_total_estimado}</p><p>Compra estimada: C$ {pedido.analisis_interno.costo_compra_estimado}</p><p>Compra real: C$ {pedido.analisis_interno.costo_compra_real_total}</p><p>Comisión: C$ {pedido.analisis_interno.monto_comision_vendedor}</p><p>Utilidad: C$ {pedido.analisis_interno.utilidad_estimada}</p></div> : null}</aside></div>
+  </div>;
+}
