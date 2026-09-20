@@ -23,6 +23,7 @@ test("pedido frontend uses conversion, billing and no PDF actions", () => {
   assert.match(detail, /facturar/);
   assert.match(detail, /ubicaciones/);
   assert.match(detail, /usuario_inventario_id/);
+  assert.match(detail, /\/usuarios\?per_page=100/);
   assert.match(detail, /role === "admin"/);
   assert.doesNotMatch(detail, /role === "vendedor".*usuario_inventario_id/s);
   assert.doesNotMatch(detail, /PDF|pdf|Descargar/);
