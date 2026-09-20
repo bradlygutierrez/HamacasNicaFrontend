@@ -1,10 +1,13 @@
-import SectionPage from "@/app/_components/section-page";
+import CatalogPage from "@/app/_components/catalog-page";
 
 export default function TamanoPage() {
     return (
-        <SectionPage
+        <CatalogPage
             title="Tamaños"
             description="Catálogo de tamaños de hamaca."
+            endpoint="/tamanos"
+            namePlaceholder="Ej: Individual"
+            descriptionPlaceholder="Descripción o dimensiones del tamaño"
         />
     );
 }
