@@ -40,10 +40,10 @@ test('proforma editor protects internal controls by role and supports removing s
   assert.match(editor, /readOnly={role !== "admin"}/);
 });
 
-test('proforma routes exist and phase four links are absent', () => {
+test('proforma routes exist and phase five links are absent', () => {
   assert.ok(readFileSync(resolve(root, 'app/(sidebar-pages)/proformas/nueva/page.tsx'), 'utf8'));
   assert.ok(readFileSync(resolve(root, 'app/(sidebar-pages)/proformas/[id]/page.tsx'), 'utf8'));
   const permissions = readFileSync(resolve(root, 'app/_lib/permissions.ts'), 'utf8');
   assert.match(permissions, /href: "\/proformas"/);
-  assert.doesNotMatch(permissions, /href: "\/pedidos"/);
+  assert.doesNotMatch(permissions, /href: "\/facturar"/);
 });
