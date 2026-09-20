@@ -35,6 +35,7 @@ test("pedido frontend separates internal analysis and operational controls", () 
   assert.match(conversion, /window\.confirm/);
   assert.match(detail, /Guardar logística/);
   assert.match(detail, /costo_compra_real/);
+  assert.match(detail, /item\.estado !== "completado"/);
   assert.match(detail, /cancelado/);
 });
 
