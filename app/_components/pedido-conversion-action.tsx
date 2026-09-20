@@ -27,6 +27,7 @@ export default function PedidoConversionAction() {
   }, [id]);
 
   async function convert() {
+    if (!window.confirm("¿Crear el pedido a partir de esta proforma aceptada?")) return;
     const response = await apiFetch("/proformas/" + id + "/pedido", { method: "POST" });
     const data = await response.json().catch(() => null);
     if (!response.ok) {
