@@ -90,3 +90,19 @@ test("ventas POS capabilities allow creation for admin and vendedor, not socio",
   assert.equal(getCatalogCapabilities("/ventas", { id: 2, nombre: "Vendedor", rol: "vendedor" }, [{ pantalla: { ruta: "/ventas" }, permiso: { slug: "ver" } }, { pantalla: { ruta: "/ventas" }, permiso: { slug: "crear" } }]).canCreate, true);
   assert.equal(getCatalogCapabilities("/ventas", { id: 3, nombre: "Socio", rol: "socio" }, [{ pantalla: { ruta: "/ventas" }, permiso: { slug: "ver" } }]).canCreate, false);
 });
+
+test("ventas keeps mobile layouts from forcing horizontal overflow", () => {
+  const pdfActions = readFileSync(resolve("app/_components/pdf-actions.tsx"), "utf8");
+  assert.match(source, /ventas-page/);
+  assert.match(source, /min-w-0/);
+  assert.match(source, /flex-col gap-2 sm:flex-row/);
+  assert.match(source, /h-\[100dvh\]/);
+  assert.match(source, /max-h-\[100dvh\]/);
+  assert.match(source, /grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(source, /grid-template-columns: 1fr 1fr/);
+  assert.match(source, /w-full min-w-0 gap-1/);
+  assert.doesNotMatch(source, /grid min-w-\[260px\]/);
+  assert.doesNotMatch(source, /grid-cols-\[120px_1fr_120px\]/);
+  assert.match(pdfActions, /flex w-full flex-col gap-2 sm:w-auto sm:flex-row/);
+  assert.match(pdfActions, /min-h-10 w-full/);
+});
