@@ -25,6 +25,13 @@ test("ventas POS exposes the direct sale flow and permission gate", () => {
   assert.match(source, /aria-label="Cerrar nueva venta"/);
   assert.match(source, /max-w-6xl/);
   assert.match(source, /overflow-y-auto/);
+  assert.match(source, /\{error \? <p role="alert"/);
+  assert.match(source, /document\.body\.style\.overflow = "hidden"/);
+  assert.match(source, /document\.body\.style\.overflow = previousOverflow/);
+  assert.match(source, /closeForm\(\); setItems\(\[\]\)/);
+  assert.match(source, /role="dialog" aria-modal="true" aria-labelledby="register-client-title"/);
+  assert.match(source, /id="register-client-title"/);
+  assert.match(source, /if \(quickClientOpen\) setQuickClientOpen\(false\); else closeForm\(\)/);
 });
 
 test("ventas keeps invoice filters, pagination, detail loading and client modes", () => {
