@@ -28,6 +28,8 @@ test('proforma pages and editor use backend pricing and no inventory mutations',
   assert.match(editor, /status/);
   assert.match(editor, /Guardar borrador/);
   assert.match(editor, /Emitir proforma/);
+  assert.match(editor, /\+ Registrar cliente/);
+  assert.match(editor, /setSelectedClientId\(client\.id\)/);
   assert.doesNotMatch(editor, /inventario|movimientos|facturas/);
 });
 
