@@ -23,6 +23,11 @@ export const poppins = Poppins({
 export const metadata: Metadata = {
   title: "Hamacas Nica",
   description: "Inventario, POS y administración de Hamacas Nica",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
