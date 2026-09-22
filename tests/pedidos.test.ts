@@ -45,14 +45,17 @@ test("pedido frontend separates internal analysis and operational controls", () 
   assert.match(detail, /cancelado/);
 });
 
-test("ventas identifies direct and pedido invoices without PDF actions", () => {
+test("ventas identifies direct and pedido invoices with PDF actions", () => {
   const ventas = readFileSync(resolve(root, "app/(sidebar-pages)/ventas/page.tsx"), "utf8");
+  const pdfActions = readFileSync(resolve(root, "app/_components/pdf-actions.tsx"), "utf8");
   assert.match(ventas, /ventas directas y pedidos/);
   assert.match(ventas, /pedido_numero/);
   assert.match(ventas, /servicios/);
   assert.match(ventas, /Servicios del producto/);
   assert.match(ventas, /detalle\.servicios/);
-  assert.doesNotMatch(ventas, /Descargar|PDF|pdf/);
+  assert.match(ventas, /PdfActions/);
+  assert.match(pdfActions, /Ver PDF/);
+  assert.match(pdfActions, /Descargar PDF/);
 });
 
 function permissionsSource(): string {
