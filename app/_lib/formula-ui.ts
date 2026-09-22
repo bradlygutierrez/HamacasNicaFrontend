@@ -2,6 +2,7 @@ export type FormulaUiInput = {
   hasActive: boolean;
   hasDraft: boolean;
   canCreate: boolean;
+  canEdit?: boolean;
 };
 
 export type FormulaUiState = {
@@ -16,12 +17,13 @@ export function getFormulaUiState({
   hasActive,
   hasDraft,
   canCreate,
+  canEdit = canCreate,
 }: FormulaUiInput): FormulaUiState {
   if (hasActive && hasDraft) {
     return {
       statusLabel: "Activa + borrador",
-      canContinue: true,
-      canView: false,
+      canContinue: canEdit,
+      canView: !canEdit,
       canCreate: false,
       canCreateVersion: false,
     };
@@ -33,15 +35,15 @@ export function getFormulaUiState({
       canContinue: false,
       canView: true,
       canCreate: false,
-      canCreateVersion: canCreate,
+      canCreateVersion: canCreate && canEdit,
     };
   }
 
   if (hasDraft) {
     return {
       statusLabel: "Borrador",
-      canContinue: true,
-      canView: false,
+      canContinue: canEdit,
+      canView: !canEdit,
       canCreate: false,
       canCreateVersion: false,
     };

@@ -55,6 +55,28 @@ test('formula UI is read-only when creation is not allowed', () => {
   });
 });
 
+test('formula UI uses view labels for read-only drafts', () => {
+  assert.deepEqual(getFormulaUiState({ hasActive: false, hasDraft: true, canCreate: false, canEdit: false }), {
+    statusLabel: 'Borrador',
+    canContinue: false,
+    canView: true,
+    canCreate: false,
+    canCreateVersion: false,
+  });
+  assert.deepEqual(getFormulaUiState({ hasActive: true, hasDraft: true, canCreate: false, canEdit: false }), {
+    statusLabel: 'Activa + borrador',
+    canContinue: false,
+    canView: true,
+    canCreate: false,
+    canCreateVersion: false,
+  });
+});
+
+test('formula UI keeps continuation labels for editors', () => {
+  assert.equal(getFormulaUiState({ hasActive: false, hasDraft: true, canCreate: true, canEdit: true }).canContinue, true);
+  assert.equal(getFormulaUiState({ hasActive: true, hasDraft: true, canCreate: true, canEdit: true }).canContinue, true);
+});
+
 test('formula pages use versioning, cost and service formula endpoints', () => {
   const list = readFileSync(resolve(root, 'app/(sidebar-pages)/formulas/page.tsx'), 'utf8');
   const editor = readFileSync(resolve(root, 'app/(sidebar-pages)/formulas/[hamacaId]/page.tsx'), 'utf8');
@@ -63,9 +85,9 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
 
   assert.match(list, /\/formulas/);
   assert.match(list, /import \{ useCatalogCapabilities \} from "@\/app\/_components\/catalog-permissions-provider"/);
-  assert.match(list, /const \{ canCreate \} = useCatalogCapabilities\("\/formulas"\)/);
+  assert.match(list, /const \{ canCreate, canEdit \} = useCatalogCapabilities\("\/formulas"\)/);
   assert.match(list, /import \{ getFormulaUiState, type FormulaUiState \} from "@\/app\/_lib\/formula-ui"/);
-  assert.match(list, /getFormulaUiState\(\{ hasActive, hasDraft, canCreate \}\)/);
+  assert.match(list, /getFormulaUiState\(\{ hasActive, hasDraft, canCreate, canEdit \}\)/);
   assert.match(list, /uiState\.canCreateVersion/);
   assert.doesNotMatch(list, /apiFetch\(`\/hamacas\/\$\{item\.id\}\/recetas`\)/);
   assert.match(list, /apiFetch\(`\/hamacas\/\$\{item\.id\}\/recetas`, \{ method: "POST"/);
@@ -76,8 +98,9 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(list, /Borrador v\{item\.receta_borrador\?\.version\}/);
   assert.match(list, /uiState\.canCreate \? <button[^>]+>[\s\S]*Crear fórmula/);
   assert.match(list, /uiState\.canContinue \? <Link[^>]+>\{uiState\.statusLabel === "Activa \+ borrador" \? "Continuar borrador" : "Continuar fórmula"\}/);
-  assert.match(list, /uiState\.canView \? <><Link[^>]+>Ver fórmula/);
-  assert.match(list, /uiState\.canView \? <><Link[^>]+>Ver fórmula[\s\S]*uiState\.canCreateVersion \? <button[^>]+>[\s\S]*Nueva versión/);
+  assert.match(list, /hasActive \? \(hasDraft \? "Ver fórmula \/ borrador" : "Ver fórmula"\) : "Ver borrador"/);
+  assert.match(list, /uiState\.canView \? <><Link[^>]+>\{hasActive \?/);
+  assert.match(list, /uiState\.canView \? <><Link[^>]+>[\s\S]*uiState\.canCreateVersion \? <button[^>]+>[\s\S]*Nueva versión/);
   assert.match(list, /POST/);
   assert.match(list, /router\.push\(`\/formulas\/\$\{item\.id\}`\)/);
   assert.match(list, /response\.ok/);
