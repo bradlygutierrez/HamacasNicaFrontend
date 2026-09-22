@@ -98,7 +98,7 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(list, /Borrador v\{item\.receta_borrador\?\.version\}/);
   assert.match(list, /uiState\.canCreate \? <button[^>]+>[\s\S]*Crear fórmula/);
   assert.match(list, /uiState\.canContinue \? <Link[^>]+>\{uiState\.statusLabel === "Activa \+ borrador" \? "Continuar borrador" : "Continuar fórmula"\}/);
-  assert.match(list, /hasActive \? \(hasDraft \? "Ver fórmula \/ borrador" : "Ver fórmula"\) : "Ver borrador"/);
+  assert.match(list, /hasActive \? "Ver fórmula" : "Ver borrador"/);
   assert.match(list, /uiState\.canView \? <><Link[^>]+>\{hasActive \?/);
   assert.match(list, /uiState\.canView \? <><Link[^>]+>[\s\S]*uiState\.canCreateVersion \? <button[^>]+>[\s\S]*Nueva versión/);
   assert.match(list, /POST/);
