@@ -11,6 +11,10 @@ test("document helper uses authenticated blobs and supports view/download", () =
   assert.match(source, /URL\.revokeObjectURL/);
   assert.match(source, /download=1/);
   assert.match(source, /response\.ok/);
+  assert.match(source, /window\.open\("about:blank", "_blank"\)/);
+  assert.match(source, /tab\.opener = null/);
+  assert.match(source, /tab\.location\.href/);
+  assert.match(source, /tab\.close\(\)/);
 });
 
 test("PDF actions are available in proforma and factura detail", () => {

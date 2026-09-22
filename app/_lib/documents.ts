@@ -10,11 +10,18 @@ async function pdfResponse(endpoint: string): Promise<Response> {
 }
 
 export async function openPdf(endpoint: string): Promise<void> {
-  const blob = await (await pdfResponse(endpoint)).blob();
-  const url = URL.createObjectURL(blob);
-  const tab = window.open(url, "_blank", "noopener,noreferrer");
+  const tab = window.open("about:blank", "_blank");
   if (!tab) throw new Error("El navegador bloqueó la nueva pestaña del PDF.");
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  tab.opener = null;
+  try {
+    const blob = await (await pdfResponse(endpoint)).blob();
+    const url = URL.createObjectURL(blob);
+    tab.location.href = url;
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (error) {
+    tab.close();
+    throw error;
+  }
 }
 
 export async function downloadPdf(endpoint: string, filename?: string): Promise<void> {
