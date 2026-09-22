@@ -39,6 +39,27 @@ test("ventas keeps invoice filters, pagination, detail loading and client modes"
   assert.match(source, /updateManualClient/);
 });
 
+test("ventas invalidates stale previews and requires a current calculation", () => {
+  assert.match(source, /const invalidatePreview = \(\) => setPreview\(null\)/);
+  assert.match(source, /cantidad: Number\(event\.target\.value\).*invalidatePreview\(\)/);
+  assert.match(source, /setItems\(items\.filter\(\(_, itemIndex\) => itemIndex !== index\)\); invalidatePreview\(\)/);
+  assert.match(source, /setDiscount\(event\.target\.value\); invalidatePreview\(\)/);
+  assert.match(source, /setAppliesIva\(event\.target\.checked\); invalidatePreview\(\)/);
+  assert.match(source, /setAppliesIr\(event\.target\.checked\); invalidatePreview\(\)/);
+  assert.match(source, /disabled=\{saving \|\| !preview\}/);
+});
+
+test("ventas resets filters and sale fields after a successful sale", () => {
+  assert.match(source, /setSearch\(""\)/);
+  assert.match(source, /setOrigin\("venta_directa"\)/);
+  assert.match(source, /setPage\(1\)/);
+  assert.match(source, /setChannel\("pos"\)/);
+  assert.match(source, /setPaymentMethod\("efectivo"\)/);
+  assert.match(source, /setAppliesIva\(true\)/);
+  assert.match(source, /setAppliesIr\(false\)/);
+  assert.match(source, /loadInvoices\(data\?\.data\?\.id, "", "venta_directa", 1\)/);
+});
+
 test("ventas POS capabilities allow creation for admin and vendedor, not socio", () => {
   assert.equal(getCatalogCapabilities("/ventas", { id: 1, nombre: "Admin", rol: "admin" }, []).canCreate, true);
   assert.equal(getCatalogCapabilities("/ventas", { id: 2, nombre: "Vendedor", rol: "vendedor" }, [{ pantalla: { ruta: "/ventas" }, permiso: { slug: "ver" } }, { pantalla: { ruta: "/ventas" }, permiso: { slug: "crear" } }]).canCreate, true);
