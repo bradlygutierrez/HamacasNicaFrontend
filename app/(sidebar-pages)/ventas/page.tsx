@@ -1,161 +1,50 @@
 "use client";
 
 import SectionPage from "@/app/_components/section-page";
+import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 import { apiFetch } from "@/app/_lib/api";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
-type Detalle = {
-    id: number;
-    hamaca_nombre?: string;
-    cantidad: number;
-    precio_unitario: string | number;
-    subtotal: string | number;
-    servicios?: Array<{
-        id: number;
-        nombre: string;
-        detalle?: string | null;
-        cantidad: string;
-        precio_unitario: string | number;
-        descuento?: string | number;
-        subtotal: string | number;
-    }>;
-};
+const DEFAULT_CLIENT_NAME = "Consumidor final";
+// detalle.servicios se muestran dentro del detalle de factura.
+type Client = { id: number; nombre: string; ruc?: string | null; direccion?: string | null; telefono?: string | null; correo?: string | null };
+type Inventory = { id: number; cantidad: number; hamaca?: { nombre?: string; precio?: string | number }; variante?: { colores?: Array<{ nombre: string }> }; colores?: Array<{ nombre: string }>; ubicacion?: { nombre?: string } };
+type SaleItem = { inventory: Inventory; cantidad: number };
+type Invoice = { id: number; numero: string; nombre_cliente: string; metodo_pago?: string | null; canal?: string; subtotal: string | number; descuento: string | number; monto_iva: string | number; monto_ir: string | number; total: string | number; fecha: string; origen?: string; pedido_numero?: string | null; detalles?: Array<{ id: number; hamaca_nombre?: string; cantidad: number; precio_unitario: string | number; subtotal: string | number; colores?: string[]; servicios?: Array<{ id: number; nombre: string; subtotal: string | number }> }>; servicios?: Array<{ id: number; nombre: string; subtotal: string | number }> };
+type Preview = { subtotal: string; descuento: string; base: string; monto_iva: string; monto_ir: string; total: string };
+type Meta = { current_page: number; last_page: number; total: number };
 
-type Factura = {
-    id: number;
-    numero: string;
-    nombre_cliente: string;
-    metodo_pago?: string | null;
-    subtotal: string | number;
-    descuento: string | number;
-    monto_iva: string | number;
-    monto_ir: string | number;
-    total: string | number;
-    fecha: string;
-    origen?: string;
-    pedido_numero?: string | null;
-    detalles?: Detalle[];
-    servicios?: Array<{ id: number; nombre: string; detalle?: string | null; cantidad: string; precio_unitario: string | number; subtotal: string | number }>;
-};
-
-function money(value: string | number) {
-    return Number(value ?? 0).toLocaleString("es-NI", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-}
+const money = (value: string | number | undefined) => Number(value ?? 0).toLocaleString("es-NI", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const errorMessage = (data: { message?: string; errors?: Record<string, string[]> } | null, fallback: string) => data?.message ?? Object.values(data?.errors ?? {})[0]?.[0] ?? fallback;
 
 export default function VentasPage() {
-    const [facturas, setFacturas] = useState<Factura[]>([]);
-    const [selected, setSelected] = useState<Factura | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+  const { canCreate } = useCatalogCapabilities("/ventas");
+  const [facturas, setFacturas] = useState<Invoice[]>([]); const [selected, setSelected] = useState<Invoice | null>(null); const [inventory, setInventory] = useState<Inventory[]>([]); const [clients, setClients] = useState<Client[]>([]);
+  const [search, setSearch] = useState(""); const [origin, setOrigin] = useState(""); const [page, setPage] = useState(1); const [meta, setMeta] = useState<Meta>({ current_page: 1, last_page: 1, total: 0 }); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  const [formOpen, setFormOpen] = useState(false); const [inventorySearch, setInventorySearch] = useState(""); const [clientSearch, setClientSearch] = useState(""); const [items, setItems] = useState<SaleItem[]>([]); const [manualClient, setManualClient] = useState<Client>({ id: 0, nombre: DEFAULT_CLIENT_NAME }); const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
+  const [quickClientOpen, setQuickClientOpen] = useState(false); const [quickClient, setQuickClient] = useState({ nombre: "", ruc: "", telefono: "", correo: "", direccion: "" }); const [discount, setDiscount] = useState("0"); const [appliesIva, setAppliesIva] = useState(true); const [appliesIr, setAppliesIr] = useState(false); const [paymentMethod, setPaymentMethod] = useState("efectivo"); const [preview, setPreview] = useState<Preview | null>(null); const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        async function loadFacturas() {
-            try {
-                const response = await apiFetch("/facturas");
-                const data = await response.json().catch(() => null);
+  const selectInvoice = useCallback(async (id: number) => { const response = await apiFetch("/facturas/" + id); const data = await response.json().catch(() => null); if (response.ok) setSelected(data?.data ?? null); }, []);
+  const loadInvoices = useCallback(async (preferredId?: number) => { const response = await apiFetch("/facturas?search=" + encodeURIComponent(search) + "&origen=" + encodeURIComponent(origin) + "&page=" + page + "&per_page=15"); const data = await response.json().catch(() => null); if (!response.ok) throw new Error(errorMessage(data, "No se pudieron cargar las facturas.")); const rows = Array.isArray(data?.data) ? data.data : []; setFacturas(rows); setMeta(data?.meta ?? { current_page: page, last_page: 1, total: rows.length }); const row = rows.find((item: Invoice) => item.id === preferredId) ?? rows[0]; if (row) await selectInvoice(row.id); else setSelected(null); }, [origin, page, search, selectInvoice]);
+  const loadInventory = useCallback(async () => { const response = await apiFetch("/inventario-hamacas?per_page=100"); const data = await response.json().catch(() => null); if (response.ok) setInventory((data?.data ?? []).filter((item: Inventory) => Number(item.cantidad) > 0)); }, []);
+  useEffect(() => { const timer = window.setTimeout(() => { void Promise.all([loadInvoices(), loadInventory()]).catch((err: Error) => setError(err.message)).finally(() => setLoading(false)); }, 0); return () => window.clearTimeout(timer); }, [loadInvoices, loadInventory]);
+  useEffect(() => { const timer = window.setTimeout(async () => { const response = await apiFetch("/clientes?search=" + encodeURIComponent(clientSearch) + "&per_page=20"); const data = await response.json().catch(() => null); if (response.ok) setClients(data?.data ?? []); }, 250); return () => window.clearTimeout(timer); }, [clientSearch]);
 
-                if (!response.ok) {
-                    throw new Error(data?.message ?? `HTTP ${response.status}`);
-                }
+  const availableInventory = useMemo(() => inventory.filter((item) => { const colors = (item.variante?.colores ?? item.colores ?? []).map((color) => color.nombre).join(" "); return (item.hamaca?.nombre + " " + colors + " " + (item.ubicacion?.nombre ?? "")).toLowerCase().includes(inventorySearch.toLowerCase().trim()); }), [inventory, inventorySearch]);
+  const payload = () => ({ cliente_id: selectedClientId, nombre_cliente: manualClient.nombre || DEFAULT_CLIENT_NAME, ruc: manualClient.ruc || null, direccion: manualClient.direccion || null, telefono: manualClient.telefono || null, correo: manualClient.correo || null, canal: "pos", metodo_pago: paymentMethod, descuento: Number(discount || 0), aplica_iva: appliesIva, aplica_ir: appliesIr, items: items.map((item) => ({ inventario_hamaca_id: item.inventory.id, cantidad: item.cantidad })) });
+  async function calculate() { if (!items.length) { setError("Agregá al menos un producto."); return; } const response = await apiFetch("/pos/ventas/calcular", { method: "POST", body: JSON.stringify(payload()) }); const data = await response.json().catch(() => null); if (!response.ok) { setError(errorMessage(data, "No se pudo calcular la venta.")); return; } setError(""); setPreview(data.data); }
+  async function submitSale() { if (!items.length || items.some((item) => item.cantidad < 1 || item.cantidad > Number(item.inventory.cantidad))) { setError("Revisá las cantidades y el stock disponible."); return; } setSaving(true); const response = await apiFetch("/pos/ventas", { method: "POST", body: JSON.stringify(payload()) }); const data = await response.json().catch(() => null); setSaving(false); if (!response.ok) { setError(errorMessage(data, "No se pudo registrar la venta.")); return; } toast.success("Venta registrada correctamente."); setFormOpen(false); setItems([]); setPreview(null); setDiscount("0"); setSelectedClientId(null); setManualClient({ id: 0, nombre: DEFAULT_CLIENT_NAME }); await loadInventory(); await loadInvoices(data?.data?.id); }
+  function addItem(item: Inventory) { if (!items.some((line) => line.inventory.id === item.id)) setItems([...items, { inventory: item, cantidad: 1 }]); }
+  function registerClient() { void (async () => { if (!quickClient.nombre.trim()) { setError("El nombre del cliente es obligatorio."); return; } const response = await apiFetch("/clientes", { method: "POST", body: JSON.stringify({ ...quickClient, ruc: quickClient.ruc || null, telefono: quickClient.telefono || null, correo: quickClient.correo || null, direccion: quickClient.direccion || null }) }); const data = await response.json().catch(() => null); if (!response.ok) { setError(errorMessage(data, "No se pudo registrar el cliente.")); return; } const client = data.data as Client; setSelectedClientId(client.id); setManualClient(client); setQuickClientOpen(false); setQuickClient({ nombre: "", ruc: "", telefono: "", correo: "", direccion: "" }); toast.success("Cliente registrado correctamente."); })(); }
 
-                const items = data.data ?? [];
-                setFacturas(items);
-                setSelected(items[0] ?? null);
-            } catch (err) {
-                console.error(err);
-                setError("No se pudieron cargar las facturas.");
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        loadFacturas();
-    }, []);
-
-    return (
-        <SectionPage
-            title="Ventas"
-            description="Consulta de facturas emitidas por ventas directas y pedidos."
-        >
-            {loading ? (
-                <p className="text-sm font-semibold text-[var(--color-foreground-secondary)]">
-                    Cargando facturas...
-                </p>
-            ) : error ? (
-                <p className="text-sm font-semibold text-red-700">{error}</p>
-            ) : (
-                <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-                    <section className="overflow-hidden rounded-md border border-black/10 bg-white">
-                        <div className="grid grid-cols-[120px_1fr_120px] gap-3 bg-[#08264d] px-4 py-3 text-sm font-semibold text-white">
-                            <span>Número</span>
-                            <span>Cliente</span>
-                            <span className="text-right">Total</span>
-                        </div>
-
-                        {facturas.length === 0 ? (
-                            <p className="px-4 py-6 text-sm text-[#08264d]">
-                                No hay facturas registradas.
-                            </p>
-                        ) : (
-                            facturas.map((factura) => (
-                                <button
-                                    key={factura.id}
-                                    type="button"
-                                    onClick={() => setSelected(factura)}
-                                    className={`grid w-full grid-cols-[120px_1fr_120px] gap-3 border-t border-black/10 px-4 py-3 text-left text-sm text-[#08264d] transition hover:bg-[#e8edf3] ${
-                                        selected?.id === factura.id ? "bg-[#e8edf3]" : "bg-white"
-                                    }`}
-                                >
-                                    <span className="font-semibold">{factura.numero}</span>
-                                    <span className="truncate">{factura.nombre_cliente} · {factura.origen === "pedido" ? `Pedido ${factura.pedido_numero ?? ""}` : "Venta directa"}</span>
-                                    <span className="text-right font-semibold">C$ {money(factura.total)}</span>
-                                </button>
-                            ))
-                        )}
-                    </section>
-
-                    <aside className="rounded-md border border-black/10 bg-white p-4 text-[#08264d]">
-                        {selected ? (
-                            <div className="space-y-4">
-                                <div>
-                                    <h2 className="text-xl font-bold">{selected.numero}</h2>
-                                    <p className="text-sm">{selected.nombre_cliente}</p>
-                                    <p className="text-xs text-[#08264d]/70">{selected.fecha}</p>
-                                    <p className="text-xs font-semibold">{selected.origen === "pedido" ? `Pedido: ${selected.pedido_numero ?? "—"}` : "Venta directa"}</p>
-                                </div>
-
-                                {(selected.servicios ?? []).length > 0 ? <div className="space-y-2 border-t border-black/10 pt-3 text-sm"><p className="font-semibold">Servicios</p>{selected.servicios?.map((service) => <div key={service.id} className="rounded-md bg-[#f2f5f8] p-3"><p>{service.nombre}</p><p>{service.cantidad} x C$ {money(service.precio_unitario)}</p><p className="font-semibold">C$ {money(service.subtotal)}</p></div>)}</div> : null}
-
-                                <div className="space-y-2 text-sm">
-                                    {(selected.detalles ?? []).map((detalle) => (
-                                        <div key={detalle.id} className="rounded-md bg-[#f2f5f8] p-3">
-                                            <p className="font-semibold">{detalle.hamaca_nombre ?? "Producto"}</p>
-                                            <p>
-                                                {detalle.cantidad} x C$ {money(detalle.precio_unitario)}
-                                            </p>
-                                            <p className="font-semibold">C$ {money(detalle.subtotal)}</p>
-                                            {(detalle.servicios ?? []).length > 0 ? <div className="mt-2 border-t border-black/10 pt-2"><p className="font-semibold">Servicios del producto</p>{detalle.servicios?.map((service) => <div key={service.id} className="mt-1 text-sm"><p>{service.nombre}{service.detalle ? ` · ${service.detalle}` : ""}</p><p>{service.cantidad} x C$ {money(service.precio_unitario)} · C$ {money(service.subtotal)}</p></div>)}</div> : null}
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="space-y-1 border-t border-black/10 pt-3 text-sm">
-                                    <p className="flex justify-between"><span>Subtotal</span><span>C$ {money(selected.subtotal)}</span></p>
-                                    <p className="flex justify-between"><span>Descuento</span><span>C$ {money(selected.descuento)}</span></p>
-                                    <p className="flex justify-between"><span>IVA</span><span>C$ {money(selected.monto_iva)}</span></p>
-                                    <p className="flex justify-between"><span>IR</span><span>C$ {money(selected.monto_ir)}</span></p>
-                                    <p className="flex justify-between text-base font-bold"><span>Total</span><span>C$ {money(selected.total)}</span></p>
-                                </div>
-                            </div>
-                        ) : (
-                            <p className="text-sm">Selecciona una factura.</p>
-                        )}
-                    </aside>
-                </div>
-            )}
-        </SectionPage>
-    );
+  return <SectionPage title="Ventas" description="Consulta de facturas emitidas por ventas directas y pedidos."><div className="space-y-5">
+    <div className="flex flex-wrap items-center gap-2">{canCreate ? <button type="button" onClick={() => setFormOpen(true)} className="rounded bg-[#123852] px-4 py-2 text-sm font-bold text-white">+ Nueva venta</button> : null}<input aria-label="Buscar factura" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Buscar número o cliente" className="h-10 min-w-[220px] flex-1 rounded border bg-white px-3 text-sm" /><select aria-label="Filtrar origen" value={origin} onChange={(event) => { setOrigin(event.target.value); setPage(1); }} className="h-10 rounded border bg-white px-3 text-sm"><option value="">Todas</option><option value="venta_directa">Venta directa</option><option value="pedido">Pedido</option></select></div>
+    {error ? <p role="alert" className="rounded bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p> : null}
+    {formOpen ? <section className="rounded border border-black/10 bg-[#e9eef1] p-5"><div className="flex items-center justify-between"><h2 className="text-xl font-extrabold">Nueva venta</h2><button type="button" onClick={() => setFormOpen(false)} aria-label="Cerrar">✕</button></div><div className="mt-4 grid gap-4 lg:grid-cols-2"><div className="space-y-2"><h3 className="font-bold">Cliente</h3><div className="flex gap-2"><input aria-label="Buscar cliente" value={clientSearch} onChange={(event) => setClientSearch(event.target.value)} placeholder="Buscar cliente" className="h-9 flex-1 rounded border bg-white px-2 text-sm" /><button type="button" onClick={() => setQuickClientOpen(true)} className="rounded bg-[#123852] px-2 text-xs font-bold text-white">+ Registrar cliente</button></div>{clients.map((client) => <button type="button" key={client.id} onClick={() => { setSelectedClientId(client.id); setManualClient(client); setClientSearch(""); }} className="mr-1 rounded bg-white px-2 py-1 text-xs">{client.nombre}</button>)}<input aria-label="Nombre cliente" value={manualClient.nombre} onChange={(event) => { setSelectedClientId(null); setManualClient({ ...manualClient, nombre: event.target.value }); }} className="h-9 w-full rounded border bg-white px-2 text-sm" /></div><div className="space-y-2"><h3 className="font-bold">Condiciones</h3><select aria-label="Método de pago" value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value)} className="h-9 w-full rounded border bg-white px-2 text-sm"><option value="efectivo">Efectivo</option><option value="tarjeta">Tarjeta</option><option value="transferencia">Transferencia</option></select><input aria-label="Descuento" type="number" min="0" value={discount} onChange={(event) => setDiscount(event.target.value)} className="h-9 w-full rounded border bg-white px-2 text-sm" /><label className="mr-3 text-sm"><input type="checkbox" checked={appliesIva} onChange={(event) => setAppliesIva(event.target.checked)} /> IVA</label><label className="text-sm"><input type="checkbox" checked={appliesIr} onChange={(event) => setAppliesIr(event.target.checked)} /> IR</label></div></div>
+    <div className="mt-4"><h3 className="font-bold">Productos</h3><input aria-label="Buscar inventario" value={inventorySearch} onChange={(event) => setInventorySearch(event.target.value)} placeholder="Buscar modelo, color o ubicación" className="mt-2 h-9 w-full rounded border bg-white px-2 text-sm" /><div className="mt-2 grid gap-2 md:grid-cols-2">{availableInventory.map((item) => <button type="button" key={item.id} onClick={() => addItem(item)} className="rounded bg-white p-3 text-left text-sm"><b>{item.hamaca?.nombre}</b><br />{(item.variante?.colores ?? item.colores ?? []).map((color) => color.nombre).join(" / ") || "Sin color"} · {item.ubicacion?.nombre ?? "Sin ubicación"}<br />Disponible: {item.cantidad} · C$ {money(item.hamaca?.precio)}</button>)}</div>{items.map((line, index) => <div key={line.inventory.id} className="mt-2 flex flex-wrap items-center gap-2 rounded bg-white p-3 text-sm"><span className="min-w-[180px] font-semibold">{line.inventory.hamaca?.nombre}</span><input aria-label={"Cantidad " + (index + 1)} type="number" min="1" max={line.inventory.cantidad} value={line.cantidad} onChange={(event) => setItems(items.map((item, itemIndex) => itemIndex === index ? { ...item, cantidad: Number(event.target.value) } : item))} className="h-9 w-20 rounded border px-2" /><span>máx. {line.inventory.cantidad}</span><button type="button" onClick={() => setItems(items.filter((_, itemIndex) => itemIndex !== index))} className="text-red-700">Quitar</button></div>)}</div>
+    <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => void calculate()} className="rounded bg-[#456f89] px-4 py-2 text-sm font-bold text-white">Calcular</button>{preview ? <div className="grid min-w-[260px] gap-1 rounded bg-white p-3 text-sm"><span>Subtotal: C$ {money(preview.subtotal)}</span><span>Descuento: C$ {money(preview.descuento)}</span><span>Base: C$ {money(preview.base)}</span><span>IVA: C$ {money(preview.monto_iva)}</span><span>IR: C$ {money(preview.monto_ir)}</span><b>TOTAL: C$ {money(preview.total)}</b></div> : null}<button type="button" disabled={saving} onClick={() => void submitSale()} className="rounded bg-emerald-700 px-4 py-2 text-sm font-bold text-white">{saving ? "Registrando..." : "Confirmar venta"}</button></div></section> : null}
+    {quickClientOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-lg rounded bg-[#e9eef1] p-5"><h2 className="text-xl font-bold">Registrar cliente</h2><div className="mt-3 grid gap-2 sm:grid-cols-2">{(["nombre", "ruc", "telefono", "correo", "direccion"] as const).map((key) => <input key={key} aria-label={key} value={quickClient[key]} onChange={(event) => setQuickClient({ ...quickClient, [key]: event.target.value })} placeholder={key} className="h-9 rounded border bg-white px-2 text-sm" />)}</div><div className="mt-4 flex justify-end gap-2"><button type="button" onClick={() => setQuickClientOpen(false)} className="rounded border px-3 py-2 text-sm">Cancelar</button><button type="button" onClick={registerClient} className="rounded bg-[#123852] px-3 py-2 text-sm font-bold text-white">Guardar cliente</button></div></div></div> : null}
+    <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]"><div className="overflow-hidden rounded-md border border-black/10 bg-white"><div className="grid grid-cols-[120px_1fr_120px] gap-3 bg-[#08264d] px-4 py-3 text-sm font-semibold text-white"><span>Número</span><span>Cliente</span><span className="text-right">Total</span></div>{loading ? <p className="p-4 text-sm">Cargando facturas...</p> : facturas.length ? facturas.map((factura) => <button key={factura.id} type="button" onClick={() => void selectInvoice(factura.id)} className={"grid w-full grid-cols-[120px_1fr_120px] gap-3 border-t px-4 py-3 text-left text-sm text-[#08264d] " + (selected?.id === factura.id ? "bg-[#e8edf3]" : "bg-white")}><span className="font-semibold">{factura.numero}</span><span className="truncate">{factura.nombre_cliente} · {factura.origen === "pedido" ? "Pedido " + (factura.pedido_numero ?? "") : "Venta directa"}</span><span className="text-right font-semibold">C$ {money(factura.total)}</span></button>) : <p className="px-4 py-6 text-sm">No hay facturas registradas.</p>}<div className="flex items-center justify-between border-t p-3 text-sm"><button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="rounded bg-[#123852] px-3 py-2 text-white disabled:opacity-40">Anterior</button><span>Página {meta.current_page} de {meta.last_page}</span><button type="button" disabled={page >= meta.last_page} onClick={() => setPage(page + 1)} className="rounded bg-[#123852] px-3 py-2 text-white disabled:opacity-40">Siguiente</button></div></div><aside className="rounded-md border border-black/10 bg-white p-4 text-[#08264d]">{selected ? <div className="space-y-3 text-sm"><h2 className="text-xl font-bold">{selected.numero}</h2><p>{selected.nombre_cliente}</p><p>Origen: {selected.origen === "pedido" ? "Pedido " + (selected.pedido_numero ?? "—") : "Venta directa"}</p><p>Fecha: {selected.fecha}</p><p>Canal: {selected.canal ?? "—"} · Método: {selected.metodo_pago ?? "—"}</p>{selected.detalles?.map((detail) => <div key={detail.id} className="rounded bg-[#f2f5f8] p-3"><b>{detail.hamaca_nombre ?? "Producto"}</b><p>{detail.cantidad} × C$ {money(detail.precio_unitario)} = C$ {money(detail.subtotal)}</p>{detail.colores?.length ? <p>{detail.colores.join(" / ")}</p> : null}{detail.servicios?.length ? <div><p>Servicios del producto</p>{detail.servicios.map((service) => <p key={service.id}>{service.nombre} · C$ {money(service.subtotal)}</p>)}</div> : null}</div>)}{selected.servicios?.map((service) => <div key={service.id} className="rounded bg-[#f2f5f8] p-3">Servicio: {service.nombre}<br />C$ {money(service.subtotal)}</div>)}<div className="border-t pt-3"><p>Subtotal: C$ {money(selected.subtotal)}</p><p>Descuento: C$ {money(selected.descuento)}</p><p>IVA: C$ {money(selected.monto_iva)}</p><p>IR: C$ {money(selected.monto_ir)}</p><b>TOTAL: C$ {money(selected.total)}</b></div></div> : <p className="text-sm">Seleccioná una factura.</p>}</aside></section>
+  </div></SectionPage>;
 }
