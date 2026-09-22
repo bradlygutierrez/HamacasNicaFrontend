@@ -12,6 +12,8 @@ test('proforma pages and editor use backend pricing and no inventory mutations',
   assert.match(list, /proformas\?/);
   assert.match(editor, /POST.*proformas\/calcular|\/proformas\/calcular/);
   assert.match(editor, /proformas\/productos/);
+  assert.match(editor, /hamaca_variante_id: line\.product\.id/);
+  assert.match(editor, /productLabel/);
   assert.match(editor, /selectedClientId/);
   assert.match(editor, /commissionRate/);
   assert.match(editor, /materiales_agrupados/);

@@ -94,6 +94,8 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(list, /variante\?\.nombre/);
   assert.match(list, /variante\?\.colores/);
   assert.match(list, /source_variant_id/);
+  assert.match(list, /hamaca_id=\$\{hamacaId\}&per_page=100/);
+  assert.match(list, /Versiones y costos estimados de producción por variante/);
   assert.match(list, /const hasActive = Boolean\(item\.receta_activa\)/);
   assert.match(list, /const hasDraft = Boolean\(item\.receta_borrador\)/);
   assert.match(list, /uiState\.statusLabel\}/);
