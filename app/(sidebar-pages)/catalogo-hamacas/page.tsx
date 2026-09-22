@@ -57,6 +57,12 @@ type Hamaca = {
   inventario?: Inventario[];
 };
 
+type FormulaSummary = {
+  id: number;
+  receta_activa?: { version: number } | null;
+  receta_borrador?: { version: number } | null;
+};
+
 type AvailabilityFilter = "todas" | "disponibles" | "agotadas";
 
 const BACKEND_URL =
@@ -88,6 +94,7 @@ export default function CatalogoHamacasPage() {
   const [availabilityFilter, setAvailabilityFilter] =
     useState<AvailabilityFilter>("todas");
   const [loading, setLoading] = useState(true);
+  const [formulaByHamaca, setFormulaByHamaca] = useState<Record<number, FormulaSummary>>({});
 
   const [hamacaModalOpen, setHamacaModalOpen] = useState(false);
   const [selectedHamacaToEdit, setSelectedHamacaToEdit] =
@@ -105,10 +112,12 @@ export default function CatalogoHamacasPage() {
     setLoading(true);
 
     try {
-      const response = await apiFetch("/hamacas/detalles");
+      const [response, formulaResponse] = await Promise.all([apiFetch("/hamacas/detalles"), apiFetch("/formulas?per_page=100")]);
       const data = await response.json();
+      const formulaData = await formulaResponse.json().catch(() => null);
 
       setHamacas(data.data ?? []);
+      setFormulaByHamaca(Object.fromEntries((Array.isArray(formulaData?.data) ? formulaData.data : []).map((item: FormulaSummary) => [item.id, item])));
     } catch (error) {
       console.error("Error cargando catálogo:", error);
       toast.error("No se pudo cargar el catálogo.");
@@ -273,6 +282,10 @@ export default function CatalogoHamacasPage() {
             ubicaciones={item.ubicaciones}
             propietarios={item.propietarios}
             imageUrls={item.imageUrls}
+            formulaStatus={formulaByHamaca[item.hamacaId]?.receta_borrador ? "Borrador" : formulaByHamaca[item.hamacaId]?.receta_activa ? "Activa" : "Sin fórmula"}
+            formulaVersion={formulaByHamaca[item.hamacaId]?.receta_borrador?.version ?? formulaByHamaca[item.hamacaId]?.receta_activa?.version}
+            formulaActionLabel={formulaByHamaca[item.hamacaId]?.receta_borrador ? "Continuar fórmula" : formulaByHamaca[item.hamacaId]?.receta_activa ? "Ver fórmula" : "Configurar fórmula"}
+            onFormulaAction={() => router.push(`/formulas/${item.hamacaId}`)}
             onEdit={() => {
               setSelectedHamacaToEdit(item.hamaca);
               setHamacaModalOpen(true);
@@ -299,7 +312,14 @@ export default function CatalogoHamacasPage() {
           setHamacaModalOpen(false);
           setSelectedHamacaToEdit(null);
         }}
-        onSuccess={loadData}
+        onSuccess={(createdHamacaId) => {
+          void loadData();
+          if (createdHamacaId) {
+            toast.info("Modelo creado. Configurar fórmula ahora", {
+              onClick: () => router.push(`/formulas/${createdHamacaId}`),
+            });
+          }
+        }}
         hamacaToEdit={selectedHamacaToEdit}
       />
 

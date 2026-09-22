@@ -3,8 +3,57 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getFormulaUiState } from '../app/_lib/formula-ui.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+test('formula UI maps the four recipe states to explicit labels and actions', () => {
+  assert.deepEqual(getFormulaUiState({ hasActive: false, hasDraft: false, canCreate: true }), {
+    statusLabel: 'Sin fórmula',
+    canContinue: false,
+    canView: false,
+    canCreate: true,
+    canCreateVersion: false,
+  });
+  assert.deepEqual(getFormulaUiState({ hasActive: false, hasDraft: true, canCreate: true }), {
+    statusLabel: 'Borrador',
+    canContinue: true,
+    canView: false,
+    canCreate: false,
+    canCreateVersion: false,
+  });
+  assert.deepEqual(getFormulaUiState({ hasActive: true, hasDraft: false, canCreate: true }), {
+    statusLabel: 'Activa',
+    canContinue: false,
+    canView: true,
+    canCreate: false,
+    canCreateVersion: true,
+  });
+  assert.deepEqual(getFormulaUiState({ hasActive: true, hasDraft: true, canCreate: true }), {
+    statusLabel: 'Activa + borrador',
+    canContinue: true,
+    canView: false,
+    canCreate: false,
+    canCreateVersion: false,
+  });
+});
+
+test('formula UI is read-only when creation is not allowed', () => {
+  assert.deepEqual(getFormulaUiState({ hasActive: false, hasDraft: false, canCreate: false }), {
+    statusLabel: 'Sin fórmula',
+    canContinue: false,
+    canView: false,
+    canCreate: false,
+    canCreateVersion: false,
+  });
+  assert.deepEqual(getFormulaUiState({ hasActive: true, hasDraft: false, canCreate: false }), {
+    statusLabel: 'Activa',
+    canContinue: false,
+    canView: true,
+    canCreate: false,
+    canCreateVersion: false,
+  });
+});
 
 test('formula pages use versioning, cost and service formula endpoints', () => {
   const list = readFileSync(resolve(root, 'app/(sidebar-pages)/formulas/page.tsx'), 'utf8');
@@ -13,10 +62,53 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   const selector = readFileSync(resolve(root, 'app/_components/async-catalog-selector.tsx'), 'utf8');
 
   assert.match(list, /\/formulas/);
-  assert.doesNotMatch(list, /\/hamacas\/\$\{.*\}\/recetas/);
+  assert.match(list, /import \{ useCatalogCapabilities \} from "@\/app\/_components\/catalog-permissions-provider"/);
+  assert.match(list, /const \{ canCreate \} = useCatalogCapabilities\("\/formulas"\)/);
+  assert.match(list, /import \{ getFormulaUiState, type FormulaUiState \} from "@\/app\/_lib\/formula-ui"/);
+  assert.match(list, /getFormulaUiState\(\{ hasActive, hasDraft, canCreate \}\)/);
+  assert.match(list, /uiState\.canCreateVersion/);
+  assert.doesNotMatch(list, /apiFetch\(`\/hamacas\/\$\{item\.id\}\/recetas`\)/);
+  assert.match(list, /apiFetch\(`\/hamacas\/\$\{item\.id\}\/recetas`, \{ method: "POST"/);
+  assert.match(list, /const hasActive = Boolean\(item\.receta_activa\)/);
+  assert.match(list, /const hasDraft = Boolean\(item\.receta_borrador\)/);
+  assert.match(list, /uiState\.statusLabel\}/);
+  assert.match(list, /Activa v\{item\.receta_activa\?\.version\}/);
+  assert.match(list, /Borrador v\{item\.receta_borrador\?\.version\}/);
+  assert.match(list, /uiState\.canCreate \? <button[^>]+>[\s\S]*Crear fórmula/);
+  assert.match(list, /uiState\.canContinue \? <Link[^>]+>\{uiState\.statusLabel === "Activa \+ borrador" \? "Continuar borrador" : "Continuar fórmula"\}/);
+  assert.match(list, /uiState\.canView \? <><Link[^>]+>Ver fórmula/);
+  assert.match(list, /uiState\.canView \? <><Link[^>]+>Ver fórmula[\s\S]*uiState\.canCreateVersion \? <button[^>]+>[\s\S]*Nueva versión/);
+  assert.match(list, /POST/);
+  assert.match(list, /router\.push\(`\/formulas\/\$\{item\.id\}`\)/);
+  assert.match(list, /response\.ok/);
+  assert.match(list, /useRef/);
+  assert.match(list, /mutationInFlight/);
+  assert.match(list, /if \(mutationInFlight\.current\) return/);
+  assert.match(list, /role="alert"/);
+  assert.match(list, /aria-live="assertive"/);
+  assert.match(list, /aria-hidden="true"/);
+  assert.match(list, /htmlFor="formula-search"/);
+  assert.match(list, /id="formula-search"/);
+  assert.match(list, /Record<string, string \| string\[]>/);
+  assert.match(list, /Array\.isArray\(fieldError\)/);
   assert.match(editor, /\/recetas/);
   assert.match(editor, /\/costos/);
   assert.match(editor, /\/activar/);
+  assert.match(editor, /Crear fórmula de producción/);
+  assert.match(editor, /Definí los materiales y procesos necesarios/);
+  assert.match(editor, /1\. Materiales/);
+  assert.match(editor, /2\. Mano de obra/);
+  assert.match(editor, /3\. Resumen/);
+  assert.match(editor, /Cantidad por hamaca/);
+  assert.match(editor, /Merma %/);
+  assert.match(editor, /Costo por hamaca/);
+  assert.match(editor, /Guardar borrador/);
+  assert.match(editor, /Activar fórmula/);
+  assert.match(editor, /Descartar borrador/);
+  assert.match(editor, /¿Activar esta fórmula\?/);
+  assert.match(editor, /Fórmula activada correctamente\./);
+  assert.doesNotMatch(editor, /placeholder="Costo"/);
+  assert.doesNotMatch(editor, />Crear versión</);
   assert.match(editor, /material\?\.nombre/);
   assert.match(editor, /proceso\?\.nombre/);
   assert.match(editor, /Costo estimado con precios actuales/);
@@ -25,6 +117,18 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(service, /\/costos/);
   assert.match(selector, /search/);
   assert.match(selector, /per_page=20/);
+});
+
+test('formula list uses the helper state for status and actions', () => {
+  const list = readFileSync(resolve(root, 'app/(sidebar-pages)/formulas/page.tsx'), 'utf8');
+
+  assert.match(list, /uiState\.statusLabel/);
+  assert.match(list, /uiState\.canContinue/);
+  assert.match(list, /uiState\.canView/);
+  assert.match(list, /uiState\.canCreate \? <button/);
+  assert.match(list, /uiState\.canCreateVersion/);
+  assert.match(list, /!hasActive && !hasDraft/);
+  assert.match(list, /hasActive && hasDraft/);
 });
 
 test('formula UI gates mutations and does not introduce phase five links', () => {

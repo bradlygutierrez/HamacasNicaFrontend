@@ -40,7 +40,7 @@ type Mode = "crear" | "editar";
 type HamacaModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (createdHamacaId?: number) => void;
   hamacaToEdit?: Hamaca | null;
 };
 
@@ -282,7 +282,7 @@ export default function HamacaModal({
           ? "Modelo creado correctamente."
           : "Modelo actualizado correctamente."
       );
-      onSuccess();
+      onSuccess(mode === "crear" ? Number(data?.data?.id) : undefined);
       onClose();
     } catch (err) {
       console.error("Error guardando modelo:", err);
