@@ -20,6 +20,22 @@ test("ventas POS exposes the direct sale flow and permission gate", () => {
   assert.match(source, /value="pos"/);
   assert.match(source, /value="ecommerce"/);
   assert.match(source, /canal: channel/);
+  assert.match(source, /role="dialog"/);
+  assert.match(source, /aria-modal="true"/);
+  assert.match(source, /aria-label="Cerrar nueva venta"/);
+  assert.match(source, /max-w-6xl/);
+  assert.match(source, /overflow-y-auto/);
+  assert.match(source, /\{error \? <p role="alert"/);
+  assert.match(source, /document\.body\.style\.overflow = "hidden"/);
+  assert.match(source, /document\.body\.style\.overflow = previousOverflow/);
+  assert.match(source, /closeForm\(\); setItems\(\[\]\)/);
+  assert.match(source, /role="dialog" aria-modal="true" aria-labelledby="register-client-title"/);
+  assert.match(source, /id="register-client-title"/);
+  assert.match(source, /if \(quickClientOpen\) \{ setError\(""\); setQuickClientOpen\(false\); \} else closeForm\(\)/);
+  assert.match(source, /onClick=\{\(\) => \{ setError\(""\); setQuickClientOpen\(true\); \}\}/);
+  assert.match(source, /<h2 id="register-client-title"[\s\S]*\{error \? <p role="alert"/);
+  assert.match(source, /setManualClient\(client\); setError\(""\); setQuickClientOpen\(false\)/);
+  assert.match(source, /onClick=\{\(\) => \{ setError\(""\); setQuickClientOpen\(false\); \}\} className="rounded border/);
 });
 
 test("ventas keeps invoice filters, pagination, detail loading and client modes", () => {
@@ -37,6 +53,15 @@ test("ventas keeps invoice filters, pagination, detail loading and client modes"
   assert.match(source, /Correo cliente/);
   assert.match(source, /Dirección cliente/);
   assert.match(source, /updateManualClient/);
+  assert.match(source, /Método de pago/);
+  assert.match(source, /Descuento \(C\$\)/);
+  assert.match(source, /Impuestos/);
+  assert.match(source, /Agrega el impuesto configurado/);
+  assert.match(source, /Aplica la retención configurada/);
+  assert.match(source, /isAdded/);
+  assert.match(source, /\+ Agregar/);
+  assert.match(source, /✓ Agregado/);
+  assert.match(source, /Cantidad/);
 });
 
 test("ventas invalidates stale previews and requires a current calculation", () => {
