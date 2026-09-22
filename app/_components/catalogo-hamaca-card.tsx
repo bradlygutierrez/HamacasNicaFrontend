@@ -16,9 +16,10 @@ type CatalogoHamacaCardProps = {
   onEdit?: () => void;
   onViewPhotos?: () => void;
   onViewInventory?: () => void;
-  formulaStatus?: "Sin fórmula" | "Borrador" | "Activa";
-  formulaVersion?: number;
+  formulaActiveVersion?: number;
+  formulaDraftVersion?: number;
   formulaActionLabel?: string;
+  showFormulaAction?: boolean;
   onFormulaAction?: () => void;
 };
 
@@ -35,9 +36,10 @@ export default function CatalogoHamacaCard({
   onEdit,
   onViewPhotos,
   onViewInventory,
-  formulaStatus = "Sin fórmula",
-  formulaVersion,
+  formulaActiveVersion,
+  formulaDraftVersion,
   formulaActionLabel = "Configurar fórmula",
+  showFormulaAction = false,
   onFormulaAction,
 }: CatalogoHamacaCardProps) {
   const [imageError, setImageError] = useState(false);
@@ -106,11 +108,15 @@ export default function CatalogoHamacaCard({
         <div>
           <p className="mb-1 text-lg font-bold text-[#155b72]">Fórmula de producción:</p>
           <div className="rounded-[8px] bg-[#155b72] px-4 py-2 text-white">
-            {formulaStatus}{formulaVersion ? ` v${formulaVersion}` : ""}
+            {formulaActiveVersion ? <div>Activa v{formulaActiveVersion}</div> : null}
+            {formulaDraftVersion ? <div>Borrador v{formulaDraftVersion}</div> : null}
+            {!formulaActiveVersion && !formulaDraftVersion ? "Sin fórmula" : null}
           </div>
-          <button type="button" onClick={onFormulaAction} className="mt-2 w-full rounded-[8px] bg-[#123852] px-3 py-2 font-semibold text-white shadow">
-            {formulaActionLabel}
-          </button>
+          {showFormulaAction ? (
+            <button type="button" onClick={onFormulaAction} className="mt-2 w-full rounded-[8px] bg-[#123852] px-3 py-2 font-semibold text-white shadow">
+              {formulaActionLabel}
+            </button>
+          ) : null}
         </div>
 
         <div>

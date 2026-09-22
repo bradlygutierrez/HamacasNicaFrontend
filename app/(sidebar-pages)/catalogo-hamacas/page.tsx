@@ -4,6 +4,7 @@ import CatalogoHamacaCard from "@/app/_components/catalogo-hamaca-card";
 import FotoVarianteModal from "@/app/_components/foto-variante-modal";
 import HamacaModal from "@/app/_components/hamaca-modal";
 import VarianteModal from "@/app/_components/variante-modal";
+import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 import { apiFetch } from "@/app/_lib/api";
 import { Layers, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -88,6 +89,8 @@ function uniqueValues(values: Array<string | null | undefined>): string[] {
 
 export default function CatalogoHamacasPage() {
   const router = useRouter();
+  const { canCreate: canCreateFormula, canView: canViewFormula } =
+    useCatalogCapabilities("/formulas");
 
   const [hamacas, setHamacas] = useState<Hamaca[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -282,9 +285,30 @@ export default function CatalogoHamacasPage() {
             ubicaciones={item.ubicaciones}
             propietarios={item.propietarios}
             imageUrls={item.imageUrls}
-            formulaStatus={formulaByHamaca[item.hamacaId]?.receta_borrador ? "Borrador" : formulaByHamaca[item.hamacaId]?.receta_activa ? "Activa" : "Sin fórmula"}
-            formulaVersion={formulaByHamaca[item.hamacaId]?.receta_borrador?.version ?? formulaByHamaca[item.hamacaId]?.receta_activa?.version}
-            formulaActionLabel={formulaByHamaca[item.hamacaId]?.receta_borrador ? "Continuar fórmula" : formulaByHamaca[item.hamacaId]?.receta_activa ? "Ver fórmula" : "Configurar fórmula"}
+            formulaActiveVersion={formulaByHamaca[item.hamacaId]?.receta_activa?.version}
+            formulaDraftVersion={formulaByHamaca[item.hamacaId]?.receta_borrador?.version}
+            formulaActionLabel={(() => {
+              const formula = formulaByHamaca[item.hamacaId];
+              const hasActive = Boolean(formula?.receta_activa);
+              const hasDraft = Boolean(formula?.receta_borrador);
+
+              if (hasActive && hasDraft) {
+                return canCreateFormula ? "Continuar borrador" : "Ver fórmula / borrador";
+              }
+
+              if (hasDraft) {
+                return canCreateFormula ? "Continuar fórmula" : "Ver borrador";
+              }
+
+              if (hasActive) return "Ver fórmula";
+              return "Configurar fórmula";
+            })()}
+            showFormulaAction={Boolean(
+              canViewFormula &&
+                (canCreateFormula ||
+                  formulaByHamaca[item.hamacaId]?.receta_activa ||
+                  formulaByHamaca[item.hamacaId]?.receta_borrador)
+            )}
             onFormulaAction={() => router.push(`/formulas/${item.hamacaId}`)}
             onEdit={() => {
               setSelectedHamacaToEdit(item.hamaca);
