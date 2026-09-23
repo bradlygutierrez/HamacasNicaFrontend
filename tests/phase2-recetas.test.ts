@@ -90,7 +90,12 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(list, /getFormulaUiState\(\{ hasActive, hasDraft, canCreate, canEdit \}\)/);
   assert.match(list, /uiState\.canCreateVersion/);
   assert.doesNotMatch(list, /apiFetch\(`\/hamacas\/\$\{item\.id\}\/recetas`\)/);
-  assert.match(list, /apiFetch\(`\/hamacas\/\$\{item\.id\}\/recetas`, \{ method: "POST"/);
+  assert.match(list, /apiFetch\(`\/hamaca-variantes\/\$\{item\.id\}\/recetas`, \{ method: "POST"/);
+  assert.match(list, /variante\?\.nombre/);
+  assert.match(list, /variante\?\.colores/);
+  assert.match(list, /source_variant_id/);
+  assert.match(list, /hamaca_id=\$\{hamacaId\}&per_page=100/);
+  assert.match(list, /Versiones y costos estimados de producción por variante/);
   assert.match(list, /const hasActive = Boolean\(item\.receta_activa\)/);
   assert.match(list, /const hasDraft = Boolean\(item\.receta_borrador\)/);
   assert.match(list, /uiState\.statusLabel\}/);
@@ -114,7 +119,8 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(list, /id="formula-search"/);
   assert.match(list, /Record<string, string \| string\[]>/);
   assert.match(list, /Array\.isArray\(fieldError\)/);
-  assert.match(editor, /\/recetas/);
+  assert.match(editor, /\/hamaca-variantes\/\$\{hamacaId\}\/recetas/);
+  assert.match(editor, /Variante:/);
   assert.match(editor, /\/costos/);
   assert.match(editor, /\/activar/);
   assert.match(editor, /Crear fórmula de producción/);
