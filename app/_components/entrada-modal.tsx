@@ -11,17 +11,10 @@ type Color = {
   nombre: string;
 };
 
-type Hamaca = {
-  id: number;
-  nombre: string;
-  precio: string | number;
-};
-
-type Variante = {
+type ProductoHamaca = {
   id: number;
   nombre: string | null;
-  hamaca_id: number;
-  hamaca?: Hamaca | null;
+  precio: string | number;
   colores: Color[];
   fotos?: Array<{ id: number; ruta: string }>;
 };
@@ -37,7 +30,7 @@ type Ubicacion = {
 };
 
 type FormData = {
-  hamaca_variante_id: string;
+  hamaca_id: string;
   usuario_id: string;
   cantidad: string;
   fecha: string;
@@ -51,7 +44,7 @@ type Props = {
 };
 
 const EMPTY_FORM: FormData = {
-  hamaca_variante_id: "",
+  hamaca_id: "",
   usuario_id: "",
   cantidad: "",
   fecha: todayLocalDate(),
@@ -59,7 +52,7 @@ const EMPTY_FORM: FormData = {
 };
 
 export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
-  const [variantes, setVariantes] = useState<Variante[]>([]);
+  const [hamacas, setHamacas] = useState<ProductoHamaca[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [ubicaciones, setUbicaciones] = useState<Ubicacion[]>([]);
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
@@ -72,17 +65,17 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
     async function loadCatalogos() {
       try {
-        const [variantesRes, ubicacionesRes, meRes] = await Promise.all([
-          apiFetch("/hamaca-variantes"),
+        const [hamacasRes, ubicacionesRes, meRes] = await Promise.all([
+          apiFetch("/hamacas?per_page=100"),
           apiFetch("/ubicaciones"),
           apiFetch("/me"),
         ]);
 
-        const variantesData = await variantesRes.json();
+        const hamacasData = await hamacasRes.json();
         const ubicacionesData = await ubicacionesRes.json();
         const meData = await meRes.json();
 
-        setVariantes(variantesData.data ?? []);
+        setHamacas(hamacasData.data ?? []);
         setUbicaciones(ubicacionesData.data ?? []);
 
         let loadedUsers: Usuario[] = [];
@@ -123,21 +116,17 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
     loadCatalogos();
   }, [isOpen]);
 
-  const filteredVariantes = useMemo(() => {
+  const filteredHamacas = useMemo(() => {
     const query = searchTerm.toLowerCase().trim();
 
-    if (!query) return variantes;
+    if (!query) return hamacas;
 
-    return variantes.filter((variante) => {
-      const text = `
-        ${variante.hamaca?.nombre ?? ""}
-        ${variante.nombre ?? ""}
-        ${variante.colores.map((color) => color.nombre).join(" ")}
-      `.toLowerCase();
+    return hamacas.filter((hamaca) => {
+      const text = `${hamaca.nombre ?? ""} ${hamaca.colores.map((color) => color.nombre).join(" ")}`.toLowerCase();
 
       return text.includes(query);
     });
-  }, [searchTerm, variantes]);
+  }, [searchTerm, hamacas]);
 
   if (!isOpen) return null;
 
@@ -155,7 +144,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
   }
 
   function validate() {
-    if (!form.hamaca_variante_id) return "Selecciona una variante.";
+    if (!form.hamaca_id) return "Selecciona una hamaca.";
     if (!form.usuario_id) return "Selecciona un usuario.";
     if (!form.cantidad || Number(form.cantidad) < 1)
       return "La cantidad debe ser mayor a 0.";
@@ -196,7 +185,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           buildEntradaPayload({
-            hamacaVarianteId: Number(form.hamaca_variante_id),
+            hamacaId: Number(form.hamaca_id),
             usuarioId: Number(form.usuario_id),
             ubicacionId: Number(form.ubicacion_id),
             cantidad: Number(form.cantidad),
@@ -258,7 +247,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
         <div className="grid max-h-[80vh] gap-4 overflow-y-auto px-6 py-5 md:grid-cols-2">
           <div className="md:col-span-2">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Buscar variante
+              Buscar hamaca
             </label>
 
             <input
@@ -272,23 +261,20 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
           <div className="md:col-span-2">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Variante <span className="text-red-500">*</span>
+              Producto <span className="text-red-500">*</span>
             </label>
 
             <select
-              name="hamaca_variante_id"
-              value={form.hamaca_variante_id}
+              name="hamaca_id"
+              value={form.hamaca_id}
               onChange={handleChange}
               className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
-              <option value="">Seleccionar variante...</option>
+              <option value="">Seleccionar hamaca...</option>
 
-              {filteredVariantes.map((variante) => (
-                <option key={variante.id} value={variante.id}>
-                  {variante.hamaca?.nombre ?? "Hamaca"} -{" "}
-                  {variante.colores.length > 0
-                    ? variante.colores.map((color) => color.nombre).join(", ")
-                    : "Sin colores"}
+              {filteredHamacas.map((hamaca) => (
+                <option key={hamaca.id} value={hamaca.id}>
+                  {hamaca.nombre} · {hamaca.colores.map((color) => color.nombre).join(" / ") || "Sin colores"}
                 </option>
               ))}
             </select>

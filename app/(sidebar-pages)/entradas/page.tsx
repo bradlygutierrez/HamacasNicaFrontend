@@ -54,7 +54,7 @@ export default function EntradasPage() {
   const loadData = useCallback(async () => {
     const [movimientosRes, inventariosRes] = await Promise.all([
       apiFetch('/movimientos'),
-      apiFetch('/inventario-hamacas'),
+      apiFetch('/inventario-hamacas?per_page=100'),
     ]);
 
     const movimientosData = await movimientosRes.json();

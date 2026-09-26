@@ -12,3 +12,8 @@ test('inventory cards expose relocation action wired to transfer modal', () => {
   assert.match(page, /setSelectedTransferInventarioId\(item\.id\)/);
   assert.match(page, /initialInventarioId=\{selectedTransferInventarioId\}/);
 });
+
+test('inventory view requests up to 100 rows instead of hiding later pages', () => {
+  const page = readFileSync('app/(sidebar-pages)/inventario-hamacas/page.tsx', 'utf8');
+  assert.match(page, /inventario-hamacas\?per_page=100/);
+});

@@ -21,6 +21,8 @@ test("pedido frontend uses conversion, billing and no PDF actions", () => {
   assert.match(listing, /per_page=15/);
   assert.match(detail, /Facturar pedido/);
   assert.match(detail, /facturar/);
+  assert.match(detail, /pedido_detalle_id: line\.id/);
+  assert.doesNotMatch(detail, /hamaca-variantes|hamaca_variante_id|variant/i);
   assert.match(detail, /ubicaciones/);
   assert.match(detail, /usuario_inventario_id/);
   assert.match(detail, /\/usuarios\?per_page=100/);

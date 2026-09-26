@@ -1,5 +1,5 @@
 export type EntradaPayload = {
-  hamaca_variante_id: number;
+  hamaca_id: number;
   usuario_id: number;
   ubicacion_id: number;
   cantidad: number;
@@ -7,7 +7,7 @@ export type EntradaPayload = {
 };
 
 type EntradaInput = {
-  hamacaVarianteId: number;
+  hamacaId: number;
   usuarioId: number;
   ubicacionId: number;
   cantidad: number;
@@ -15,14 +15,14 @@ type EntradaInput = {
 };
 
 export function buildEntradaPayload({
-  hamacaVarianteId,
+  hamacaId,
   usuarioId,
   ubicacionId,
   cantidad,
   fecha,
 }: EntradaInput): EntradaPayload {
   const payload: EntradaPayload = {
-    hamaca_variante_id: hamacaVarianteId,
+    hamaca_id: hamacaId,
     usuario_id: usuarioId,
     ubicacion_id: ubicacionId,
     cantidad,
