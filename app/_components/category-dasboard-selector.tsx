@@ -20,7 +20,7 @@ export default function CategoryDasboardSelector({
                 text-center px-3 py-2 w-1/2 md:w-[30%] rounded-[7px] text-base md:text-xl font-medium border-2 cursor-pointer transition-all
                 ${isSelected
                     ? "bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)]"
-                    : "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)] border-gray-300 hover:bg-gray-200"}
+                    : "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)] border-gray-300 hover:bg-gray-200 hover:text-[#1f4e5f]"}
             `}
         >
             {categoryName}

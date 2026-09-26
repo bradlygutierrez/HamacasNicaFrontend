@@ -187,6 +187,7 @@ export default function Dashboard() {
                             cardTitle="Stock Mínimo"
                             cardScore={categoryStats.stockMin.toString()}
                             icon={TrendingDown}
+                            cardTitleClassName="text-black"
                         />
                         <DashboardCardBlue
                             cardTitle="Stock Máximo"

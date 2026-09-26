@@ -6,12 +6,13 @@ interface dashboardCardProps {
     cardTitle: string;
     cardScore: string;
     icon: LucideIcon;
+    cardTitleClassName?: string;
 }
 
-export default function DashboardCardBlue({ cardTitle, cardScore, icon: Icon }: dashboardCardProps) {
+export default function DashboardCardBlue({ cardTitle, cardScore, icon: Icon, cardTitleClassName = "" }: dashboardCardProps) {
     return (
         <div className="space-y-2">
-            <h2 className="text-left text-sm font-semibold text-[var(--color-foreground-secondary)] md:text-base">
+            <h2 className={`text-left text-sm font-semibold text-[var(--color-foreground-secondary)] md:text-base ${cardTitleClassName}`}>
                 {cardTitle}
             </h2>
 
