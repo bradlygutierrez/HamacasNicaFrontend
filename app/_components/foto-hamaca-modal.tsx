@@ -2,7 +2,7 @@
 
 import { apiFetch } from "@/app/_lib/api";
 import {
-  buildVarianteFotoPayload,
+  buildHamacaFotoPayload,
   normalizePhotoRoutes,
 } from "@/app/_lib/hamacas";
 import { Camera, Copy, Download, Plus, Trash, Upload } from "lucide-react";
@@ -14,12 +14,12 @@ type Foto = {
   ruta: string;
 };
 
-type FotoVarianteModalProps = {
+type FotoHamacaModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   hamacaNombre: string;
-  varianteId: number | null;
+  hamacaId: number | null;
   initialFotos?: Foto[];
 };
 
@@ -52,14 +52,14 @@ function openImage(url: string) {
   link.remove();
 }
 
-export default function FotoVarianteModal({
+export default function FotoHamacaModal({
   isOpen,
   onClose,
   onSuccess,
   hamacaNombre,
-  varianteId,
+  hamacaId,
   initialFotos = [],
-}: FotoVarianteModalProps) {
+}: FotoHamacaModalProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [copiedFotoId, setCopiedFotoId] = useState<number | null>(null);
@@ -212,11 +212,11 @@ export default function FotoVarianteModal({
   }
 }
 
-  async function uploadFile(file: File, selectedVarianteId: number) {
+  async function uploadFile(file: File, selectedHamacaId: number) {
     const formData = new FormData();
 
     formData.append("foto", file);
-    formData.append("hamaca_variante_ids[]", String(selectedVarianteId));
+    formData.append("hamaca_ids[]", String(selectedHamacaId));
 
     const response = await apiFetch("/fotos", {
       method: "POST",
@@ -229,13 +229,13 @@ export default function FotoVarianteModal({
     }
   }
 
-  async function uploadRoute(route: string, selectedVarianteId: number) {
+  async function uploadRoute(route: string, selectedHamacaId: number) {
     const response = await apiFetch("/fotos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(
-        buildVarianteFotoPayload({
-          hamacaVarianteId: selectedVarianteId,
+        buildHamacaFotoPayload({
+          hamacaId: selectedHamacaId,
           ruta: route,
         })
       ),
@@ -248,13 +248,13 @@ export default function FotoVarianteModal({
   }
 
   async function handleSubmit() {
-    if (varianteId === null) {
-      setError("No se encontró la variante.");
-      toast.error("No se encontró la variante.");
+    if (hamacaId === null) {
+      setError("No se encontró la hamaca.");
+      toast.error("No se encontró la hamaca.");
       return;
     }
 
-    const selectedVarianteId = varianteId;
+    const selectedHamacaId = hamacaId;
     const routes = normalizePhotoRoutes(photoRoutes);
 
     if (routes.length === 0 && selectedFiles.length === 0) {
@@ -268,8 +268,8 @@ export default function FotoVarianteModal({
 
     try {
       await Promise.all([
-        ...selectedFiles.map((file) => uploadFile(file, selectedVarianteId)),
-        ...routes.map((route) => uploadRoute(route, selectedVarianteId)),
+        ...selectedFiles.map((file) => uploadFile(file, selectedHamacaId)),
+        ...routes.map((route) => uploadRoute(route, selectedHamacaId)),
       ]);
 
       toast.success("Fotos guardadas correctamente.");

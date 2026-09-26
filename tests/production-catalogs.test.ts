@@ -14,7 +14,7 @@ test('production catalog pages use the new API resources', () => {
 
   assert.match(materials, /endpoint="\/materiales"/);
   assert.match(processes, /endpoint="\/procesos-produccion"/);
-  assert.match(processes, /El costo de este proceso se define por modelo dentro de la fórmula de producción/);
+  assert.match(processes, /El costo de este proceso se define por hamaca dentro de la fórmula de producción/);
   assert.match(services, /endpoint="\/servicios-adicionales"/);
 });
 

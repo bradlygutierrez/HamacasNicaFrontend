@@ -5,7 +5,7 @@ import { apiFetch } from "@/app/_lib/api";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import SalidaModal from "@/app/_components/salida-modal";
-import FotoVarianteModal from "@/app/_components/foto-variante-modal";
+import FotoHamacaModal from "@/app/_components/foto-hamaca-modal";
 import TransferenciaModal from "@/app/_components/transferencia-modal";
 
 type Color = {
@@ -16,13 +16,6 @@ type Color = {
 type Foto = {
     id: number;
     ruta: string;
-};
-
-type Variante = {
-    id: number;
-    nombre: string | null;
-    colores: Color[];
-    fotos: Foto[];
 };
 
 type Hamaca = {
@@ -39,15 +32,14 @@ type Hamaca = {
         nombre: string;
     } | null;
     fotos?: Foto[];
+    colores?: Color[];
 };
 
 type InventarioHamaca = {
     id: number;
     hamaca_id: number;
-    hamaca_variante_id: number | null;
     cantidad: number;
     hamaca: Hamaca;
-    variante: Variante | null;
     ubicacion: {
         id: number;
         nombre: string;
@@ -87,7 +79,7 @@ export default function InventarioHamacasPage() {
     const [selectedTransferInventarioId, setSelectedTransferInventarioId] = useState<number | null>(null);
     const [fotoModalOpen, setFotoModalOpen] = useState(false);
     const [selectedFotoData, setSelectedFotoData] = useState<{
-        varianteId: number;
+        hamacaId: number;
         hamacaNombre: string;
         fotos: Foto[];
     } | null>(null);
@@ -119,10 +111,7 @@ export default function InventarioHamacasPage() {
         }
 
         return items.filter((item) => {
-            const colores =
-                item.variante?.colores?.map((color) => color.nombre).join(" ") ??
-                item.colores?.map((color) => color.nombre).join(" ") ??
-                "";
+            const colores = item.hamaca?.colores?.map((color) => color.nombre).join(" ") ?? "";
 
             const searchableText = `
         ${item.hamaca?.nombre ?? ""}
@@ -169,14 +158,9 @@ export default function InventarioHamacasPage() {
 
             <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {filteredItems.map((item) => {
-                    const varianteFotos = item.variante?.fotos ?? [];
                     const hamacaFotos = item.hamaca?.fotos ?? [];
-                    const fotos = varianteFotos.length > 0 ? varianteFotos : hamacaFotos;
-
-                    const colores =
-                        item.variante?.colores?.length
-                            ? item.variante.colores.map((color) => color.nombre)
-                            : item.colores.map((color) => color.nombre);
+                    const fotos = hamacaFotos;
+                    const colores = (item.hamaca?.colores ?? []).map((color) => color.nombre);
 
                     return (
                         <InventarioHamacaCard
@@ -189,17 +173,10 @@ export default function InventarioHamacasPage() {
                             precio={item.hamaca?.precio ?? "0.00"}
                             imageUrls={fotos.map((foto) => imageUrl(foto.ruta))}
                             onViewPhotos={() => {
-                                const varianteId = item.hamaca_variante_id ?? item.variante?.id ?? null;
-
-                                if (varianteId === null) {
-                                    console.error("Este inventario no tiene variante asociada:", item);
-                                    return;
-                                }
-
                                 setSelectedFotoData({
-                                    varianteId,
+                                    hamacaId: item.hamaca_id,
                                     hamacaNombre: item.hamaca?.nombre ?? "Sin nombre",
-                                    fotos: item.variante?.fotos ?? item.hamaca?.fotos ?? [],
+                                    fotos: item.hamaca?.fotos ?? [],
                                 });
 
                                 setFotoModalOpen(true);
@@ -217,9 +194,9 @@ export default function InventarioHamacasPage() {
                 })}
             </section>
 
-            <FotoVarianteModal
+            <FotoHamacaModal
                 isOpen={fotoModalOpen}
-                varianteId={selectedFotoData?.varianteId ?? null}
+                hamacaId={selectedFotoData?.hamacaId ?? null}
                 hamacaNombre={selectedFotoData?.hamacaNombre ?? ""}
                 initialFotos={selectedFotoData?.fotos ?? []}
                 onClose={() => {

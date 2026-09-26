@@ -1,7 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/app/_lib/api";
-import { buildHamacaPayload } from "@/app/_lib/hamacas";
+import { buildHamacaPayload, suggestHamacaName } from "@/app/_lib/hamacas";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import { toast } from "react-toastify";
@@ -16,6 +16,8 @@ type Tamano = {
   nombre: string;
 };
 
+type Color = { id: number; nombre: string };
+
 type Hamaca = {
   id: number;
   nombre: string;
@@ -23,6 +25,7 @@ type Hamaca = {
   categoria_id: number;
   tamano_id: number;
   precio: number | string;
+  colores?: Color[];
 };
 
 type HamacaFormData = {
@@ -33,7 +36,7 @@ type HamacaFormData = {
   precio: string;
 };
 
-type FormErrors = Partial<Record<keyof HamacaFormData, string>>;
+type FormErrors = Partial<Record<keyof HamacaFormData | "color_ids", string>>;
 
 type Mode = "crear" | "editar";
 
@@ -62,6 +65,7 @@ export default function HamacaModal({
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [tamanos, setTamanos] = useState<Tamano[]>([]);
+  const [colores, setColores] = useState<Color[]>([]);
   const [hamacas, setHamacas] = useState<Hamaca[]>([]);
 
   const [selectedHamacaId, setSelectedHamacaId] = useState<string>(
@@ -69,6 +73,10 @@ export default function HamacaModal({
   );
 
   const [form, setForm] = useState<HamacaFormData>(EMPTY_FORM);
+  const [selectedColorIds, setSelectedColorIds] = useState<number[]>([]);
+  const [nameWasEdited, setNameWasEdited] = useState(false);
+  const [photoRoutes, setPhotoRoutes] = useState<string[]>([]);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -78,19 +86,22 @@ export default function HamacaModal({
 
     async function loadCatalogos() {
       try {
-        const [catRes, tamRes, hamRes] = await Promise.all([
+        const [catRes, tamRes, hamRes, colorRes] = await Promise.all([
           apiFetch("/categorias"),
           apiFetch("/tamanos"),
           apiFetch("/hamacas"),
+          apiFetch("/colores"),
         ]);
 
         const catData = await catRes.json();
         const tamData = await tamRes.json();
         const hamData = await hamRes.json();
+        const colorData = await colorRes.json();
 
         setCategorias(catData.data ?? []);
         setTamanos(tamData.data ?? []);
         setHamacas(hamData.data ?? []);
+        setColores(colorData.data ?? []);
       } catch (err) {
         console.error("Error cargando catálogos:", err);
         setGeneralError("No se pudieron cargar los datos del formulario.");
@@ -111,6 +122,10 @@ export default function HamacaModal({
       setMode("crear");
       setSelectedHamacaId("");
       setForm(EMPTY_FORM);
+      setSelectedColorIds([]);
+      setNameWasEdited(false);
+      setPhotoRoutes([]);
+      setPhotoFiles([]);
     }
 
     setErrors({});
@@ -125,6 +140,8 @@ export default function HamacaModal({
       tamano_id: String(hamaca.tamano_id),
       precio: String(hamaca.precio),
     });
+    setSelectedColorIds((hamaca.colores ?? []).map((color) => color.id));
+    setNameWasEdited(true);
   }
 
   function handleHamacaSelect(event: ChangeEvent<HTMLSelectElement>) {
@@ -152,6 +169,10 @@ export default function HamacaModal({
     setSelectedHamacaId("");
     setErrors({});
     setGeneralError("");
+    setSelectedColorIds([]);
+    setPhotoRoutes([]);
+    setPhotoFiles([]);
+    setNameWasEdited(false);
   }
 
   function handleChange(
@@ -163,6 +184,7 @@ export default function HamacaModal({
       ...prev,
       [name]: value,
     }));
+    if (name === "nombre") setNameWasEdited(true);
 
     setErrors((prev) => ({
       ...prev,
@@ -172,12 +194,30 @@ export default function HamacaModal({
     setGeneralError("");
   }
 
+  const suggestedName = suggestHamacaName(
+    categorias.find((item) => String(item.id) === form.categoria_id)?.nombre ?? "",
+    tamanos.find((item) => String(item.id) === form.tamano_id)?.nombre ?? "",
+    selectedColorIds.map((id) => colores.find((item) => item.id === id)?.nombre ?? "")
+  );
+
+  useEffect(() => {
+    if (mode !== "crear" || nameWasEdited) return;
+    setForm((current) => ({ ...current, nombre: suggestedName }));
+  }, [mode, nameWasEdited, suggestedName]);
+
+  function toggleColor(colorId: number) {
+    setSelectedColorIds((current) => current.includes(colorId)
+      ? current.filter((id) => id !== colorId)
+      : [...current, colorId]);
+  }
+
   function validate(): boolean {
     const newErrors: FormErrors = {};
+    const name = form.nombre.trim() || suggestedName.trim();
 
-    if (!form.nombre.trim()) {
+    if (!name) {
       newErrors.nombre = "El nombre es obligatorio.";
-    } else if (form.nombre.trim().length > 100) {
+    } else if (name.length > 150) {
       newErrors.nombre = "Máximo 100 caracteres.";
     }
 
@@ -188,6 +228,7 @@ export default function HamacaModal({
     if (!form.tamano_id) {
       newErrors.tamano_id = "Selecciona un tamaño.";
     }
+    if (selectedColorIds.length < 1) newErrors.color_ids = "Selecciona al menos un color.";
 
     const precio = Number.parseFloat(form.precio);
 
@@ -221,8 +262,8 @@ export default function HamacaModal({
     if (!validate()) return;
 
     if (mode === "editar" && !selectedHamacaId) {
-      setGeneralError("Selecciona un modelo para editar.");
-      toast.error("Selecciona un modelo para editar.");
+      setGeneralError("Selecciona un hamaca para editar.");
+      toast.error("Selecciona un hamaca para editar.");
       return;
     }
 
@@ -235,20 +276,30 @@ export default function HamacaModal({
       categoriaId: Number.parseInt(form.categoria_id),
       tamanoId: Number.parseInt(form.tamano_id),
       precio: Number.parseFloat(form.precio),
+      colorIds: selectedColorIds,
+      suggestedName,
     });
+    const requestBody = new FormData();
+    requestBody.append("nombre", payload.nombre);
+    requestBody.append("descripcion", payload.descripcion ?? "");
+    requestBody.append("categoria_id", String(payload.categoria_id));
+    requestBody.append("tamano_id", String(payload.tamano_id));
+    requestBody.append("precio", String(payload.precio));
+    selectedColorIds.forEach((colorId) => requestBody.append("color_ids[]", String(colorId)));
+    photoRoutes.map((route) => route.trim()).filter(Boolean).forEach((route) => requestBody.append("rutas[]", route));
+    photoFiles.forEach((file) => requestBody.append("fotos[]", file));
+    if (mode === "editar") requestBody.append("_method", "PUT");
 
     try {
       const response =
         mode === "crear"
           ? await apiFetch("/hamacas", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
+              body: requestBody,
             })
           : await apiFetch(`/hamacas/${selectedHamacaId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
+              method: "POST",
+              body: requestBody,
             });
 
       const data = await response.json().catch(() => null);
@@ -258,7 +309,7 @@ export default function HamacaModal({
 
         if (data?.errors) {
           Object.entries(data.errors).forEach(([key, msgs]) => {
-            serverErrors[key as keyof HamacaFormData] = (msgs as string[])[0];
+            serverErrors[key as keyof HamacaFormData | "color_ids"] = (msgs as string[])[0];
           });
         }
 
@@ -274,18 +325,21 @@ export default function HamacaModal({
 
       setForm(EMPTY_FORM);
       setSelectedHamacaId("");
+      setSelectedColorIds([]);
+      setPhotoFiles([]);
+      setPhotoRoutes([]);
       setErrors({});
       setGeneralError("");
 
       toast.success(
         mode === "crear"
-          ? "Modelo creado correctamente."
-          : "Modelo actualizado correctamente."
+          ? "Hamaca creado correctamente."
+          : "Hamaca actualizado correctamente."
       );
       onSuccess(mode === "crear" ? Number(data?.data?.id) : undefined);
       onClose();
     } catch (err) {
-      console.error("Error guardando modelo:", err);
+      console.error("Error guardando hamaca:", err);
       setGeneralError("Ocurrió un error al guardar. Intenta de nuevo.");
       toast.error("Ocurrió un error al guardar. Intenta de nuevo.");
     } finally {
@@ -295,8 +349,8 @@ export default function HamacaModal({
 
   async function handleDelete() {
     if (mode !== "editar" || !selectedHamacaId) {
-      setGeneralError("Selecciona un modelo para eliminar.");
-      toast.error("Selecciona un modelo para eliminar.");
+      setGeneralError("Selecciona un hamaca para eliminar.");
+      toast.error("Selecciona un hamaca para eliminar.");
       return;
     }
 
@@ -305,7 +359,7 @@ export default function HamacaModal({
     );
 
     const confirmed = window.confirm(
-      `¿Seguro que querés eliminar el modelo "${
+      `¿Seguro que querés eliminar el hamaca "${
         selectedModel?.nombre ?? selectedHamacaId
       }"? Esto lo ocultará del sistema, pero no borrará el historial.`
     );
@@ -331,13 +385,13 @@ export default function HamacaModal({
       setErrors({});
       setGeneralError("");
 
-      toast.success("Modelo eliminado correctamente.");
+      toast.success("Hamaca eliminado correctamente.");
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error eliminando modelo:", error);
-      setGeneralError("No se pudo eliminar el modelo.");
-      toast.error("No se pudo eliminar el modelo.");
+      console.error("Error eliminando hamaca:", error);
+      setGeneralError("No se pudo eliminar el hamaca.");
+      toast.error("No se pudo eliminar el hamaca.");
     } finally {
       setLoading(false);
     }
@@ -365,7 +419,7 @@ export default function HamacaModal({
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[14px] bg-[#f0f4f8] shadow-xl">
         <div className="flex items-center justify-between bg-[#1a3a5c] px-6 py-4">
           <h2 className="text-[17px] font-medium text-white">
-            {mode === "crear" ? "Agregar modelo" : "Editar modelo"}
+            {mode === "crear" ? "Nueva hamaca" : "Editar hamaca"}
           </h2>
 
           <button
@@ -408,7 +462,7 @@ export default function HamacaModal({
           {mode === "editar" ? (
             <div className="rounded-lg border border-[#1a3a5c]/15 bg-[#1a3a5c]/[0.06] p-3">
               <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-                Modelo a editar
+                Hamaca a editar
               </p>
 
               <select
@@ -416,7 +470,7 @@ export default function HamacaModal({
                 onChange={handleHamacaSelect}
                 className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="">Seleccionar modelo...</option>
+                <option value="">Seleccionar hamaca...</option>
                 {hamacas.map((hamaca) => (
                   <option key={hamaca.id} value={hamaca.id}>
                     {hamaca.nombre}
@@ -436,12 +490,16 @@ export default function HamacaModal({
               name="nombre"
               value={form.nombre}
               onChange={handleChange}
-              placeholder="Ej: Hamaca Matrimonial"
-              maxLength={100}
+              placeholder="Ej: Hamaca con palo Familiar - Azul / Blanco"
+              maxLength={150}
               className={`rounded-md border bg-white px-3 py-2 text-sm text-[#1a3a5c] placeholder-[#9ab]/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20 ${
                 errors.nombre ? "border-red-400" : "border-[#1a3a5c]/25"
               }`}
             />
+
+            <div className="flex justify-end">
+              <button type="button" onClick={() => { setNameWasEdited(false); setForm((current) => ({ ...current, nombre: suggestedName })); }} className="text-xs font-semibold text-[#123852] underline">Usar nombre sugerido</button>
+            </div>
 
             {errors.nombre ? (
               <span className="text-[11px] text-red-600">
@@ -459,7 +517,7 @@ export default function HamacaModal({
               name="descripcion"
               value={form.descripcion}
               onChange={handleChange}
-              placeholder="Descripción opcional del modelo"
+              placeholder="Descripción opcional del hamaca"
               rows={3}
               className="resize-y rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] placeholder-[#9ab]/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
             />
@@ -556,6 +614,23 @@ export default function HamacaModal({
             ) : null}
           </div>
 
+          <fieldset>
+            <legend className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">Colores *</legend>
+            <div className="flex flex-wrap gap-2">
+              {colores.map((color) => <label key={color.id} className="flex items-center gap-1 rounded border bg-white px-2 py-1 text-sm"><input type="checkbox" checked={selectedColorIds.includes(color.id)} onChange={() => toggleColor(color.id)} />{color.nombre}</label>)}
+            </div>
+            {selectedColorIds.length === 0 ? <p className="mt-1 text-xs text-red-700">Selecciona al menos un color.</p> : null}
+            {errors.color_ids ? <p role="alert" className="mt-1 text-xs text-red-700">{errors.color_ids}</p> : null}
+            <p className="mt-2 text-xs text-slate-600">Nombre sugerido: {suggestedName || "Seleccioná categoría, tamaño y colores"}</p>
+          </fieldset>
+
+          <fieldset className="space-y-2">
+            <legend className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">Fotos</legend>
+            <input aria-label="Subir fotos de hamaca" type="file" accept="image/*" multiple onChange={(event) => setPhotoFiles((current) => [...current, ...Array.from(event.target.files ?? [])])} className="block w-full text-sm" />
+            <textarea aria-label="Rutas de fotos" value={photoRoutes.join("\n")} onChange={(event) => setPhotoRoutes(event.target.value.split("\n"))} placeholder="Rutas de fotos, una por línea" className="w-full rounded border bg-white p-2 text-sm" />
+            {photoFiles.length ? <p className="text-xs">{photoFiles.length} foto(s) seleccionada(s)</p> : null}
+          </fieldset>
+
           {generalError ? (
             <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
               {generalError}
@@ -571,7 +646,7 @@ export default function HamacaModal({
               disabled={loading}
               className="mr-auto rounded-[7px] bg-red-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-800 disabled:opacity-50"
             >
-              Eliminar modelo
+              Eliminar hamaca
             </button>
           ) : null}
 
@@ -596,7 +671,7 @@ export default function HamacaModal({
                 Guardando...
               </>
             ) : mode === "crear" ? (
-              "Crear modelo"
+              "Crear hamaca"
             ) : (
               "Guardar cambios"
             )}

@@ -1,12 +1,11 @@
 "use client";
 
 import CatalogoHamacaCard from "@/app/_components/catalogo-hamaca-card";
-import FotoVarianteModal from "@/app/_components/foto-variante-modal";
+import FotoHamacaModal from "@/app/_components/foto-hamaca-modal";
 import HamacaModal from "@/app/_components/hamaca-modal";
-import VarianteModal from "@/app/_components/variante-modal";
 import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 import { apiFetch } from "@/app/_lib/api";
-import { Layers, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
@@ -21,17 +20,8 @@ type Foto = {
   ruta: string;
 };
 
-type Variante = {
-  id: number;
-  nombre: string | null;
-  hamaca_id: number;
-  colores: Color[];
-  fotos: Foto[];
-};
-
 type Inventario = {
   id: number;
-  hamaca_variante_id: number | null;
   cantidad: number;
   ubicacion: {
     id: number;
@@ -50,16 +40,18 @@ type Hamaca = {
   descripcion: string | null;
   categoria_id: number;
   tamano_id: number;
-  categoria: string | null;
-  tamano: string | null;
+  categoria: string | { id?: number; nombre: string } | null;
+  tamano: string | { id?: number; nombre: string } | null;
   precio: string | number;
   fotos?: Foto[];
-  variantes?: Variante[];
+  colores?: Color[];
   inventario?: Inventario[];
 };
 
 type FormulaSummary = {
-  id: number;
+  id?: number;
+  hamaca_id?: number;
+  hamaca?: { id: number };
   receta_activa?: { version: number } | null;
   receta_borrador?: { version: number } | null;
 };
@@ -87,6 +79,10 @@ function uniqueValues(values: Array<string | null | undefined>): string[] {
   return Array.from(new Set(values.filter(Boolean) as string[]));
 }
 
+function relationName(value: string | { nombre: string } | null): string | null {
+  return typeof value === "string" ? value : value?.nombre ?? null;
+}
+
 export default function CatalogoHamacasPage() {
   const router = useRouter();
   const { canCreate: canCreateFormula, canView: canViewFormula } =
@@ -102,11 +98,10 @@ export default function CatalogoHamacasPage() {
   const [hamacaModalOpen, setHamacaModalOpen] = useState(false);
   const [selectedHamacaToEdit, setSelectedHamacaToEdit] =
     useState<Hamaca | null>(null);
-  const [varianteModalOpen, setVarianteModalOpen] = useState(false);
 
   const [fotoModalOpen, setFotoModalOpen] = useState(false);
   const [selectedFotoData, setSelectedFotoData] = useState<{
-    varianteId: number;
+    hamacaId: number;
     hamacaNombre: string;
     fotos: Foto[];
   } | null>(null);
@@ -120,7 +115,7 @@ export default function CatalogoHamacasPage() {
       const formulaData = await formulaResponse.json().catch(() => null);
 
       setHamacas(data.data ?? []);
-      setFormulaByHamaca(Object.fromEntries((Array.isArray(formulaData?.data) ? formulaData.data : []).map((item: FormulaSummary) => [item.id, item])));
+      setFormulaByHamaca(Object.fromEntries((Array.isArray(formulaData?.data) ? formulaData.data : []).map((item: FormulaSummary) => [item.hamaca?.id ?? item.hamaca_id ?? item.id, item])));
     } catch (error) {
       console.error("Error cargando catálogo:", error);
       toast.error("No se pudo cargar el catálogo.");
@@ -134,41 +129,33 @@ export default function CatalogoHamacasPage() {
   }, [loadData]);
 
   const catalogItems = useMemo(() => {
-    return hamacas.flatMap((hamaca) => {
-      const variantes = hamaca.variantes ?? [];
-
-      return variantes.map((variante) => {
-        const inventariosDeVariante = (hamaca.inventario ?? []).filter(
-          (inventario) => inventario.hamaca_variante_id === variante.id
-        );
-
-        const disponible = inventariosDeVariante.reduce(
+    return hamacas.map((hamaca) => {
+        const inventarios = hamaca.inventario ?? [];
+        const disponible = inventarios.reduce(
           (sum, inventario) => sum + Number(inventario.cantidad ?? 0),
           0
         );
 
-        const fotos =
-          variante.fotos.length > 0 ? variante.fotos : hamaca.fotos ?? [];
+        const fotos = hamaca.fotos ?? [];
 
         return {
-          key: `${hamaca.id}-${variante.id}`,
+          key: String(hamaca.id),
           hamaca,
           hamacaId: hamaca.id,
-          varianteId: variante.id,
           nombre: hamaca.nombre,
           descripcion: hamaca.descripcion,
-          categoria: hamaca.categoria,
-          tamano: hamaca.tamano,
+          categoria: relationName(hamaca.categoria),
+          tamano: relationName(hamaca.tamano),
           precio: hamaca.precio,
-          colores: variante.colores.map((color) => color.nombre),
+          colores: (hamaca.colores ?? []).map((color) => color.nombre),
           disponible,
           ubicaciones: uniqueValues(
-            inventariosDeVariante.map(
+            inventarios.map(
               (inventario) => inventario.ubicacion?.nombre
             )
           ),
           propietarios: uniqueValues(
-            inventariosDeVariante.map(
+            inventarios.map(
               (inventario) => inventario.usuario?.nombre
             )
           ),
@@ -176,7 +163,6 @@ export default function CatalogoHamacasPage() {
           rawFotos: fotos,
         };
       });
-    });
   }, [hamacas]);
 
   const filteredItems = useMemo(() => {
@@ -229,16 +215,7 @@ export default function CatalogoHamacasPage() {
             className="flex h-[46px] items-center justify-center gap-2 rounded-[8px] bg-[#f7f7f7] px-5 text-base font-semibold text-[#08264d] shadow-md sm:text-lg"
           >
             <Plus className="h-5 w-5" />
-            Modelo
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setVarianteModalOpen(true)}
-            className="flex h-[46px] items-center justify-center gap-2 rounded-[8px] bg-[#123852] px-5 text-base font-semibold text-white shadow-md sm:text-lg"
-          >
-            <Layers className="h-5 w-5" />
-            Variante
+            Nueva hamaca
           </button>
         </div>
 
@@ -268,7 +245,7 @@ export default function CatalogoHamacasPage() {
 
       {!loading && filteredItems.length === 0 ? (
         <p className="text-xl font-semibold text-white">
-          No hay variantes para mostrar. Crea un modelo y luego una variante.
+          No hay hamacas para mostrar. Crea una nueva hamaca.
         </p>
       ) : null}
 
@@ -316,7 +293,7 @@ export default function CatalogoHamacasPage() {
             }}
             onViewPhotos={() => {
               setSelectedFotoData({
-                varianteId: item.varianteId,
+                hamacaId: item.hamacaId,
                 hamacaNombre: item.nombre,
                 fotos: item.rawFotos,
               });
@@ -324,7 +301,7 @@ export default function CatalogoHamacasPage() {
               setFotoModalOpen(true);
             }}
             onViewInventory={() => {
-              router.push(`/inventario-hamacas?varianteId=${item.varianteId}`);
+              router.push(`/inventario-hamacas?hamacaId=${item.hamacaId}`);
             }}
           />
         ))}
@@ -339,7 +316,7 @@ export default function CatalogoHamacasPage() {
         onSuccess={(createdHamacaId) => {
           void loadData();
           if (createdHamacaId) {
-            toast.info("Modelo creado. Configurar fórmula ahora", {
+            toast.info("Hamaca creada. Configurar fórmula ahora", {
               onClick: () => router.push(`/formulas/${createdHamacaId}`),
             });
           }
@@ -347,15 +324,9 @@ export default function CatalogoHamacasPage() {
         hamacaToEdit={selectedHamacaToEdit}
       />
 
-      <VarianteModal
-        isOpen={varianteModalOpen}
-        onClose={() => setVarianteModalOpen(false)}
-        onSuccess={loadData}
-      />
-
-      <FotoVarianteModal
+      <FotoHamacaModal
         isOpen={fotoModalOpen}
-        varianteId={selectedFotoData?.varianteId ?? null}
+        hamacaId={selectedFotoData?.hamacaId ?? null}
         hamacaNombre={selectedFotoData?.hamacaNombre ?? ""}
         initialFotos={selectedFotoData?.fotos ?? []}
         onClose={() => {

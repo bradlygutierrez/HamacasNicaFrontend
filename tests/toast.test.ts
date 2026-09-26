@@ -12,7 +12,7 @@ test('root layout renders the global toast container', () => {
 });
 
 test('photo upload modal reports success and failure through toasts', () => {
-  const modal = readFileSync('app/_components/foto-variante-modal.tsx', 'utf8');
+  const modal = readFileSync('app/_components/foto-hamaca-modal.tsx', 'utf8');
 
   assert.match(modal, /toast\.success\("Fotos guardadas correctamente\."\)/);
   assert.match(modal, /toast\.error\("No se pudieron guardar las fotos\."\)/);
