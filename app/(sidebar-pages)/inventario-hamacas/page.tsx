@@ -88,7 +88,7 @@ export default function InventarioHamacasPage() {
         setLoading(true);
 
         try {
-            const response = await apiFetch("/inventario-hamacas");
+            const response = await apiFetch("/inventario-hamacas?per_page=100");
             const data = await response.json();
 
             setItems(data.data ?? []);

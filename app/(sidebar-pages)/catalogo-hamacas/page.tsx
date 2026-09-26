@@ -110,7 +110,7 @@ export default function CatalogoHamacasPage() {
     setLoading(true);
 
     try {
-      const [response, formulaResponse] = await Promise.all([apiFetch("/hamacas/detalles"), apiFetch("/formulas?per_page=100")]);
+      const [response, formulaResponse] = await Promise.all([apiFetch("/hamacas/detalles?per_page=100"), apiFetch("/formulas?per_page=100")]);
       const data = await response.json();
       const formulaData = await formulaResponse.json().catch(() => null);
 

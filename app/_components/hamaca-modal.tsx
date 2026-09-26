@@ -497,6 +497,8 @@ export default function HamacaModal({
               }`}
             />
 
+            <span className="text-[11px] text-slate-500">Máximo 150 caracteres.</span>
+
             <div className="flex justify-end">
               <button type="button" onClick={() => { setNameWasEdited(false); setForm((current) => ({ ...current, nombre: suggestedName })); }} className="text-xs font-semibold text-[#123852] underline">Usar nombre sugerido</button>
             </div>

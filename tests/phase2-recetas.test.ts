@@ -84,6 +84,9 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   const selector = readFileSync(resolve(root, 'app/_components/async-catalog-selector.tsx'), 'utf8');
 
   assert.match(list, /\/formulas/);
+  assert.match(list, /type FormulaSummary = \{ hamaca:/);
+  assert.match(list, /<article key=\{hamacaIdOf\(item\)\}/);
+  assert.doesNotMatch(list, /type FormulaSummary = \{ id: number/);
   assert.match(list, /import \{ useCatalogCapabilities \} from "@\/app\/_components\/catalog-permissions-provider"/);
   assert.match(list, /const \{ canCreate, canEdit \} = useCatalogCapabilities\("\/formulas"\)/);
   assert.match(list, /import \{ getFormulaUiState, type FormulaUiState \} from "@\/app\/_lib\/formula-ui"/);

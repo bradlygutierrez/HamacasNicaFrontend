@@ -49,7 +49,8 @@ export function buildHamacaPayload({
 export function suggestHamacaName(category: string, size: string, colors: string[]): string {
   const product = [category.trim(), size.trim()].filter(Boolean).join(" ");
   const colorNames = colors.map((color) => color.trim()).filter(Boolean);
-  return product + (colorNames.length ? ` - ${colorNames.join(" / ")}` : "");
+  const suggestion = product + (colorNames.length ? ` - ${colorNames.join(" / ")}` : "");
+  return Array.from(suggestion).slice(0, 150).join("");
 }
 
 export function normalizePhotoRoutes(routes: string[]): string[] {

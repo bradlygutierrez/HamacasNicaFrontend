@@ -71,6 +71,10 @@ test('builds a foto payload attached to one hamaca', () => {
 test('suggests a product name from category, size, and selected colors', () => {
   assert.equal(suggestHamacaName('Hamaca con palo', 'Familiar', ['Azul', 'Blanco']), 'Hamaca con palo Familiar - Azul / Blanco');
   assert.equal(suggestHamacaName('Hamaca con palo', 'Familiar', []), 'Hamaca con palo Familiar');
+  assert.equal(Array.from(suggestHamacaName('é'.repeat(50), 'ñ'.repeat(50), ['ó'.repeat(50)] )).length, 150);
+  const modal = readFileSync(resolve(root, 'app/_components/hamaca-modal.tsx'), 'utf8');
+  assert.match(modal, /maxLength=\{150\}/);
+  assert.match(modal, /Máximo 150 caracteres\./);
 });
 
 test('creates one complete Hamaca and supports automatic name reset', () => {
