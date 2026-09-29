@@ -135,7 +135,11 @@ test('formula pages use versioning, cost and service formula endpoints', () => {
   assert.match(editor, /Guardar borrador/);
   assert.match(editor, /Activar fórmula/);
   assert.match(editor, /Descartar borrador/);
-  assert.match(editor, /¿Activar esta fórmula\?/);
+  assert.match(editor, /setActivationConfirmOpen\(true\)/);
+  assert.match(editor, /role="dialog"[\s\S]*¿Activar esta fórmula\?/);
+  assert.match(editor, /Guardar borrador y activar/);
+  assert.doesNotMatch(editor, /window\.confirm/);
+  assert.match(editor, /async function confirmActivation\(\)[\s\S]*?await saveDraft\(false\)[\s\S]*?await handleAction\(`\/recetas-hamaca\/\$\{draft\.id\}\/activar`/);
   assert.match(editor, /Fórmula activada correctamente\./);
   assert.doesNotMatch(editor, /placeholder="Costo"/);
   assert.doesNotMatch(editor, />Crear versión</);
