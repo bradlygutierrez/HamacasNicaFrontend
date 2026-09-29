@@ -47,6 +47,18 @@ test('proforma editor protects internal controls by role and supports removing s
   assert.match(editor, /readOnly={role !== "admin"}/);
 });
 
+test('proforma list stacks its header and keeps filters, cards and pagination inside mobile width', () => {
+  const list = readFileSync(resolve(root, 'app/(sidebar-pages)/proformas/page.tsx'), 'utf8');
+
+  assert.match(list, /flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between/);
+  assert.match(list, /w-fit self-end rounded bg-white px-4 py-2 text-center[^\"]*sm:w-auto/);
+  assert.match(list, /relative h-11 w-full min-w-0 flex-1/);
+  assert.match(list, /h-11 w-full min-w-0 rounded bg-white/);
+  assert.match(list, /min-w-0 flex-1/);
+  assert.match(list, /break-words font-bold/);
+  assert.match(list, /grid grid-cols-\[1fr_auto_1fr\][^\"]*sm:flex/);
+});
+
 test('proforma routes exist and phase five links are absent', () => {
   assert.ok(readFileSync(resolve(root, 'app/(sidebar-pages)/proformas/nueva/page.tsx'), 'utf8'));
   assert.ok(readFileSync(resolve(root, 'app/(sidebar-pages)/proformas/[id]/page.tsx'), 'utf8'));
