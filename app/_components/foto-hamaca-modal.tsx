@@ -5,8 +5,9 @@ import {
   buildHamacaFotoPayload,
   normalizePhotoRoutes,
 } from "@/app/_lib/hamacas";
-import { Camera, Copy, Download, Plus, Trash, Upload } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import HamacaPhotoPicker from "@/app/_components/hamaca-photo-picker";
+import { Camera, Copy, Download, Plus, Trash } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 type Foto = {
@@ -60,12 +61,9 @@ export default function FotoHamacaModal({
   hamacaId,
   initialFotos = [],
 }: FotoHamacaModalProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
   const [copiedFotoId, setCopiedFotoId] = useState<number | null>(null);
   const [photoRoutes, setPhotoRoutes] = useState<string[]>([""]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -74,7 +72,6 @@ export default function FotoHamacaModal({
 
     setPhotoRoutes([""]);
     setSelectedFiles([]);
-    setDragActive(false);
     setCopiedFotoId(null);
     setError("");
   }, [isOpen]);
@@ -98,37 +95,6 @@ export default function FotoHamacaModal({
       const next = prev.filter((_, routeIndex) => routeIndex !== index);
       return next.length > 0 ? next : [""];
     });
-  }
-
-  function addFiles(files: FileList | File[]) {
-    const imageFiles = Array.from(files).filter((file) =>
-      file.type.startsWith("image/")
-    );
-
-    setSelectedFiles((prev) => [...prev, ...imageFiles]);
-  }
-
-  function handleFileInput(event: React.ChangeEvent<HTMLInputElement>) {
-    if (event.target.files) {
-      addFiles(event.target.files);
-    }
-
-    event.target.value = "";
-  }
-
-  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    setDragActive(false);
-
-    if (event.dataTransfer.files) {
-      addFiles(event.dataTransfer.files);
-    }
-  }
-
-  function removeSelectedFile(index: number) {
-    setSelectedFiles((prev) =>
-      prev.filter((_, fileIndex) => fileIndex !== index)
-    );
   }
 
   async function copyImageToClipboard(fotoId: number, fallbackUrl: string) {
@@ -365,58 +331,7 @@ export default function FotoHamacaModal({
               Subir fotos
             </h3>
 
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handleFileInput}
-            />
-
-            <div
-              onDragOver={(event) => {
-                event.preventDefault();
-                setDragActive(true);
-              }}
-              onDragLeave={() => setDragActive(false)}
-              onDrop={handleDrop}
-              onClick={() => inputRef.current?.click()}
-              className={`flex cursor-pointer flex-col items-center justify-center rounded-[10px] border-2 border-dashed p-6 text-center transition ${
-                dragActive
-                  ? "border-[#1a3a5c] bg-[#1a3a5c]/10"
-                  : "border-[#1a3a5c]/30 bg-white"
-              }`}
-            >
-              <Upload className="mb-2 h-10 w-10 text-[#1a3a5c]" />
-              <p className="font-semibold text-[#1a3a5c]">
-                Arrastrá fotos aquí o tocá para abrir la galería
-              </p>
-              <p className="mt-1 text-sm text-[#4a6a8a]">
-                En celular abre la galería. En PC permite seleccionar archivos.
-              </p>
-            </div>
-
-            {selectedFiles.length > 0 ? (
-              <div className="mt-3 space-y-2">
-                {selectedFiles.map((file, index) => (
-                  <div
-                    key={`${file.name}-${index}`}
-                    className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm text-[#1a3a5c]"
-                  >
-                    <span className="truncate">{file.name}</span>
-
-                    <button
-                      type="button"
-                      onClick={() => removeSelectedFile(index)}
-                      className="ml-3 text-red-600"
-                    >
-                      Quitar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : null}
+            <HamacaPhotoPicker files={selectedFiles} onFilesChange={setSelectedFiles} />
           </section>
 
           <section>
