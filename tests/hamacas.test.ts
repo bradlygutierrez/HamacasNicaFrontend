@@ -76,6 +76,7 @@ test('suggests a product name from category, size, and selected colors', () => {
   const modal = readFileSync(resolve(root, 'app/_components/hamaca-modal.tsx'), 'utf8');
   assert.match(modal, /maxLength=\{150\}/);
   assert.match(modal, /Máximo 150 caracteres\./);
+  assert.match(modal, /newErrors\.nombre = "Máximo 150 caracteres\."/);
 });
 
 test('creates one complete Hamaca and supports automatic name reset', () => {
@@ -111,6 +112,13 @@ test('shows current photos when editing a Hamaca', () => {
   assert.match(modal, /fotos\?: Array<\{ id: number; ruta: string \}>/);
   assert.match(modal, /Fotos actuales/);
   assert.match(modal, /currentHamaca\.fotos\.map/);
+});
+
+test('clears pending photos and routes whenever the selected Hamaca changes', () => {
+  const modal = readFileSync(resolve(root, 'app/_components/hamaca-modal.tsx'), 'utf8');
+  const handler = modal.match(/function handleHamacaSelect\([\s\S]*?\n  }/)?.[0] ?? '';
+
+  assert.match(handler, /setSelectedHamacaId\(id\);[\s\S]*setPhotoFiles\(\[\]\);[\s\S]*setPhotoRoutes\(\[\]\);[\s\S]*setPhotoPickerResetKey\(\(key\) => key \+ 1\);[\s\S]*if \(!id\)/);
 });
 
 test('builds the direct Hamaca create payload with selected color IDs', () => {

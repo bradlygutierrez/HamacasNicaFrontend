@@ -164,6 +164,9 @@ export default function HamacaModal({
     const id = event.target.value;
 
     setSelectedHamacaId(id);
+    setPhotoFiles([]);
+    setPhotoRoutes([]);
+    setPhotoPickerResetKey((key) => key + 1);
     setErrors({});
     setGeneralError("");
 
@@ -235,7 +238,7 @@ export default function HamacaModal({
     if (!name) {
       newErrors.nombre = "El nombre es obligatorio.";
     } else if (name.length > 150) {
-      newErrors.nombre = "Máximo 100 caracteres.";
+      newErrors.nombre = "Máximo 150 caracteres.";
     }
 
     if (!form.categoria_id) {
