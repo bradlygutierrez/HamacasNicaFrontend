@@ -2,6 +2,7 @@
 
 import { apiFetch } from "@/app/_lib/api";
 import { buildHamacaPayload, suggestHamacaName } from "@/app/_lib/hamacas";
+import HamacaPhotoPicker from "@/app/_components/hamaca-photo-picker";
 import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import { toast } from "react-toastify";
@@ -26,6 +27,7 @@ type Hamaca = {
   tamano_id: number;
   precio: number | string;
   colores?: Color[];
+  fotos?: Array<{ id: number; ruta: string }>;
 };
 
 type HamacaFormData = {
@@ -55,6 +57,13 @@ const EMPTY_FORM: HamacaFormData = {
   precio: "",
 };
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
+
+function imageUrl(path: string) {
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${BACKEND_URL}${path.startsWith("/storage/") ? path : `/storage/${path}`}`;
+}
+
 export default function HamacaModal({
   isOpen,
   onClose,
@@ -77,12 +86,18 @@ export default function HamacaModal({
   const [nameWasEdited, setNameWasEdited] = useState(false);
   const [photoRoutes, setPhotoRoutes] = useState<string[]>([]);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [photoPickerResetKey, setPhotoPickerResetKey] = useState(0);
   const [errors, setErrors] = useState<FormErrors>({});
   const [generalError, setGeneralError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setPhotoRoutes([]);
+      setPhotoFiles([]);
+      setPhotoPickerResetKey((key) => key + 1);
+      return;
+    }
 
     async function loadCatalogos() {
       try {
@@ -126,6 +141,7 @@ export default function HamacaModal({
       setNameWasEdited(false);
       setPhotoRoutes([]);
       setPhotoFiles([]);
+      setPhotoPickerResetKey((key) => key + 1);
     }
 
     setErrors({});
@@ -148,6 +164,9 @@ export default function HamacaModal({
     const id = event.target.value;
 
     setSelectedHamacaId(id);
+    setPhotoFiles([]);
+    setPhotoRoutes([]);
+    setPhotoPickerResetKey((key) => key + 1);
     setErrors({});
     setGeneralError("");
 
@@ -172,6 +191,7 @@ export default function HamacaModal({
     setSelectedColorIds([]);
     setPhotoRoutes([]);
     setPhotoFiles([]);
+    setPhotoPickerResetKey((key) => key + 1);
     setNameWasEdited(false);
   }
 
@@ -218,7 +238,7 @@ export default function HamacaModal({
     if (!name) {
       newErrors.nombre = "El nombre es obligatorio.";
     } else if (name.length > 150) {
-      newErrors.nombre = "Máximo 100 caracteres.";
+      newErrors.nombre = "Máximo 150 caracteres.";
     }
 
     if (!form.categoria_id) {
@@ -328,6 +348,7 @@ export default function HamacaModal({
       setSelectedColorIds([]);
       setPhotoFiles([]);
       setPhotoRoutes([]);
+      setPhotoPickerResetKey((key) => key + 1);
       setErrors({});
       setGeneralError("");
 
@@ -401,6 +422,9 @@ export default function HamacaModal({
     setForm(EMPTY_FORM);
     setErrors({});
     setGeneralError("");
+    setPhotoFiles([]);
+    setPhotoRoutes([]);
+    setPhotoPickerResetKey((key) => key + 1);
 
     if (mode === "editar") {
       setSelectedHamacaId("");
@@ -628,9 +652,27 @@ export default function HamacaModal({
 
           <fieldset className="space-y-2">
             <legend className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">Fotos</legend>
-            <input aria-label="Subir fotos de hamaca" type="file" accept="image/*" multiple onChange={(event) => setPhotoFiles((current) => [...current, ...Array.from(event.target.files ?? [])])} className="block w-full text-sm" />
-            <textarea aria-label="Rutas de fotos" value={photoRoutes.join("\n")} onChange={(event) => setPhotoRoutes(event.target.value.split("\n"))} placeholder="Rutas de fotos, una por línea" className="w-full rounded border bg-white p-2 text-sm" />
-            {photoFiles.length ? <p className="text-xs">{photoFiles.length} foto(s) seleccionada(s)</p> : null}
+            {mode === "editar" ? (() => {
+              const currentHamaca = hamacas.find((item) => String(item.id) === selectedHamacaId) ?? hamacaToEdit;
+              return currentHamaca?.fotos?.length ? (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-[#1a3a5c]">Fotos actuales</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {currentHamaca.fotos.map((foto) => (
+                      <div key={foto.id} className="overflow-hidden rounded-md border border-[#1a3a5c]/15 bg-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imageUrl(foto.ruta)} alt="Foto actual de hamaca" className="h-20 w-full object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null;
+            })() : null}
+            <HamacaPhotoPicker key={photoPickerResetKey} files={photoFiles} onFilesChange={setPhotoFiles} />
+            <details className="rounded-md border border-[#1a3a5c]/15 bg-white px-3 py-2">
+              <summary className="cursor-pointer text-sm font-medium text-[#1a3a5c]">Agregar imagen mediante URL o ruta</summary>
+              <textarea aria-label="Rutas de fotos" value={photoRoutes.join("\n")} onChange={(event) => setPhotoRoutes(event.target.value.split("\n"))} placeholder="Una URL o ruta por línea" className="mt-2 w-full rounded border bg-white p-2 text-sm" />
+            </details>
           </fieldset>
 
           {generalError ? (
