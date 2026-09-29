@@ -22,7 +22,8 @@ test('proforma pages and editor use backend pricing and no inventory mutations',
   assert.match(editor, /materiales_agrupados/);
   assert.match(editor, /Precio unitario/);
   assert.match(editor, /Descuento/);
-  assert.match(editor, /Costo interno override/);
+  assert.match(editor, /ProformaServiceCard/);
+  assert.doesNotMatch(editor, /Costo interno override/);
   assert.match(editor, /currentUserName/);
   assert.match(editor, /assignedSellerName/);
   assert.match(editor, /nombre_cliente: manualClient\.nombre/);
@@ -45,6 +46,31 @@ test('proforma editor protects internal controls by role and supports removing s
   assert.match(editor, /services\.filter/);
   assert.match(editor, /generalServices\.filter/);
   assert.match(editor, /readOnly={role !== "admin"}/);
+});
+
+test('proforma editor labels all discount levels and renders human summary labels', () => {
+  const editor = readFileSync(resolve(root, 'app/_components/proforma-editor.tsx'), 'utf8');
+  const serviceCard = readFileSync(resolve(root, 'app/_components/proforma-service-card.tsx'), 'utf8');
+
+  assert.match(editor, /Descuento global \(C\$\)/);
+  assert.match(editor, /descuento_global: Number\(discount \|\| 0\)/);
+  assert.match(editor, /setDiscount\(event\.target\.value\); setPreview\(null\)/);
+  assert.match(editor, /Descuento del producto \(C\$\)/);
+  assert.match(serviceCard, /Precio unitario \(C\$\)/);
+  assert.match(serviceCard, /Descuento del servicio \(C\$\)/);
+  assert.match(serviceCard, /Detalle \(opcional\)/);
+  assert.match(serviceCard, /Costo interno personalizado \(C\$\)/);
+  assert.match(serviceCard, /Solo visible para administración\. Dejalo vacío para usar el costo configurado\./);
+  assert.match(serviceCard, /subtotal estimado/i);
+  assert.match(editor, /Servicios adicionales/);
+  assert.doesNotMatch(editor, /Servicios generales/);
+  assert.match(editor, /servicios_pedido:/);
+  assert.match(editor, /Aplicar IVA/);
+  assert.match(editor, /Tasa IVA \(%\)/);
+  assert.match(editor, /Aplicar IR/);
+  assert.match(editor, /Comisión del vendedor \(%\)/);
+  assert.match(editor, /Productos[\s\S]*Servicios adicionales[\s\S]*Subtotal[\s\S]*Descuentos[\s\S]*Base neta[\s\S]*Total/);
+  assert.doesNotMatch(editor, /<span>\{key\}<\/span>/);
 });
 
 test('new proforma editor keeps its header, fields and quick-client dialog usable on mobile', () => {
