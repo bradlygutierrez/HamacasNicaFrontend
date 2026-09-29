@@ -13,6 +13,10 @@ type Inventario = {
     id: number;
     nombre: string;
     precio?: number | string;
+    colores?: Array<{
+      id: number;
+      nombre: string;
+    }>;
   };
   ubicacion?: {
     id: number;
@@ -23,10 +27,6 @@ type Inventario = {
     nombre: string;
     rol: string;
   };
-  colores?: Array<{
-    id: number;
-    nombre: string;
-  }>;
 };
 
 type FormData = {
@@ -50,7 +50,7 @@ const EMPTY_FORM: FormData = {
 
 function formatInventarioLabel(inventario: Inventario) {
   const producto = inventario.hamaca?.nombre ?? `INV-${inventario.id}`;
-  const colores = inventario.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
+  const colores = inventario.hamaca?.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
   const ubicacion = inventario.ubicacion?.nombre ?? 'Sin ubicación';
 
   return `${producto} - ${colores} - ${ubicacion} (${inventario.cantidad})`;
@@ -80,9 +80,20 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
   useEffect(() => {
     if (!isOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
     async function loadCatalogos() {
       try {
-        const inventariosRes = await apiFetch('/inventario-hamacas');
+        const inventariosRes = await apiFetch('/inventario-hamacas?per_page=100');
 
         const inventariosData = await inventariosRes.json();
         const availableInventarios = (inventariosData.data ?? []).filter(
@@ -199,23 +210,30 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
   return (
     <div
-      className="fixed inset-y-0 right-0 left-[64px] z-40 flex items-center justify-center bg-black/20 px-3 py-6"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-3 sm:p-4"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="max-h-[calc(100vh-32px)] w-full max-w-[620px] overflow-y-auto rounded-[10px] bg-[#f7f7f7] px-6 py-6 shadow-xl sm:px-9">
-        <h2 className="mb-5 text-3xl font-medium text-black">
-          Agregar Salida
-        </h2>
+      <div className="flex max-h-[calc(100dvh-24px)] w-full min-w-0 max-w-[620px] flex-col overflow-hidden rounded-[10px] bg-[#f7f7f7] shadow-xl">
+        <header className="flex shrink-0 items-center justify-between border-b border-[#08264d]/15 px-4 py-4 sm:px-6">
+          <h2 className="min-w-0 break-words text-xl font-medium text-black sm:text-2xl">
+            Agregar Salida
+          </h2>
+          <button type="button" onClick={onClose} disabled={loading} aria-label="Cerrar modal" className="ml-3 shrink-0 rounded p-1 text-[#08264d] hover:bg-[#08264d]/10 disabled:opacity-60">
+            <X className="h-5 w-5" />
+          </button>
+        </header>
 
-        <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
-          <div className="flex flex-col gap-4">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 py-4 sm:px-6">
+          <div className="flex min-w-0 flex-col gap-4">
+            <label htmlFor="salida-inventario" className="text-sm font-medium text-[#08264d]">Producto en inventario</label>
             <select
+              id="salida-inventario"
               name="inventario_hamaca_id"
               value={form.inventario_hamaca_id}
               onChange={handleChange}
-              className="h-[46px] w-full border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none sm:px-7 sm:text-xl"
+              className="h-[46px] w-full min-w-0 max-w-full border border-black bg-[#f7f7f7] px-3 text-sm text-[#08264d] outline-none sm:px-5 sm:text-base"
             >
               <option value="">Producto en inventario</option>
               {inventarios.map((inventario) => (
@@ -225,7 +243,9 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               ))}
             </select>
 
+            <label htmlFor="salida-cantidad" className="text-sm font-medium text-[#08264d]">Cantidad</label>
             <input
+              id="salida-cantidad"
               name="cantidad"
               type="number"
               min={1}
@@ -233,52 +253,54 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               value={form.cantidad}
               onChange={handleChange}
               placeholder="Cantidad"
-              className="h-[46px] w-full border border-black bg-[#f7f7f7] px-7 text-xl text-[#08264d] outline-none"
+              className="h-[46px] w-full min-w-0 border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none"
             />
 
+            <label htmlFor="salida-fecha" className="text-sm font-medium text-[#08264d]">Fecha</label>
             <input
+              id="salida-fecha"
               name="fecha"
               type="date"
               value={form.fecha}
               onChange={handleChange}
-              className="h-[46px] w-full border border-black bg-[#f7f7f7] px-7 text-xl text-[#08264d] outline-none"
+              className="h-[46px] w-full min-w-0 border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none"
             />
 
             {selectedInventario && (
-              <div className="rounded-md border border-[#08264d]/30 bg-white px-4 py-3 text-sm font-semibold text-[#08264d]">
+              <div className="min-w-0 break-words rounded-md border border-[#08264d]/30 bg-white px-4 py-3 text-sm font-semibold text-[#08264d]">
                 Stock disponible: {selectedInventario.cantidad}
               </div>
             )}
 
             {error && (
-              <p className="rounded-md bg-red-100 px-3 py-2 text-sm font-semibold text-red-700">
+              <p className="min-w-0 break-words rounded-md bg-red-100 px-3 py-2 text-sm font-semibold text-red-700">
                 {error}
               </p>
             )}
           </div>
 
-          <div className="flex gap-2 sm:flex-col">
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading}
-              className="flex h-[38px] flex-1 items-center justify-center gap-2 rounded-[10px] bg-[#155b72] px-4 text-base font-bold text-white disabled:opacity-60 sm:flex-none"
-            >
-              <Plus className="h-5 w-5" />
-              {loading ? 'Guardando' : 'Agregar'}
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="flex h-[38px] flex-1 items-center justify-center gap-2 rounded-[10px] bg-[#08264d] px-4 text-base font-bold text-white disabled:opacity-60 sm:flex-none"
-            >
-              <X className="h-5 w-5" />
-              Cancelar
-            </button>
-          </div>
         </div>
+
+        <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-[#08264d]/15 bg-[#f7f7f7] p-4 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#08264d] px-4 text-base font-bold text-white disabled:opacity-60 sm:w-auto"
+          >
+            <X className="h-5 w-5" />
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#155b72] px-4 text-base font-bold text-white disabled:opacity-60 sm:w-auto"
+          >
+            <Plus className="h-5 w-5" />
+            {loading ? 'Guardando' : 'Agregar'}
+          </button>
+        </footer>
       </div>
     </div>
   );

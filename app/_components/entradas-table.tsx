@@ -39,7 +39,46 @@ function formatMoney(value: number) {
 export default function EntradasTable({ rows }: Props) {
   return (
     <section className="w-full min-w-0 max-w-full overflow-hidden rounded-[4px] bg-[#f7f7f7] shadow-lg">
-      <div className="w-full min-w-0 overflow-x-auto">
+      <div className="space-y-3 p-3 md:hidden">
+        {rows.length === 0 ? (
+          <div className="rounded-md bg-[#dcdcdc] px-4 py-8 text-center text-sm font-semibold text-[#08264d]">
+            No hay entradas registradas.
+          </div>
+        ) : rows.map((row) => (
+          <article key={row.id} className="min-w-0 rounded-md bg-white p-4 text-[#08264d] shadow-sm">
+            <h2 className="break-words text-base font-bold">{row.producto}</h2>
+            <dl className="mt-3 grid min-w-0 grid-cols-2 gap-x-3 gap-y-3">
+              <div className="min-w-0">
+                <dt className="text-xs text-slate-600">Usuario</dt>
+                <dd className="break-words text-sm font-medium">{row.usuario}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-slate-600">Fecha</dt>
+                <dd className="break-words text-sm font-medium">{formatDate(row.fecha)}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-slate-600">Cantidad</dt>
+                <dd className="break-words text-sm font-medium">{row.cantidad}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-slate-600">Ubicación</dt>
+                <dd className="break-words text-sm font-medium">{row.ubicacion}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-slate-600">Total</dt>
+                <dd className="break-words text-sm font-medium">C$ {formatMoney(row.total)}</dd>
+              </div>
+            </dl>
+            <div className="mt-3 flex justify-end">
+              <span className="inline-flex max-w-full justify-center break-words rounded-full bg-[#35bf49] px-3 py-1 text-xs font-semibold text-white">
+                {row.estatus}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden w-full min-w-0 overflow-x-auto md:block">
         <table className="w-full min-w-[980px] border-collapse text-[#08264d]">
           <thead>
             <tr className="bg-[#f7f7f7] text-lg font-bold sm:text-2xl">
@@ -53,16 +92,10 @@ export default function EntradasTable({ rows }: Props) {
               <th className="px-4 py-3 text-center">Estatus</th>
             </tr>
           </thead>
-
           <tbody className="text-base sm:text-2xl">
             {rows.map((row, index) => (
-              <tr
-                key={row.id}
-                className={index % 2 === 0 ? 'bg-[#dcdcdc]' : 'bg-[#f7f7f7]'}
-              >
-                <td className="px-3 py-2">
-                  <Pencil className="h-6 w-6 text-[#08264d] sm:h-7 sm:w-7" />
-                </td>
+              <tr key={row.id} className={index % 2 === 0 ? 'bg-[#dcdcdc]' : 'bg-[#f7f7f7]'}>
+                <td className="px-3 py-2"><Pencil className="h-6 w-6 text-[#08264d] sm:h-7 sm:w-7" /></td>
                 <td className="px-4 py-2">{row.producto}</td>
                 <td className="px-4 py-2">{row.usuario}</td>
                 <td className="px-4 py-2 text-center">{formatDate(row.fecha)}</td>
@@ -70,26 +103,15 @@ export default function EntradasTable({ rows }: Props) {
                 <td className="px-4 py-2 text-center">{row.ubicacion}</td>
                 <td className="px-4 py-2 text-center">{formatMoney(row.total)}</td>
                 <td className="px-4 py-2 text-center">
-                  <span className="inline-flex min-w-[110px] justify-center rounded-full bg-[#35bf49] px-4 py-1 text-sm font-semibold text-white">
-                    {row.estatus}
-                  </span>
+                  <span className="inline-flex min-w-[110px] justify-center rounded-full bg-[#35bf49] px-4 py-1 text-sm font-semibold text-white">{row.estatus}</span>
                 </td>
               </tr>
             ))}
-
             {rows.length === 0 && (
-              <tr>
-                <td colSpan={8} className="bg-[#dcdcdc] px-4 py-10 text-center text-lg font-semibold">
-                  No hay entradas registradas.
-                </td>
-              </tr>
+              <tr><td colSpan={8} className="bg-[#dcdcdc] px-4 py-10 text-center text-lg font-semibold">No hay entradas registradas.</td></tr>
             )}
-
             {Array.from({ length: 8 }).map((_, index) => (
-              <tr
-                key={`empty-${index}`}
-                className={index % 2 === 0 ? 'bg-[#dcdcdc]' : 'bg-[#f7f7f7]'}
-              >
+              <tr key={`empty-${index}`} className={index % 2 === 0 ? 'bg-[#dcdcdc]' : 'bg-[#f7f7f7]'}>
                 <td colSpan={8} className="h-[46px]" />
               </tr>
             ))}

@@ -63,6 +63,17 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (!isOpen) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
     async function loadCatalogos() {
       try {
         const [hamacasRes, ubicacionesRes, meRes] = await Promise.all([
@@ -224,13 +235,13 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-3 sm:p-4"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-3xl overflow-hidden rounded-[14px] bg-[#f0f4f8] shadow-xl">
-        <div className="flex items-center justify-between bg-[#1a3a5c] px-6 py-4">
+      <div className="flex max-h-[calc(100dvh-24px)] w-full min-w-0 max-w-3xl flex-col overflow-hidden rounded-[14px] bg-[#f0f4f8] shadow-xl">
+        <div className="flex shrink-0 items-center justify-between bg-[#1a3a5c] px-4 py-4 sm:px-6">
           <h2 className="text-[18px] font-semibold text-white">
             Agregar Entrada
           </h2>
@@ -239,13 +250,14 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
             type="button"
             onClick={onClose}
             className="text-white/70 hover:text-white"
+            aria-label="Cerrar modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="grid max-h-[80vh] gap-4 overflow-y-auto px-6 py-5 md:grid-cols-2">
-          <div className="md:col-span-2">
+        <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 py-5 sm:px-6 md:grid-cols-2">
+          <div className="min-w-0 md:col-span-2">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
               Buscar hamaca
             </label>
@@ -255,11 +267,11 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Buscar por hamaca o color"
-              className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
+              className="w-full min-w-0 rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             />
           </div>
 
-          <div className="md:col-span-2">
+          <div className="min-w-0 md:col-span-2">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
               Producto <span className="text-red-500">*</span>
             </label>
@@ -268,7 +280,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               name="hamaca_id"
               value={form.hamaca_id}
               onChange={handleChange}
-              className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
+              className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
               <option value="">Seleccionar hamaca...</option>
 
@@ -280,7 +292,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
             </select>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
               Usuario <span className="text-red-500">*</span>
             </label>
@@ -289,7 +301,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               name="usuario_id"
               value={form.usuario_id}
               onChange={handleChange}
-              className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
+              className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
               <option value="">Seleccionar usuario...</option>
               {usuarios.map((usuario) => (
@@ -300,7 +312,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
             </select>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
               Ubicación <span className="text-red-500">*</span>
             </label>
@@ -309,7 +321,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               name="ubicacion_id"
               value={form.ubicacion_id}
               onChange={handleChange}
-              className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
+              className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
               <option value="">Seleccionar ubicación...</option>
               {ubicaciones.map((ubicacion) => (
@@ -320,7 +332,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
             </select>
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
               Cantidad <span className="text-red-500">*</span>
             </label>
@@ -331,11 +343,11 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               value={form.cantidad}
               onChange={handleChange}
               min={1}
-              className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
+              className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
               Fecha <span className="text-red-500">*</span>
             </label>
@@ -345,23 +357,23 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               name="fecha"
               value={form.fecha}
               onChange={handleChange}
-              className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
+              className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             />
           </div>
 
           {error ? (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:col-span-2">
+            <p className="min-w-0 break-words rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:col-span-2">
               {error}
             </p>
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-[#1a3a5c]/12 bg-[#e8edf3] px-6 py-4">
+        <div className="flex shrink-0 flex-col-reverse gap-2 border-t border-[#1a3a5c]/12 bg-[#e8edf3] px-4 py-4 sm:flex-row sm:justify-end sm:px-6">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="rounded-[7px] border border-[#1a3a5c]/30 px-4 py-2 text-sm font-semibold text-[#1a3a5c]"
+            className="w-full rounded-[7px] border border-[#1a3a5c]/30 px-4 py-2 text-sm font-semibold text-[#1a3a5c] sm:w-auto"
           >
             Cancelar
           </button>
@@ -370,7 +382,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="rounded-[7px] bg-[#1a3a5c] px-5 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            className="w-full rounded-[7px] bg-[#1a3a5c] px-5 py-2 text-sm font-semibold text-white disabled:opacity-60 sm:w-auto"
           >
             {loading ? "Guardando..." : "Agregar entrada"}
           </button>

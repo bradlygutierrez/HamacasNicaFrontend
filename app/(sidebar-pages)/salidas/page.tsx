@@ -22,6 +22,10 @@ type Inventario = {
     id: number;
     nombre: string;
     precio: number | string;
+    colores?: Array<{
+      id: number;
+      nombre: string;
+    }>;
   };
   ubicacion?: {
     id: number;
@@ -32,10 +36,6 @@ type Inventario = {
     nombre: string;
     rol: string;
   };
-  colores?: Array<{
-    id: number;
-    nombre: string;
-  }>;
 };
 
 export type SalidaRow = {
@@ -59,7 +59,7 @@ export default function SalidasPage() {
   const loadData = useCallback(async () => {
     const [movimientosRes, inventariosRes] = await Promise.all([
       apiFetch('/movimientos'),
-      apiFetch('/inventario-hamacas'),
+      apiFetch('/inventario-hamacas?per_page=100'),
     ]);
 
     const movimientosData = await movimientosRes.json();
@@ -87,7 +87,7 @@ export default function SalidasPage() {
 
         const precio = Number(inv?.hamaca?.precio ?? 0);
         const total = precio * Number(mov.cantidad ?? 0);
-        const colores = inv?.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
+        const colores = inv?.hamaca?.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
 
         return {
           id: mov.id,
@@ -116,19 +116,19 @@ export default function SalidasPage() {
   }, [rows, searchTerm]);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
-      <header className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
+    <div className="w-full max-w-full min-w-0 overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+      <header className="mb-4 flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
         <h1 className="text-[42px] font-extrabold leading-none text-white sm:text-[56px]">
           Salidas
         </h1>
 
-        <div className="relative h-[46px] w-full lg:max-w-[650px]">
+        <div className="relative h-[46px] w-full min-w-0 lg:max-w-[650px]">
           <Search className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-[#08264d]" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-full w-full rounded-[8px] bg-[#f7f7f7] pl-14 pr-4 text-base text-[#08264d] outline-none sm:text-xl"
+            className="h-full w-full min-w-0 rounded-[8px] bg-[#f7f7f7] pl-14 pr-4 text-base text-[#08264d] outline-none sm:text-xl"
           />
         </div>
 
