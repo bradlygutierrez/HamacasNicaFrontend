@@ -47,6 +47,18 @@ test('proforma editor protects internal controls by role and supports removing s
   assert.match(editor, /readOnly={role !== "admin"}/);
 });
 
+test('new proforma editor keeps its header, fields and quick-client dialog usable on mobile', () => {
+  const editor = readFileSync(resolve(root, 'app/_components/proforma-editor.tsx'), 'utf8');
+
+  assert.match(editor, /w-full min-w-0 max-w-full overflow-x-hidden/);
+  assert.match(editor, /header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"/);
+  assert.match(editor, /className="flex min-w-0 flex-col gap-2 sm:flex-row"/);
+  assert.match(editor, /h-10 w-full min-w-0 flex-1/);
+  assert.match(editor, /grid min-w-0 gap-5 xl:grid-cols-\[minmax\(0,1fr\)_360px\]/);
+  assert.match(editor, /max-h-\[calc\(100dvh-2rem\)\][^\"]*overflow-y-auto/);
+  assert.match(editor, /flex flex-col-reverse gap-2 sm:flex-row sm:justify-end/);
+});
+
 test('proforma list stacks its header and keeps filters, cards and pagination inside mobile width', () => {
   const list = readFileSync(resolve(root, 'app/(sidebar-pages)/proformas/page.tsx'), 'utf8');
 
