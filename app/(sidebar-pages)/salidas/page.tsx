@@ -22,6 +22,10 @@ type Inventario = {
     id: number;
     nombre: string;
     precio: number | string;
+    colores?: Array<{
+      id: number;
+      nombre: string;
+    }>;
   };
   ubicacion?: {
     id: number;
@@ -32,10 +36,6 @@ type Inventario = {
     nombre: string;
     rol: string;
   };
-  colores?: Array<{
-    id: number;
-    nombre: string;
-  }>;
 };
 
 export type SalidaRow = {
@@ -87,7 +87,7 @@ export default function SalidasPage() {
 
         const precio = Number(inv?.hamaca?.precio ?? 0);
         const total = precio * Number(mov.cantidad ?? 0);
-        const colores = inv?.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
+        const colores = inv?.hamaca?.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
 
         return {
           id: mov.id,

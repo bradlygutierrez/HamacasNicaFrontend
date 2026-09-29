@@ -47,3 +47,18 @@ test('salidas page and modal constrain mobile layout and lock background scrolli
   assert.match(modal, /document\.body\.style\.overflow = previousOverflow/);
   assert.match(modal, /flex-col-reverse[\s\S]*sm:flex-row/);
 });
+
+test('salidas reads colors from the nested hamaca resource', () => {
+  const page = readFileSync('app/(sidebar-pages)/salidas/page.tsx', 'utf8');
+  const modal = readFileSync('app/_components/salida-modal.tsx', 'utf8');
+
+  assert.match(page, /hamaca\?:\s*\{[\s\S]*?colores\?:\s*Array</);
+  assert.doesNotMatch(page, /\n\s{2}colores\?:\s*Array</);
+  assert.match(page, /inv\?\.hamaca\?\.colores\?\.map/);
+  assert.match(modal, /hamaca\?:\s*\{[\s\S]*?colores\?:\s*Array</);
+  assert.doesNotMatch(modal, /\n\s{2}colores\?:\s*Array</);
+  assert.match(modal, /inventario\.hamaca\?\.colores\?\.map/);
+  assert.match(page, /\/inventario-hamacas\?per_page=100/);
+  assert.match(modal, /\/inventario-hamacas\?per_page=100/);
+  assert.match(readFileSync('app/_components/salidas-table.tsx', 'utf8'), /md:hidden[\s\S]*hidden[^"]*md:block/);
+});

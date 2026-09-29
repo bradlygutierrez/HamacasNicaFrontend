@@ -13,6 +13,10 @@ type Inventario = {
     id: number;
     nombre: string;
     precio?: number | string;
+    colores?: Array<{
+      id: number;
+      nombre: string;
+    }>;
   };
   ubicacion?: {
     id: number;
@@ -23,10 +27,6 @@ type Inventario = {
     nombre: string;
     rol: string;
   };
-  colores?: Array<{
-    id: number;
-    nombre: string;
-  }>;
 };
 
 type FormData = {
@@ -50,7 +50,7 @@ const EMPTY_FORM: FormData = {
 
 function formatInventarioLabel(inventario: Inventario) {
   const producto = inventario.hamaca?.nombre ?? `INV-${inventario.id}`;
-  const colores = inventario.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
+  const colores = inventario.hamaca?.colores?.map((color) => color.nombre).join(', ') || 'Sin color';
   const ubicacion = inventario.ubicacion?.nombre ?? 'Sin ubicación';
 
   return `${producto} - ${colores} - ${ubicacion} (${inventario.cantidad})`;
