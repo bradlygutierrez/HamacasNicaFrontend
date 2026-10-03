@@ -2,9 +2,35 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  calculateBreakdownTotal,
+  calculateBreakdownPricing,
   calculateAdditionalServiceSubtotal,
   validateAdditionalServiceField,
 } from '../app/_lib/proforma-services.ts';
+
+test('calculates the live total of an optional service breakdown', () => {
+  assert.equal(calculateBreakdownTotal([
+    { descripcion: 'Transporte Taller → Aeropuerto', monto: '75' },
+    { descripcion: '2% Total Factura', monto: '28' },
+    { descripcion: 'Agencia Aduanera', monto: '220' },
+    { descripcion: 'Impuesto por Factura > USD 500', monto: '25' },
+    { descripcion: 'Advance Commercial Information (ACI)', monto: '35' },
+    { descripcion: 'Terminal Fee (CH)', monto: '30' },
+    { descripcion: 'Fuel Surcharge', monto: '258' },
+    { descripcion: 'Flete', monto: '1290' },
+  ]), 1961);
+});
+
+test('keeps a service breakdown equal to the discounted line subtotal after cent rounding', () => {
+  const pricing = calculateBreakdownPricing([
+    { descripcion: 'Primer concepto', monto: '150.00' },
+    { descripcion: 'Flete', monto: '40.00' },
+  ], 3, 10);
+  assert.equal(pricing.unitPrice, '66.67');
+  assert.equal(pricing.lines[1].monto, '40.01');
+  assert.equal(pricing.subtotal, 190.01);
+  assert.equal(calculateBreakdownTotal(pricing.lines), 190.01);
+});
 
 test('calculates the estimated subtotal for an additional service', () => {
   assert.equal(calculateAdditionalServiceSubtotal('2', '150', '50'), 250);

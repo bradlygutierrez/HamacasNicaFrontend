@@ -40,11 +40,22 @@ test("pedido frontend separates internal analysis and operational controls", () 
   assert.match(detail, /procesos/);
   assert.match(detail, /materiales \?\? \[\]/);
   assert.match(detail, /procesos \?\? \[\]/);
-  assert.match(conversion, /window\.confirm/);
+  assert.doesNotMatch(conversion, /window\.(confirm|prompt|alert)/);
   assert.match(detail, /Guardar logística/);
   assert.match(detail, /costo_compra_real/);
   assert.match(detail, /item\.estado !== "completado"/);
   assert.match(detail, /cancelado/);
+  assert.doesNotMatch(detail + conversion, /window\.(confirm|prompt|alert)/);
+  assert.match(detail, /toast\.(success|error)/);
+  assert.match(conversion, /toast\.(success|error)/);
+  assert.match(detail, /Cantidad que realmente fue comprada o recibida/);
+  assert.match(detail, /Monto total realmente pagado por este material/);
+  assert.match(detail, /aria-label="Navegación del pedido"/);
+  assert.match(detail, /Confirmar facturación/);
+  assert.match(detail, /Motivo de cancelación/);
+  assert.match(detail, /id="materiales"/);
+  assert.match(detail, /role !== "vendedor"/);
+  assert.match(detail, /role === "admin" \? <label/);
 });
 
 test("ventas identifies direct and pedido invoices with PDF actions", () => {

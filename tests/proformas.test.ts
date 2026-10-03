@@ -62,6 +62,9 @@ test('proforma editor labels all discount levels and renders human summary label
   assert.match(serviceCard, /Costo interno personalizado \(C\$\)/);
   assert.match(serviceCard, /Solo visible para administración\. Dejalo vacío para usar el costo configurado\./);
   assert.match(serviceCard, /subtotal estimado/i);
+  assert.match(serviceCard, /Agregar desglose/);
+  assert.match(serviceCard, /Total del desglose/);
+  assert.match(serviceCard, /Descripción del concepto/);
   assert.match(editor, /Servicios adicionales/);
   assert.doesNotMatch(editor, /Servicios generales/);
   assert.match(editor, /servicios_pedido:/);
@@ -69,7 +72,10 @@ test('proforma editor labels all discount levels and renders human summary label
   assert.match(editor, /Tasa IVA \(%\)/);
   assert.match(editor, /Aplicar IR/);
   assert.match(editor, /Comisión del vendedor \(%\)/);
-  assert.match(editor, /Productos[\s\S]*Servicios adicionales[\s\S]*Subtotal[\s\S]*Descuentos[\s\S]*Base neta[\s\S]*Total/);
+  assert.match(editor, /Subtotal bruto/);
+  assert.match(editor, /Descuentos por líneas/);
+  assert.match(editor, /Descuento global/);
+  assert.match(editor, /desglose: item\.desglose\.map/);
   assert.doesNotMatch(editor, /<span>\{key\}<\/span>/);
 });
 
