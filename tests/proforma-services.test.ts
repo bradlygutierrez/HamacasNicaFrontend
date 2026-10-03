@@ -21,15 +21,20 @@ test('calculates the live total of an optional service breakdown', () => {
   ]), 1961);
 });
 
-test('keeps a service breakdown equal to the discounted line subtotal after cent rounding', () => {
-  const pricing = calculateBreakdownPricing([
+test('service discounts reduce subtotal without changing gross breakdown amounts', () => {
+  const lines = [
     { descripcion: 'Primer concepto', monto: '150.00' },
     { descripcion: 'Flete', monto: '40.00' },
-  ], 3, 10);
-  assert.equal(pricing.unitPrice, '66.67');
-  assert.equal(pricing.lines[1].monto, '40.01');
-  assert.equal(pricing.subtotal, 190.01);
-  assert.equal(calculateBreakdownTotal(pricing.lines), 190.01);
+  ];
+  const pricing = calculateBreakdownPricing(lines, 3, 10);
+  const largerDiscount = calculateBreakdownPricing(lines, 3, 20);
+  assert.equal(pricing.unitPrice, '63.33');
+  assert.equal(pricing.lines[1].monto, '40.00');
+  assert.equal(pricing.subtotal, 180);
+  assert.equal(calculateBreakdownTotal(pricing.lines), 190);
+  assert.deepEqual(largerDiscount.lines, lines);
+  assert.equal(largerDiscount.subtotal, 170);
+  assert.equal(largerDiscount.unitPrice, pricing.unitPrice);
 });
 
 test('calculates the estimated subtotal for an additional service', () => {

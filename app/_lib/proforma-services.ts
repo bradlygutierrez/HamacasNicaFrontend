@@ -13,14 +13,10 @@ export function calculateBreakdownPricing<T extends BreakdownAmount>(lines: T[],
   const totalCents = Math.round(calculateBreakdownTotal(lines) * 100);
   const discountCents = Math.round(Number(discount || 0) * 100);
   if (!Number.isFinite(quantityValue) || quantityValue <= 0 || lines.length === 0) {
-    return { unitPrice: '0.00', lines, subtotal: totalCents / 100 };
+    return { unitPrice: '0.00', lines, subtotal: (totalCents - discountCents) / 100 };
   }
-  const priceCents = Math.round(((totalCents + discountCents) / 100 / quantityValue) * 100);
-  const subtotalCents = Math.round(quantityValue * priceCents - discountCents);
-  const adjusted = lines.map((line, index) => index === lines.length - 1
-    ? { ...line, monto: ((Math.round(Number(line.monto) * 100) + subtotalCents - totalCents) / 100).toFixed(2) }
-    : line);
-  return { unitPrice: (priceCents / 100).toFixed(2), lines: adjusted, subtotal: subtotalCents / 100 };
+  const priceCents = Math.round((totalCents / 100 / quantityValue) * 100);
+  return { unitPrice: (priceCents / 100).toFixed(2), lines, subtotal: (totalCents - discountCents) / 100 };
 }
 
 export function calculateAdditionalServiceSubtotal(
