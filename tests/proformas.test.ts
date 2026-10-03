@@ -67,6 +67,9 @@ test('proforma editor labels all discount levels and renders human summary label
   assert.match(serviceCard, /subtotal estimado/i);
   assert.match(serviceCard, /Agregar desglose/);
   assert.match(serviceCard, /Total del desglose/);
+  assert.match(serviceCard, /calculateBreakdownPricing/);
+  assert.match(serviceCard, /Precio unitario aproximado/);
+  assert.match(serviceCard, /Importe bruto según desglose/);
   assert.match(serviceCard, /Descripción del concepto/);
   assert.match(editor, /Servicios adicionales/);
   assert.doesNotMatch(editor, /Servicios generales/);

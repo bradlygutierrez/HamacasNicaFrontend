@@ -13,10 +13,10 @@ export function calculateBreakdownPricing<T extends BreakdownAmount>(lines: T[],
   const totalCents = Math.round(calculateBreakdownTotal(lines) * 100);
   const discountCents = Math.round(Number(discount || 0) * 100);
   if (!Number.isFinite(quantityValue) || quantityValue <= 0 || lines.length === 0) {
-    return { unitPrice: '0.00', lines, subtotal: (totalCents - discountCents) / 100 };
+    return { unitPrice: '0.00', lines, gross: totalCents / 100, subtotal: (totalCents - discountCents) / 100 };
   }
   const priceCents = Math.round((totalCents / 100 / quantityValue) * 100);
-  return { unitPrice: (priceCents / 100).toFixed(2), lines, subtotal: (totalCents - discountCents) / 100 };
+  return { unitPrice: (priceCents / 100).toFixed(2), lines, gross: totalCents / 100, subtotal: (totalCents - discountCents) / 100 };
 }
 
 export function calculateAdditionalServiceSubtotal(
@@ -39,7 +39,8 @@ export function validateAdditionalServiceField(
   field: AdditionalServiceField,
   value: string,
   quantity?: string | number,
-  unitPrice?: string | number
+  unitPrice?: string | number,
+  grossOverride?: number
 ) {
   const parsedValue = Number(value);
 
@@ -56,7 +57,7 @@ export function validateAdditionalServiceField(
   }
 
   if (field === 'descuento' && quantity !== undefined && unitPrice !== undefined) {
-    const subtotal = Number(quantity) * Number(unitPrice);
+    const subtotal = grossOverride ?? Number(quantity) * Number(unitPrice);
     if (Number.isFinite(subtotal) && parsedValue > subtotal) {
       return 'El descuento no puede superar el subtotal de este elemento.';
     }

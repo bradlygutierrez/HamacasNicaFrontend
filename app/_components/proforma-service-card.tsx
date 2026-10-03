@@ -1,5 +1,5 @@
 import {
-  calculateBreakdownTotal,
+  calculateBreakdownPricing,
   calculateAdditionalServiceSubtotal,
   validateAdditionalServiceField,
 } from '@/app/_lib/proforma-services';
@@ -45,19 +45,23 @@ export default function ProformaServiceCard({
 }: Props) {
   const quantityError = validateAdditionalServiceField('cantidad', item.cantidad);
   const unitPriceError = validateAdditionalServiceField('precio_unitario', item.precio_unitario);
+  const breakdownPricing = item.desglose.length
+    ? calculateBreakdownPricing(item.desglose, item.cantidad, item.descuento)
+    : null;
   const discountError = validateAdditionalServiceField(
     'descuento',
     item.descuento,
     item.cantidad,
-    item.precio_unitario
+    item.precio_unitario,
+    breakdownPricing?.gross
   );
   const subtotal = calculateAdditionalServiceSubtotal(
     item.cantidad,
     item.precio_unitario,
     item.descuento
   );
-  const breakdownTotal = calculateBreakdownTotal(item.desglose);
-  const displayedSubtotal = item.desglose.length ? breakdownTotal : subtotal;
+  const breakdownTotal = breakdownPricing?.gross ?? 0;
+  const displayedSubtotal = breakdownPricing?.subtotal ?? subtotal;
   const updateBreakdown = (index: number, patch: Partial<ServiceLine['desglose'][number]>) => {
     onChange({ desglose: item.desglose.map((row, rowIndex) => rowIndex === index ? { ...row, ...patch } : row) });
   };
@@ -95,7 +99,7 @@ export default function ProformaServiceCard({
           </label>
 
           <label className="min-w-0 text-xs font-bold">
-            Precio unitario (C$)
+            {item.desglose.length ? 'Precio unitario aproximado (C$)' : 'Precio unitario (C$)'}
             <input
               type="number"
               min="0"
@@ -107,7 +111,7 @@ export default function ProformaServiceCard({
               className={inputClass(Boolean(unitPriceError))}
               placeholder="Ej. 150"
             />
-            {item.desglose.length ? <span className="mt-1 block text-xs font-normal text-[#002060]">Se calcula con el total del desglose.</span> : null}
+            {item.desglose.length ? <span className="mt-1 block text-xs font-normal text-[#002060]">Importe bruto exacto según desglose: C$ {breakdownTotal.toFixed(2)}. El precio por unidad se redondea a centavos.</span> : null}
             {unitPriceError ? <span role="alert" className="mt-1 block text-xs font-medium text-red-700">{unitPriceError}</span> : null}
           </label>
 
@@ -155,7 +159,7 @@ export default function ProformaServiceCard({
         </div>
       ) : (
         <div className="mt-2 space-y-1 break-words text-sm text-[#002060]">
-          <p>{item.cantidad} × C$ {item.precio_unitario} · Descuento C$ {item.descuento}</p>
+          {breakdownPricing ? <p>Cantidad: {item.cantidad} · Importe bruto según desglose: C$ {breakdownTotal.toFixed(2)} · Precio unitario aprox.: C$ {item.precio_unitario} · Descuento: C$ {item.descuento}</p> : <p>{item.cantidad} × C$ {item.precio_unitario} · Descuento C$ {item.descuento}</p>}
           {item.detalle ? <p>Detalle: {item.detalle}</p> : null}
         </div>
       )}

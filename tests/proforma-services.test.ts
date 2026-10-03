@@ -35,6 +35,9 @@ test('service discounts reduce subtotal without changing gross breakdown amounts
   assert.deepEqual(largerDiscount.lines, lines);
   assert.equal(largerDiscount.subtotal, 170);
   assert.equal(largerDiscount.unitPrice, pricing.unitPrice);
+  assert.equal(pricing.gross, 190);
+  assert.equal(validateAdditionalServiceField('descuento', '190', '3', '63.33', pricing.gross), null);
+  assert.equal(validateAdditionalServiceField('descuento', '190.01', '3', '63.33', pricing.gross), 'El descuento no puede superar el subtotal de este elemento.');
 });
 
 test('calculates the estimated subtotal for an additional service', () => {
