@@ -34,6 +34,9 @@ test('proforma pages and editor use backend pricing and no inventory mutations',
   assert.match(editor, /status/);
   assert.match(editor, /Guardar borrador/);
   assert.match(editor, /Emitir proforma/);
+  assert.doesNotMatch(editor, /window\.(confirm|prompt|alert)/);
+  assert.match(editor, /Confirmar emisión/);
+  assert.match(editor, /Confirmar emisión de proforma/);
   assert.match(editor, /\+ Registrar cliente/);
   assert.match(editor, /setSelectedClientId\(client\.id\)/);
   assert.doesNotMatch(editor, /inventario|movimientos|facturas/);
@@ -62,6 +65,12 @@ test('proforma editor labels all discount levels and renders human summary label
   assert.match(serviceCard, /Costo interno personalizado \(C\$\)/);
   assert.match(serviceCard, /Solo visible para administración\. Dejalo vacío para usar el costo configurado\./);
   assert.match(serviceCard, /subtotal estimado/i);
+  assert.match(serviceCard, /Agregar desglose/);
+  assert.match(serviceCard, /Total del desglose/);
+  assert.match(serviceCard, /calculateBreakdownPricing/);
+  assert.match(serviceCard, /Precio unitario aproximado/);
+  assert.match(serviceCard, /Importe bruto según desglose/);
+  assert.match(serviceCard, /Descripción del concepto/);
   assert.match(editor, /Servicios adicionales/);
   assert.doesNotMatch(editor, /Servicios generales/);
   assert.match(editor, /servicios_pedido:/);
@@ -69,7 +78,10 @@ test('proforma editor labels all discount levels and renders human summary label
   assert.match(editor, /Tasa IVA \(%\)/);
   assert.match(editor, /Aplicar IR/);
   assert.match(editor, /Comisión del vendedor \(%\)/);
-  assert.match(editor, /Productos[\s\S]*Servicios adicionales[\s\S]*Subtotal[\s\S]*Descuentos[\s\S]*Base neta[\s\S]*Total/);
+  assert.match(editor, /Subtotal bruto/);
+  assert.match(editor, /Descuentos por líneas/);
+  assert.match(editor, /Descuento global/);
+  assert.match(editor, /desglose: item\.desglose\.map/);
   assert.doesNotMatch(editor, /<span>\{key\}<\/span>/);
 });
 
