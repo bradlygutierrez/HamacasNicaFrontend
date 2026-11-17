@@ -5,6 +5,7 @@ import { todayLocalDate } from "@/app/_lib/date";
 import { buildEntradaPayload } from "@/app/_lib/entradas";
 import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
 
 type Color = {
   id: number;
@@ -208,7 +209,9 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
       const data = await response.json().catch(() => null);
 
       if (response.status === 422) {
-        setError(getValidationMessage(data));
+        const message = getValidationMessage(data);
+        setError(message);
+        toast.error(message);
         return;
       }
 
@@ -224,10 +227,12 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
       setError("");
       await onSuccess();
+      toast.success("Entrada de inventario registrada.");
       onClose();
     } catch (err) {
       console.error(err);
       setError("No se pudo registrar la entrada. Verifica tu sesión y rol.");
+      toast.error("No se pudo registrar la entrada. Verificá tu sesión y rol.");
     } finally {
       setLoading(false);
     }

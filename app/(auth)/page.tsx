@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch, csrfCookie } from "../_lib/api";
+import { toast } from "react-toastify";
 
 export default function Home() {
 
@@ -37,6 +38,7 @@ export default function Home() {
         return;
       }
 
+      toast.success("Sesión iniciada correctamente.");
       router.push("/dashboard");
 
     } catch (err) {

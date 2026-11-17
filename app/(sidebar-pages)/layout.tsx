@@ -97,9 +97,9 @@ export default function SidebarLayout({
     }
 
     return (
-        <div className="flex gap-2 min-h-screen">
+        <div className="flex min-h-screen w-full min-w-0 gap-2 overflow-x-clip">
             <SideBar usuario={usuario} navItems={navItems} />
-            <main className="flex-1 pt-11 md:pt-0">
+            <main className="min-w-0 flex-1 overflow-x-clip pt-11 md:pt-0">
                 {hasAccess ? (
                     <CatalogPermissionsProvider usuario={usuario} permissions={permissions}>
                         {children}

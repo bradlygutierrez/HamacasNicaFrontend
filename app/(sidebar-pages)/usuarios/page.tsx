@@ -3,6 +3,7 @@
 import AddUserCard from "@/app/_components/addUserCard";
 import UserCard from "@/app/_components/userCard";
 import { apiFetch } from "@/app/_lib/api";
+import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
 
 interface UsuarioForm {
@@ -153,6 +154,9 @@ export default function Usuarios() {
         if (res.ok) {
             await loadUsers();
             resetCreateForm();
+            toast.success("Usuario creado correctamente.");
+        } else {
+            toast.error(data.message || "No se pudo crear el usuario.");
         }
     };
 
@@ -190,6 +194,9 @@ export default function Usuarios() {
 
         if (res.ok) {
             await loadUsers();
+            toast.success("Usuario actualizado correctamente.");
+        } else {
+            toast.error(data.message || "No se pudo actualizar el usuario.");
         }
     };
 
@@ -203,6 +210,9 @@ export default function Usuarios() {
 
         if (res.ok) {
             await loadUsers();
+            toast.success("Usuario eliminado correctamente.");
+        } else {
+            toast.error("No se pudo eliminar el usuario.");
         }
     };
 

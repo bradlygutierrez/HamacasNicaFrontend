@@ -5,6 +5,7 @@ import { todayLocalDate } from '@/app/_lib/date';
 import { buildSalidaPayload } from '@/app/_lib/salidas';
 import { Plus, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 type Inventario = {
   id: number;
@@ -182,7 +183,9 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
       const data = await response.json().catch(() => null);
 
       if (response.status === 409 || response.status === 422) {
-        setError(getValidationMessage(data));
+        const message = getValidationMessage(data);
+        setError(message);
+        toast.error(message);
         return;
       }
 
@@ -197,10 +200,12 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
       setError('');
       await onSuccess();
+      toast.success('Salida de inventario registrada.');
       onClose();
     } catch (err) {
       console.error(err);
       setError('No se pudo registrar la salida. Verificá tu sesión, rol y stock.');
+      toast.error('No se pudo registrar la salida. Verificá tu sesión, rol y stock.');
     } finally {
       setLoading(false);
     }
