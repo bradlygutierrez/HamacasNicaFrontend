@@ -9,8 +9,8 @@ export default function PdfActions({ endpoint, filename }: { endpoint: string; f
   async function run(action: "view" | "download") {
     setBusy(action);
     try {
-      if (action === "view") await openPdf(endpoint);
-      else await downloadPdf(endpoint, filename);
+      if (action === "view") { await openPdf(endpoint); toast.success("PDF listo para consultar."); }
+      else { await downloadPdf(endpoint, filename); toast.success("PDF descargado."); }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No se pudo obtener el PDF.");
     } finally {

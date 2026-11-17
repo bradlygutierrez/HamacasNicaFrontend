@@ -33,7 +33,7 @@ export default function ServicioFormulaPage() {
   async function save() {
     if (!canEdit) return;
     const response = await apiFetch(`/servicios-adicionales/${id}/formula`, { method: "PUT", body: JSON.stringify({ materiales: materialRows, mano_obra: laborRows }) }); const data = await response.json().catch(() => null);
-    if (!response.ok) { setError(response.status === 403 ? "No tenés permiso para modificar costos." : firstError(data, response.status === 422 ? "Revisá los datos ingresados." : "No se pudo guardar la fórmula.")); return; }
+    if (!response.ok) { const message = response.status === 403 ? "No tenés permiso para modificar costos." : firstError(data, response.status === 422 ? "Revisá los datos ingresados." : "No se pudo guardar la fórmula."); setError(message); toast.error(message); return; }
     setError(""); toast.success("Costos productivos guardados."); await load();
   }
   const materialIds = materialRows.map((row) => row.material_id); const processIds = laborRows.map((row) => row.proceso_produccion_id); const price = Number(service?.precio_venta_actual ?? 0); const total = Number(costs?.resumen?.costo_total ?? 0); const margin = price > 0 ? ((price - total) / price) * 100 : 0;

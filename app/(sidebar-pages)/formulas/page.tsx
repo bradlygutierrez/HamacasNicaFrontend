@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { apiFetch } from "@/app/_lib/api";
 import { getFormulaUiState, type FormulaUiState } from "@/app/_lib/formula-ui";
 import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
@@ -71,12 +72,17 @@ export default function FormulasPage() {
       const response = await apiFetch(`/hamacas/${hamacaIdOf(item)}/recetas`, { method: "POST", ...(body ? { body } : {}) });
       const data = await response.json().catch(() => null) as ErrorPayload | null;
       if (!response.ok) {
-        setError(response.status === 403 ? "No tenés permiso para crear esta fórmula." : firstError(data, response.status === 409 ? "Ya existe un borrador para esta fórmula." : "No se pudo crear la fórmula."));
+        const message = response.status === 403 ? "No tenés permiso para crear esta fórmula." : firstError(data, response.status === 409 ? "Ya existe un borrador para esta fórmula." : "No se pudo crear la fórmula.");
+        setError(message);
+        toast.error(message);
         return;
       }
+      toast.success("Fórmula lista para configurar.");
       router.push(`/formulas/${hamacaIdOf(item)}`);
     } catch {
-      setError("No se pudo conectar con el servicio de fórmulas.");
+      const message = "No se pudo conectar con el servicio de fórmulas.";
+      setError(message);
+      toast.error(message);
     } finally {
       mutationInFlight.current = false;
       setMutationPending(false);
