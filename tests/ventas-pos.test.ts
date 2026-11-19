@@ -20,7 +20,7 @@ test("ventas POS exposes the direct sale flow and permission gate", () => {
   assert.doesNotMatch(source, /variante|hamaca_variante/);
   assert.match(source, /toast\.success\("Venta registrada correctamente\."/);
   assert.doesNotMatch(source, /precio_unitario: item\.inventory/);
-  assert.match(source, /aria-label="Canal"/);
+  assert.match(source, /aria-label=\{translateText\("Canal"\)\}/);
   assert.match(source, /value="pos"/);
   assert.match(source, /value="ecommerce"/);
   assert.match(source, /canal: channel/);

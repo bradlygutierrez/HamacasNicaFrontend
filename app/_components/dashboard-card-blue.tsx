@@ -1,5 +1,6 @@
 'use client'
 
+import { translateText } from "@/app/_lib/localization";
 import { LucideIcon } from "lucide-react";
 
 interface dashboardCardProps {
@@ -12,8 +13,8 @@ interface dashboardCardProps {
 export default function DashboardCardBlue({ cardTitle, cardScore, icon: Icon, cardTitleClassName = "" }: dashboardCardProps) {
     return (
         <div className="space-y-2">
-            <h2 className={`text-left text-sm font-semibold text-[var(--color-foreground-secondary)] md:text-base ${cardTitleClassName}`}>
-                {cardTitle}
+            <h2 className={`text-left text-sm font-semibold text-[var(--color-foreground)] md:text-base ${cardTitleClassName}`}>
+                {translateText(cardTitle)}
             </h2>
 
             <div className="flex min-h-[7rem] items-center justify-between rounded-lg border border-white/10 bg-[var(--color-foreground)] p-4 text-[var(--color-foreground-secondary)] shadow-md">

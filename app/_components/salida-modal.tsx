@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
 import { todayLocalDate } from '@/app/_lib/date';
@@ -223,16 +224,15 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
       <div className="flex max-h-[calc(100dvh-24px)] w-full min-w-0 max-w-[620px] flex-col overflow-hidden rounded-[10px] bg-[#f7f7f7] shadow-xl">
         <header className="flex shrink-0 items-center justify-between border-b border-[#08264d]/15 px-4 py-4 sm:px-6">
           <h2 className="min-w-0 break-words text-xl font-medium text-black sm:text-2xl">
-            Agregar Salida
-          </h2>
-          <button type="button" onClick={onClose} disabled={loading} aria-label="Cerrar modal" className="ml-3 shrink-0 rounded p-1 text-[#08264d] hover:bg-[#08264d]/10 disabled:opacity-60">
+            {translateText("Agregar Salida\n          ")}</h2>
+          <button type="button" onClick={onClose} disabled={loading} aria-label={translateText("Cerrar modal")} className="ml-3 shrink-0 rounded p-1 text-[#08264d] hover:bg-[#08264d]/10 disabled:opacity-60">
             <X className="h-5 w-5" />
           </button>
         </header>
 
         <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 py-4 sm:px-6">
           <div className="flex min-w-0 flex-col gap-4">
-            <label htmlFor="salida-inventario" className="text-sm font-medium text-[#08264d]">Producto en inventario</label>
+            <label htmlFor="salida-inventario" className="text-sm font-medium text-[#08264d]">{translateText("Producto en inventario")}</label>
             <select
               id="salida-inventario"
               name="inventario_hamaca_id"
@@ -240,7 +240,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               onChange={handleChange}
               className="h-[46px] w-full min-w-0 max-w-full border border-black bg-[#f7f7f7] px-3 text-sm text-[#08264d] outline-none sm:px-5 sm:text-base"
             >
-              <option value="">Producto en inventario</option>
+              <option value="">{translateText("Producto en inventario")}</option>
               {inventarios.map((inventario) => (
                 <option key={inventario.id} value={inventario.id}>
                   {formatInventarioLabel(inventario)}
@@ -248,7 +248,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               ))}
             </select>
 
-            <label htmlFor="salida-cantidad" className="text-sm font-medium text-[#08264d]">Cantidad</label>
+            <label htmlFor="salida-cantidad" className="text-sm font-medium text-[#08264d]">{translateText("Cantidad")}</label>
             <input
               id="salida-cantidad"
               name="cantidad"
@@ -257,11 +257,11 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
               max={selectedInventario?.cantidad}
               value={form.cantidad}
               onChange={handleChange}
-              placeholder="Cantidad"
+              placeholder={translateText("Cantidad")}
               className="h-[46px] w-full min-w-0 border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none"
             />
 
-            <label htmlFor="salida-fecha" className="text-sm font-medium text-[#08264d]">Fecha</label>
+            <label htmlFor="salida-fecha" className="text-sm font-medium text-[#08264d]">{translateText("Fecha")}</label>
             <input
               id="salida-fecha"
               name="fecha"
@@ -273,12 +273,12 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
 
             {selectedInventario && (
               <div className="min-w-0 break-words rounded-md border border-[#08264d]/30 bg-white px-4 py-3 text-sm font-semibold text-[#08264d]">
-                Stock disponible: {selectedInventario.cantidad}
+                {translateText("Stock disponible: ")}{selectedInventario.cantidad}
               </div>
             )}
 
             {error && (
-              <p className="min-w-0 break-words rounded-md bg-red-100 px-3 py-2 text-sm font-semibold text-red-700">
+              <p className="min-w-0 break-words rounded-md status-danger px-3 py-2 text-sm font-semibold status-danger-text">
                 {error}
               </p>
             )}
@@ -294,8 +294,7 @@ export default function SalidaModal({ isOpen, onClose, onSuccess, initialInventa
             className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#08264d] px-4 text-base font-bold text-white disabled:opacity-60 sm:w-auto"
           >
             <X className="h-5 w-5" />
-            Cancelar
-          </button>
+            {translateText("Cancelar\n          ")}</button>
           <button
             type="button"
             onClick={handleSubmit}

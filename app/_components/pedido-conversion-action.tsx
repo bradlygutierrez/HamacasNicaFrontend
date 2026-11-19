@@ -1,5 +1,7 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
+import Link from "next/link";
 import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 import { apiFetch } from "@/app/_lib/api";
 import { useParams, useRouter } from "next/navigation";
@@ -64,13 +66,13 @@ export default function PedidoConversionAction() {
     }
   }
 
-  if (pedido) return <a href={"/pedidos/" + pedido.id} className="inline-flex min-h-12 w-full items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-base font-extrabold text-emerald-900 shadow-sm transition hover:bg-emerald-100 sm:w-auto">Ver pedido creado</a>;
-  if (state !== "aceptada" || !canCreate) return error ? <span className="text-sm text-red-100">{error}</span> : null;
+  if (pedido) return <Link href={"/pedidos/" + pedido.id} className="status-success inline-flex min-h-12 w-full items-center justify-center rounded-xl px-5 py-3 text-base font-extrabold shadow-sm transition sm:w-auto">{translateText("Ver pedido creado")}</Link>;
+  if (state !== "aceptada" || !canCreate) return error ? <span className="text-sm status-danger-text">{error}</span> : null;
   return <>
     <section className="flex min-w-0 flex-1 flex-col justify-between gap-4 rounded-xl border border-emerald-200 bg-white p-4 shadow-md sm:flex-row sm:items-center sm:p-5">
-      <div className="min-w-0"><span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-extrabold text-emerald-900"><span aria-hidden="true">✓</span> Proforma aceptada</span><p className="mt-2 text-sm text-slate-600">Todo listo para continuar con la preparación del pedido.</p></div>
-      <button onClick={() => setConfirmOpen(true)} className="min-h-14 w-full shrink-0 rounded-xl bg-[#e3b72e] px-6 py-3 text-lg font-extrabold text-[#08264d] shadow-sm transition hover:-translate-y-0.5 hover:bg-[#f0c842] hover:shadow-md active:translate-y-0 sm:w-auto">Crear pedido <span aria-hidden="true">→</span></button>
+      <div className="min-w-0"><span className="status-success inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-extrabold"><span aria-hidden="true">{translateText("✓")}</span> {translateText("Proforma aceptada")}</span><p className="mt-2 text-sm text-slate-600">{translateText("Todo listo para continuar con la preparación del pedido.")}</p></div>
+      <button onClick={() => setConfirmOpen(true)} className="status-warning min-h-14 w-full shrink-0 rounded-xl px-6 py-3 text-lg font-extrabold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 sm:w-auto">{translateText("Crear pedido ")}<span aria-hidden="true">{translateText("→")}</span></button>
     </section>
-    {confirmOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4"><div role="dialog" aria-modal="true" aria-labelledby="convert-pedido-title" className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl"><h2 id="convert-pedido-title" className="text-xl font-extrabold">Crear pedido</h2><p className="mt-3 text-sm text-slate-600">¿Crear el pedido a partir de esta proforma aceptada? Al continuar, se descargará la lista de compra de materiales.</p>{error ? <p role="alert" className="mt-3 text-sm text-red-700">{error}</p> : null}<div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button disabled={busy} onClick={() => setConfirmOpen(false)} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-bold disabled:opacity-50">Cancelar</button><button disabled={busy} onClick={() => void convert()} className="rounded-lg bg-[#123852] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">{busy ? "Creando pedido…" : "Confirmar y crear pedido"}</button></div></div></div> : null}
+    {confirmOpen ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4"><div role="dialog" aria-modal="true" aria-labelledby="convert-pedido-title" className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl"><h2 id="convert-pedido-title" className="text-xl font-extrabold">{translateText("Crear pedido")}</h2><p className="mt-3 text-sm text-slate-600">{translateText("¿Crear el pedido a partir de esta proforma aceptada? Al continuar, se descargará la lista de compra de materiales.")}</p>{error ? <p role="alert" className="mt-3 text-sm status-danger-text">{error}</p> : null}<div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button disabled={busy} onClick={() => setConfirmOpen(false)} className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-bold disabled:opacity-50">{translateText("Cancelar")}</button><button disabled={busy} onClick={() => void convert()} className="rounded-lg bg-[#123852] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">{busy ? "Creando pedido…" : "Confirmar y crear pedido"}</button></div></div></div> : null}
   </>;
 }

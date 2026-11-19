@@ -1,4 +1,5 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from "@/app/_lib/api";
 import {
@@ -259,8 +260,8 @@ export default function FotoHamacaModal({
     >
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[14px] bg-[#f0f4f8] shadow-xl">
         <div className="flex items-center justify-between bg-[#1a3a5c] px-6 py-4">
-          <h2 className="text-[18px] font-semibold text-white">
-            Fotos de {hamacaNombre}
+          <h2 className="text-[17px] font-semibold text-white">
+            {translateText("Fotos de ")}{hamacaNombre}
           </h2>
 
           <button
@@ -268,15 +269,13 @@ export default function FotoHamacaModal({
             onClick={onClose}
             className="text-white/70 hover:text-white"
           >
-            ✕
-          </button>
+            {translateText("✕\r\n          ")}</button>
         </div>
 
         <div className="space-y-5 px-6 py-5">
           <section>
             <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#1a3a5c]">
-              Fotos actuales
-            </h3>
+              {translateText("Fotos actuales\r\n            ")}</h3>
 
             {initialFotos.length > 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -303,8 +302,7 @@ export default function FotoHamacaModal({
                           className="flex items-center justify-center gap-2 bg-[#1a3a5c] px-3 py-2 text-sm font-semibold text-white"
                         >
                           <Download className="h-4 w-4" />
-                          Abrir
-                        </button>
+                          {translateText("Abrir\r\n                        ")}</button>
 
                         <button
                           type="button"
@@ -328,8 +326,7 @@ export default function FotoHamacaModal({
 
           <section>
             <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-[#1a3a5c]">
-              Subir fotos
-            </h3>
+              {translateText("Subir fotos\r\n            ")}</h3>
 
             <HamacaPhotoPicker files={selectedFiles} onFilesChange={setSelectedFiles} />
           </section>
@@ -337,8 +334,7 @@ export default function FotoHamacaModal({
           <section>
             <div className="mb-3 flex items-center justify-between gap-3">
               <h3 className="text-sm font-bold uppercase tracking-wide text-[#1a3a5c]">
-                O agregar ruta manual
-              </h3>
+                {translateText("O agregar ruta manual\r\n              ")}</h3>
 
               <button
                 type="button"
@@ -346,8 +342,7 @@ export default function FotoHamacaModal({
                 className="flex items-center gap-2 rounded-[7px] bg-[#1a3a5c] px-3 py-2 text-xs font-semibold text-white"
               >
                 <Plus className="h-4 w-4" />
-                Agregar
-              </button>
+                {translateText("Agregar\r\n              ")}</button>
             </div>
 
             <div className="space-y-2">
@@ -359,7 +354,7 @@ export default function FotoHamacaModal({
                     onChange={(event) =>
                       handlePhotoChange(index, event.target.value)
                     }
-                    placeholder="fotos/familiar-roja.jpg o https://..."
+                    placeholder={translateText("fotos/familiar-roja.jpg o https://...")}
                     className="min-w-0 flex-1 rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
                   />
 
@@ -375,7 +370,7 @@ export default function FotoHamacaModal({
             </div>
 
             {error ? (
-              <p className="mt-3 text-sm font-semibold text-red-600">
+              <p className="mt-3 text-sm font-semibold status-danger-text">
                 {error}
               </p>
             ) : null}
@@ -389,8 +384,7 @@ export default function FotoHamacaModal({
             disabled={loading}
             className="rounded-[7px] border border-[#1a3a5c]/30 px-4 py-2 text-sm font-semibold text-[#1a3a5c]"
           >
-            Cancelar
-          </button>
+            {translateText("Cancelar\r\n          ")}</button>
 
           <button
             type="button"

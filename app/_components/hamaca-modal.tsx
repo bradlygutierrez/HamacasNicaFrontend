@@ -1,4 +1,5 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from "@/app/_lib/api";
 import { buildHamacaPayload, suggestHamacaName } from "@/app/_lib/hamacas";
@@ -442,7 +443,7 @@ export default function HamacaModal({
     >
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[14px] bg-[#f0f4f8] shadow-xl">
         <div className="flex items-center justify-between bg-[#1a3a5c] px-6 py-4">
-          <h2 className="text-[17px] font-medium text-white">
+          <h2 className="text-[16px] font-medium text-white">
             {mode === "crear" ? "Nueva hamaca" : "Editar hamaca"}
           </h2>
 
@@ -450,10 +451,9 @@ export default function HamacaModal({
             type="button"
             onClick={onClose}
             className="text-white/70 transition-colors hover:text-white"
-            aria-label="Cerrar modal"
+            aria-label={translateText("Cerrar modal")}
           >
-            ✕
-          </button>
+            {translateText("✕\n          ")}</button>
         </div>
 
         <div className="flex gap-2 px-6 pt-4">
@@ -466,8 +466,7 @@ export default function HamacaModal({
                 : "border-[#1a3a5c]/30 bg-transparent text-[#4a6a8a] hover:bg-[#1a3a5c]/10"
             }`}
           >
-            Crear
-          </button>
+            {translateText("Crear\n          ")}</button>
 
           <button
             type="button"
@@ -478,23 +477,21 @@ export default function HamacaModal({
                 : "border-[#1a3a5c]/30 bg-transparent text-[#4a6a8a] hover:bg-[#1a3a5c]/10"
             }`}
           >
-            Editar
-          </button>
+            {translateText("Editar\n          ")}</button>
         </div>
 
         <div className="flex flex-col gap-4 px-6 py-5">
           {mode === "editar" ? (
             <div className="rounded-lg border border-[#1a3a5c]/15 bg-[#1a3a5c]/[0.06] p-3">
-              <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-                Hamaca a editar
-              </p>
+              <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+                {translateText("Hamaca a editar\n              ")}</p>
 
               <select
                 value={selectedHamacaId}
                 onChange={handleHamacaSelect}
                 className="w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
               >
-                <option value="">Seleccionar hamaca...</option>
+                <option value="">{translateText("Seleccionar hamaca...")}</option>
                 {hamacas.map((hamaca) => (
                   <option key={hamaca.id} value={hamaca.id}>
                     {hamaca.nombre}
@@ -505,8 +502,8 @@ export default function HamacaModal({
           ) : null}
 
           <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Nombre <span className="text-red-500">*</span>
+            <label className="text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Nombre ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <input
@@ -514,36 +511,35 @@ export default function HamacaModal({
               name="nombre"
               value={form.nombre}
               onChange={handleChange}
-              placeholder="Ej: Hamaca con palo Familiar - Azul / Blanco"
+              placeholder={translateText("Ej: Hamaca con palo Familiar - Azul / Blanco")}
               maxLength={150}
               className={`rounded-md border bg-white px-3 py-2 text-sm text-[#1a3a5c] placeholder-[#9ab]/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20 ${
                 errors.nombre ? "border-red-400" : "border-[#1a3a5c]/25"
               }`}
             />
 
-            <span className="text-[11px] text-slate-500">Máximo 150 caracteres.</span>
+            <span className="text-[10px] text-slate-500">{translateText("Máximo 150 caracteres.")}</span>
 
             <div className="flex justify-end">
-              <button type="button" onClick={() => { setNameWasEdited(false); setForm((current) => ({ ...current, nombre: suggestedName })); }} className="text-xs font-semibold text-[#123852] underline">Usar nombre sugerido</button>
+              <button type="button" onClick={() => { setNameWasEdited(false); setForm((current) => ({ ...current, nombre: suggestedName })); }} className="text-xs font-semibold text-[#123852] underline">{translateText("Usar nombre sugerido")}</button>
             </div>
 
             {errors.nombre ? (
-              <span className="text-[11px] text-red-600">
+              <span className="text-[10px] status-danger-text">
                 {errors.nombre}
               </span>
             ) : null}
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Descripción
-            </label>
+            <label className="text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Descripción\n            ")}</label>
 
             <textarea
               name="descripcion"
               value={form.descripcion}
               onChange={handleChange}
-              placeholder="Descripción opcional del hamaca"
+              placeholder={translateText("Descripción opcional del hamaca")}
               rows={3}
               className="resize-y rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] placeholder-[#9ab]/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20"
             />
@@ -551,8 +547,8 @@ export default function HamacaModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-                Categoría <span className="text-red-500">*</span>
+              <label className="text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+                {translateText("Categoría ")}<span className="status-danger-text">{translateText("*")}</span>
               </label>
 
               <select
@@ -565,7 +561,7 @@ export default function HamacaModal({
                     : "border-[#1a3a5c]/25"
                 }`}
               >
-                <option value="">Seleccionar...</option>
+                <option value="">{translateText("Seleccionar...")}</option>
                 {categorias.map((categoria) => (
                   <option key={categoria.id} value={categoria.id}>
                     {categoria.nombre}
@@ -574,15 +570,15 @@ export default function HamacaModal({
               </select>
 
               {errors.categoria_id ? (
-                <span className="text-[11px] text-red-600">
+                <span className="text-[10px] status-danger-text">
                   {errors.categoria_id}
                 </span>
               ) : null}
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-                Tamaño <span className="text-red-500">*</span>
+              <label className="text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+                {translateText("Tamaño ")}<span className="status-danger-text">{translateText("*")}</span>
               </label>
 
               <select
@@ -593,7 +589,7 @@ export default function HamacaModal({
                   errors.tamano_id ? "border-red-400" : "border-[#1a3a5c]/25"
                 }`}
               >
-                <option value="">Seleccionar...</option>
+                <option value="">{translateText("Seleccionar...")}</option>
                 {tamanos.map((tamano) => (
                   <option key={tamano.id} value={tamano.id}>
                     {tamano.nombre}
@@ -602,7 +598,7 @@ export default function HamacaModal({
               </select>
 
               {errors.tamano_id ? (
-                <span className="text-[11px] text-red-600">
+                <span className="text-[10px] status-danger-text">
                   {errors.tamano_id}
                 </span>
               ) : null}
@@ -610,21 +606,20 @@ export default function HamacaModal({
           </div>
 
           <div className="flex max-w-[200px] flex-col gap-1">
-            <label className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Precio (C$) <span className="text-red-500">*</span>
+            <label className="text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Precio (C$) ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-[#4a6a8a]">
-                C$
-              </span>
+                {translateText("C$\n              ")}</span>
 
               <input
                 type="number"
                 name="precio"
                 value={form.precio}
                 onChange={handleChange}
-                placeholder="0.00"
+                placeholder={translateText("0.00")}
                 min={0}
                 step={0.01}
                 className={`w-full rounded-md border bg-white py-2 pl-9 pr-3 text-sm text-[#1a3a5c] focus:outline-none focus:ring-2 focus:ring-[#1a3a5c]/20 ${
@@ -634,34 +629,34 @@ export default function HamacaModal({
             </div>
 
             {errors.precio ? (
-              <span className="text-[11px] text-red-600">
+              <span className="text-[10px] status-danger-text">
                 {errors.precio}
               </span>
             ) : null}
           </div>
 
           <fieldset>
-            <legend className="mb-2 text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">Colores *</legend>
+            <legend className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">{translateText("Colores *")}</legend>
             <div className="flex flex-wrap gap-2">
               {colores.map((color) => <label key={color.id} className="flex items-center gap-1 rounded border bg-white px-2 py-1 text-sm"><input type="checkbox" checked={selectedColorIds.includes(color.id)} onChange={() => toggleColor(color.id)} />{color.nombre}</label>)}
             </div>
-            {selectedColorIds.length === 0 ? <p className="mt-1 text-xs text-red-700">Selecciona al menos un color.</p> : null}
-            {errors.color_ids ? <p role="alert" className="mt-1 text-xs text-red-700">{errors.color_ids}</p> : null}
-            <p className="mt-2 text-xs text-slate-600">Nombre sugerido: {suggestedName || "Seleccioná categoría, tamaño y colores"}</p>
+            {selectedColorIds.length === 0 ? <p className="mt-1 text-xs status-danger-text">{translateText("Selecciona al menos un color.")}</p> : null}
+            {errors.color_ids ? <p role="alert" className="mt-1 text-xs status-danger-text">{errors.color_ids}</p> : null}
+            <p className="mt-2 text-xs text-slate-600">{translateText("Nombre sugerido: ")}{suggestedName || "Seleccioná categoría, tamaño y colores"}</p>
           </fieldset>
 
           <fieldset className="space-y-2">
-            <legend className="text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">Fotos</legend>
+            <legend className="text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">{translateText("Fotos")}</legend>
             {mode === "editar" ? (() => {
               const currentHamaca = hamacas.find((item) => String(item.id) === selectedHamacaId) ?? hamacaToEdit;
               return currentHamaca?.fotos?.length ? (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-[#1a3a5c]">Fotos actuales</p>
+                  <p className="text-sm font-medium text-[#1a3a5c]">{translateText("Fotos actuales")}</p>
                   <div className="grid grid-cols-3 gap-2">
                     {currentHamaca.fotos.map((foto) => (
                       <div key={foto.id} className="overflow-hidden rounded-md border border-[#1a3a5c]/15 bg-white">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={imageUrl(foto.ruta)} alt="Foto actual de hamaca" className="h-20 w-full object-cover" />
+                        <img src={imageUrl(foto.ruta)} alt={translateText("Foto actual de hamaca")} className="h-20 w-full object-cover" />
                       </div>
                     ))}
                   </div>
@@ -670,13 +665,13 @@ export default function HamacaModal({
             })() : null}
             <HamacaPhotoPicker key={photoPickerResetKey} files={photoFiles} onFilesChange={setPhotoFiles} />
             <details className="rounded-md border border-[#1a3a5c]/15 bg-white px-3 py-2">
-              <summary className="cursor-pointer text-sm font-medium text-[#1a3a5c]">Agregar imagen mediante URL o ruta</summary>
-              <textarea aria-label="Rutas de fotos" value={photoRoutes.join("\n")} onChange={(event) => setPhotoRoutes(event.target.value.split("\n"))} placeholder="Una URL o ruta por línea" className="mt-2 w-full rounded border bg-white p-2 text-sm" />
+              <summary className="cursor-pointer text-sm font-medium text-[#1a3a5c]">{translateText("Agregar imagen mediante URL o ruta")}</summary>
+              <textarea aria-label={translateText("Rutas de fotos")} value={photoRoutes.join("\n")} onChange={(event) => setPhotoRoutes(event.target.value.split("\n"))} placeholder={translateText("Una URL o ruta por línea")} className="mt-2 w-full rounded border bg-white p-2 text-sm" />
             </details>
           </fieldset>
 
           {generalError ? (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+            <p className="rounded-md status-danger px-3 py-2 text-sm font-medium status-danger-text">
               {generalError}
             </p>
           ) : null}
@@ -688,10 +683,9 @@ export default function HamacaModal({
               type="button"
               onClick={handleDelete}
               disabled={loading}
-              className="mr-auto rounded-[7px] bg-red-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-800 disabled:opacity-50"
+              className="mr-auto rounded-[7px] status-danger px-4 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-status-danger-hover)] disabled:opacity-50"
             >
-              Eliminar hamaca
-            </button>
+              {translateText("Eliminar hamaca\n            ")}</button>
           ) : null}
 
           <button
@@ -700,8 +694,7 @@ export default function HamacaModal({
             disabled={loading}
             className="flex items-center gap-2 rounded-[7px] border border-[#1a3a5c]/30 bg-transparent px-4 py-2 text-sm font-medium text-[#1a3a5c] transition hover:bg-[#1a3a5c]/10 disabled:opacity-50"
           >
-            Limpiar
-          </button>
+            {translateText("Limpiar\n          ")}</button>
 
           <button
             type="button"
@@ -712,8 +705,7 @@ export default function HamacaModal({
             {loading ? (
               <>
                 <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Guardando...
-              </>
+                {translateText("Guardando...\n              ")}</>
             ) : mode === "crear" ? (
               "Crear hamaca"
             ) : (

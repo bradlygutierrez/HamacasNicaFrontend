@@ -1,4 +1,5 @@
 'use client'
+import { translateText } from "@/app/_lib/localization";
 import { Camera } from "lucide-react";
 import CustomInput from "./customInput";
 
@@ -67,8 +68,7 @@ export default function AddUserCard({
                         onClick={onClose}
                         className="text-xl font-bold"
                     >
-                        ×
-                    </button>
+                        {translateText("×\r\n                    ")}</button>
                 )}
             </div>
 
@@ -86,7 +86,7 @@ export default function AddUserCard({
                 "
             >
                 {preview ? (
-                    <img src={preview} className="w-full h-full object-cover" alt="Vista previa" />
+                    <img src={preview} className="w-full h-full object-cover" alt={translateText("Vista previa")} />
                 ) : (
                     <Camera className="w-10 h-10 md:w-10 md:h-10 text-[var(--color-foreground)]" />
                 )}
@@ -143,7 +143,7 @@ export default function AddUserCard({
                     onChange={handleChange}
                     className="w-full p-3 rounded-md border border-gray-300"
                 >
-                    <option value="">Seleccionar rol</option>
+                    <option value="">{translateText("Seleccionar rol")}</option>
                     {ROLES.map((rol) => (
                         <option key={rol.value} value={rol.value}>
                             {rol.label}
@@ -168,7 +168,7 @@ export default function AddUserCard({
 
                 {/* RESPUESTA */}
                 {response && (
-                    <p className="text-center text-sm text-red-500">
+                    <p className="text-center text-sm status-danger-text">
                         {response}
                     </p>
                 )}

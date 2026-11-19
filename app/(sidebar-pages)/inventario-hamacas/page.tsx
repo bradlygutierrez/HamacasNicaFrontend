@@ -1,4 +1,5 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import InventarioHamacaCard from "@/app/_components/inventario-hamaca-card";
 import { apiFetch } from "@/app/_lib/api";
@@ -126,12 +127,11 @@ export default function InventarioHamacasPage() {
     }, [items, searchTerm]);
 
     return (
-        <div className="w-full max-w-full overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+        <div className="w-full max-w-full overflow-x-hidden bg-[var(--page-background)] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
             <header className="mb-6 flex flex-col gap-4 lg:mb-10">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-                    <h1 className="text-[42px] font-extrabold leading-none text-white sm:text-[56px]">
-                        Inventario
-                    </h1>
+                    <h1 className="text-[41px] font-extrabold leading-none text-white sm:text-[55px]">
+                        {translateText("Inventario\r\n                    ")}</h1>
 
                     <div className="relative h-[46px] w-full lg:max-w-[650px]">
                         <Search className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-[#08264d]" />
@@ -139,7 +139,7 @@ export default function InventarioHamacasPage() {
                             type="text"
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
-                            placeholder="Buscar por hamaca, color, ubicación o propietario"
+                            placeholder={translateText("Buscar por hamaca, color, ubicación o propietario")}
                             className="h-full w-full rounded-[8px] bg-[#f7f7f7] pl-14 pr-4 text-lg text-[#08264d] outline-none sm:text-xl"
                         />
                     </div>
@@ -147,13 +147,12 @@ export default function InventarioHamacasPage() {
             </header>
 
             {loading ? (
-                <p className="text-xl font-semibold text-white">Cargando inventario...</p>
+                <p className="text-xl font-semibold text-white">{translateText("Cargando inventario...")}</p>
             ) : null}
 
             {!loading && filteredItems.length === 0 ? (
                 <p className="text-xl font-semibold text-white">
-                    No hay inventario disponible.
-                </p>
+                    {translateText("No hay inventario disponible.\r\n                ")}</p>
             ) : null}
 
             <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">

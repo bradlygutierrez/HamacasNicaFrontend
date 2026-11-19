@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
 import { getApiValidationMessage } from '@/app/_lib/catalogos';
@@ -192,11 +193,11 @@ export default function ManagedCatalogPage({
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+    <div className="w-full max-w-full overflow-x-hidden bg-[var(--page-background)] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
       <header className="mb-6 flex flex-col gap-4 lg:mb-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-[42px] font-extrabold leading-none text-white sm:text-[56px]">{title}</h1>
-          <p className="max-w-3xl text-sm font-medium text-white/85 sm:text-base">{description}</p>
+          <h1 className="text-[41px] font-extrabold leading-none text-white sm:text-[55px]">{translateText(title)}</h1>
+          <p className="max-w-3xl text-sm font-medium text-white/85 sm:text-base">{translateText(description)}</p>
         </div>
 
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -206,7 +207,7 @@ export default function ManagedCatalogPage({
               type="text"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder={`Buscar ${title.toLowerCase()}`}
+              placeholder={`${translateText("Buscar")} ${translateText(title).toLowerCase()}`}
               className="h-full w-full rounded-[8px] bg-[#f7f7f7] pl-14 pr-4 text-base text-[#08264d] outline-none sm:text-xl"
             />
           </div>
@@ -218,8 +219,7 @@ export default function ManagedCatalogPage({
               className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#f7f7f7] px-5 text-base font-medium text-black shadow-md sm:w-fit sm:text-lg lg:ml-auto"
             >
               <Plus className="h-5 w-5" />
-              Nuevo
-            </button>
+              {translateText("Nuevo\n            ")}</button>
           ) : null}
         </div>
       </header>
@@ -229,13 +229,13 @@ export default function ManagedCatalogPage({
           <form onSubmit={handleSubmit} className="rounded-[8px] bg-[#e9eef1] p-5 shadow-lg sm:p-6">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
                 {editingItem ? 'Editar registro' : 'Crear registro'}
               </p>
               <h2 className="mt-1 text-2xl font-extrabold text-[#08264d]">{editingItem?.nombre ?? title}</h2>
             </div>
             {editingItem ? (
-              <button type="button" onClick={resetForm} className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10" aria-label="Cancelar edición">
+              <button type="button" onClick={resetForm} className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10" aria-label={translateText("Cancelar edición")}>
                 <X className="h-5 w-5" />
               </button>
             ) : null}
@@ -244,8 +244,8 @@ export default function ManagedCatalogPage({
           <div className="space-y-4">
             {fields.map((field) => (
               <label key={field.key} className="block">
-                <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.12em] text-[#123852]">
-                  {field.label}{field.required ? ' *' : ''}
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[#123852]">
+                  {translateText(field.label)}{field.required ? ' *' : ''}
                 </span>
                 {field.type === 'select' ? (
                   <select
@@ -253,8 +253,8 @@ export default function ManagedCatalogPage({
                     onChange={(event) => setForm((prev) => ({ ...prev, [field.key]: event.target.value }))}
                     className="h-11 w-full rounded-[8px] border border-[#123852]/20 bg-white px-3 text-sm text-[#08264d] outline-none focus:ring-2 focus:ring-[#123852]/20"
                   >
-                    <option value="">Seleccionar...</option>
-                    {field.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    <option value="">{translateText("Seleccionar...")}</option>
+                    {field.options?.map((option) => <option key={option.value} value={option.value}>{translateText(option.label)}</option>)}
                   </select>
                 ) : (
                   <input
@@ -270,7 +270,7 @@ export default function ManagedCatalogPage({
             ))}
           </div>
 
-          {error ? <p className="mt-4 rounded-[8px] bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">{error}</p> : null}
+          {error ? <p className="mt-4 rounded-[8px] status-danger px-3 py-2 text-sm font-semibold status-danger-text">{error}</p> : null}
 
           <div className="mt-5 flex flex-col gap-2 sm:flex-row">
             <button type="submit" disabled={saving} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[8px] bg-[#123852] px-4 text-sm font-bold text-white transition hover:bg-[#08264d] disabled:opacity-60">
@@ -279,22 +279,21 @@ export default function ManagedCatalogPage({
             </button>
             <button type="button" onClick={resetForm} disabled={saving} className="flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#123852]/30 px-4 text-sm font-bold text-[#123852] transition hover:bg-[#123852]/10 disabled:opacity-60">
               <RotateCcw className="h-4 w-4" />
-              Limpiar
-            </button>
+              {translateText("Limpiar\n            ")}</button>
           </div>
           </form>
         ) : null}
 
         <section className="rounded-[8px] bg-[#e9eef1] p-4 shadow-lg sm:p-5">
           <div className="mb-4">
-            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#456f89]">Registros</p>
-            <h2 className="text-2xl font-extrabold text-[#08264d]">{filteredItems.length} encontrados</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#456f89]">{translateText("Registros")}</p>
+            <h2 className="text-2xl font-extrabold text-[#08264d]">{filteredItems.length} {translateText("encontrados")}</h2>
           </div>
 
           {loading ? (
-            <div className="rounded-[8px] bg-white px-4 py-6 text-center text-sm font-semibold text-[#456f89]">Cargando catálogo...</div>
+            <div className="rounded-[8px] bg-white px-4 py-6 text-center text-sm font-semibold text-[#456f89]">{translateText("Cargando catálogo...")}</div>
           ) : filteredItems.length === 0 ? (
-            <div className="rounded-[8px] bg-white px-4 py-6 text-center text-sm font-semibold text-[#456f89]">No hay registros para mostrar.</div>
+            <div className="rounded-[8px] bg-white px-4 py-6 text-center text-sm font-semibold text-[#456f89]">{translateText("No hay registros para mostrar.")}</div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
               {filteredItems.map((item) => (
@@ -307,8 +306,7 @@ export default function ManagedCatalogPage({
                     <div className="flex shrink-0 gap-1">
                       {formulaHrefBase && canEdit ? (
                         <Link href={`${formulaHrefBase}/${item.id}/formula`} className="rounded-full px-2 py-2 text-xs font-bold text-[#08264d] transition hover:bg-[#123852]/10">
-                          Costos
-                        </Link>
+                          {translateText("Costos\n                        ")}</Link>
                       ) : null}
                       {canEdit ? (
                         <button type="button" onClick={() => startEdit(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10" aria-label={`Editar ${item.nombre}`}>
@@ -316,7 +314,7 @@ export default function ManagedCatalogPage({
                         </button>
                       ) : null}
                       {canDelete && item.state !== false ? (
-                        <button type="button" onClick={() => handleDeactivate(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-red-100 hover:text-red-700" aria-label={`Desactivar ${item.nombre}`}>
+                        <button type="button" onClick={() => handleDeactivate(item)} className="rounded-full p-2 text-[#08264d] transition hover:bg-[var(--color-status-danger-hover)] hover:status-danger-text" aria-label={`Desactivar ${item.nombre}`}>
                           <X className="h-5 w-5" />
                         </button>
                       ) : null}
@@ -327,15 +325,15 @@ export default function ManagedCatalogPage({
 
                   <div className="mt-4 grid gap-2 text-sm text-[#08264d] sm:grid-cols-2">
                     {summaryFields.map((key) => (
-                      <div key={key} className="rounded-[8px] bg-[#f0f4f6] px-3 py-2">
-                        <span className="block text-[10px] font-bold uppercase tracking-[0.08em] text-[#456f89]">{fields.find((field) => field.key === key)?.label ?? key}</span>
+                      <div key={key} className="rounded-[8px] bg-[var(--color-card-metric-background)] px-3 py-2">
+                        <span className="block text-[9px] font-bold uppercase tracking-[0.08em] text-[#456f89]">{fields.find((field) => field.key === key)?.label ?? key}</span>
                         <span className="font-semibold">{displayValue(item[key])}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="mt-3 rounded-[8px] bg-[#123852] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white">
-                    Estado: {item.state === false ? 'Inactivo' : 'Activo'}
+                    {translateText("Estado: ")}{item.state === false ? 'Inactivo' : 'Activo'}
                   </div>
                 </article>
               ))}

@@ -1,4 +1,5 @@
 'use client'
+import { translateText } from "@/app/_lib/localization";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -51,11 +52,11 @@ export default function Home() {
 
   return (
     <div className="flex w-full flex-col h-full p-0 justify-center font-sans min-h-screen items-center 
-      bg-gradient-to-b from-[var(--color-buttons)] to-[var(--color-background)] text-[var(--color-foreground)]">
+      bg-[var(--color-background)] text-[var(--color-foreground)]">
 
       {/* Logo */}
       <section className="w-full flex justify-center">
-        <div className="bg-[url('/Logo.svg')] bg-center bg-cover bg-no-repeat w-[95%] md:w-[50%] h-[29vh]" />
+        <div className="bg-[url('/Logo.svg')] bg-center bg-cover bg-no-repeat w-[95%] md:w-[41%] h-[25vh]" />
       </section>
 
       {/* Formulario */}
@@ -64,14 +65,13 @@ export default function Home() {
           onSubmit={handleLogin}
           className="flex flex-col p-10 items-center gap-10 bg-[var(--color-foreground-secondary)] h-[87%] md:h-[80%] w-[90%] md:w-[40%] rounded-md shadow-2xl"
         >
-          <h1 className="text-[var(--color-foreground)] text-4xl md:text-6xl font-bold font-poppins md:mb-10">
-            Iniciar sesión
-          </h1>
+          <h1 className="text-[var(--color-foreground)] text-4xl md:text-5xl font-bold font-poppins md:mb-10">
+            {translateText("Iniciar sesión\n")}</h1>
 
           {/* Input correo */}
           <input
             type="email"
-            placeholder="correo"
+            placeholder={translateText("correo")}
             value={correo}
             onChange={(e) => setCorreo(e.target.value)}
             className="placeholder-[var(--color-foreground)] h-14 w-[90%] md:w-[70%] bg-white shadow-md rounded-md p-5 text-center text-2xl font-semibold"
@@ -80,7 +80,7 @@ export default function Home() {
           {/* Input contraseña */}
           <input
             type="password"
-            placeholder="contraseña"
+            placeholder={translateText("contraseña")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="h-14 w-[90%] md:w-[70%] placeholder-[var(--color-foreground)] bg-white shadow-md rounded-md p-5 text-center text-2xl font-semibold"
@@ -97,7 +97,7 @@ export default function Home() {
 
           {/* Error */}
           {error && (
-            <p className="text-red-500 text-lg font-semibold text-center">
+            <p className="status-danger-text text-lg font-semibold text-center">
               {error}
             </p>
           )}

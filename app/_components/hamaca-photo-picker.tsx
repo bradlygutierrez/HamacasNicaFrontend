@@ -1,4 +1,5 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import { addImageFiles } from "@/app/_lib/hamaca-photo-files";
 import { Upload } from "lucide-react";
@@ -64,7 +65,7 @@ export default function HamacaPhotoPicker({ files, onFilesChange }: HamacaPhotoP
         multiple
         hidden
         onChange={handleFileInput}
-        aria-label="Subir fotos de hamaca"
+        aria-label={translateText("Subir fotos de hamaca")}
       />
       <div
         role="button"
@@ -84,8 +85,8 @@ export default function HamacaPhotoPicker({ files, onFilesChange }: HamacaPhotoP
         }`}
       >
         <Upload className="mb-2 h-10 w-10 text-[#1a3a5c]" />
-        <p className="font-semibold text-[#1a3a5c]">Arrastrá fotos aquí o tocá para abrir la galería</p>
-        <p className="mt-1 text-sm text-[#4a6a8a]">En celular abre la galería. En PC permite seleccionar archivos.</p>
+        <p className="font-semibold text-[#1a3a5c]">{translateText("Arrastrá fotos aquí o tocá para abrir la galería")}</p>
+        <p className="mt-1 text-sm text-[#4a6a8a]">{translateText("En celular abre la galería. En PC permite seleccionar archivos.")}</p>
       </div>
 
       {previews.length > 0 ? (
@@ -97,7 +98,7 @@ export default function HamacaPhotoPicker({ files, onFilesChange }: HamacaPhotoP
               <img src={url} alt={file.name} className="h-28 w-full object-cover" />
               <div className="space-y-1 p-2">
                 <p className="truncate text-xs text-[#1a3a5c]" title={file.name}>{file.name}</p>
-                <button type="button" onClick={() => removeSelectedFile(file)} className="text-xs font-semibold text-red-600 hover:text-red-800">Quitar</button>
+                <button type="button" onClick={() => removeSelectedFile(file)} className="text-xs font-semibold status-danger-text">{translateText("Quitar")}</button>
               </div>
             </div>
           ))}

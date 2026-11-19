@@ -1,5 +1,7 @@
 'use client'
 
+import { translateText } from "@/app/_lib/localization";
+
 interface dashboardCardProps {
     //categorySelected:string; 
     cardTitle: string;
@@ -10,7 +12,7 @@ export default function DashboardCard({ cardTitle, cardScore }: dashboardCardPro
     return (
         <div className="flex h-full min-h-[8rem] flex-col items-center justify-center rounded-lg bg-[var(--color-foreground-secondary)] p-5 text-[var(--color-foreground)]">
             <h2 className="text-center text-base font-medium md:text-xl">
-                {cardTitle}
+                {translateText(cardTitle)}
             </h2 >
             <h1 className="text-4xl font-bold md:text-6xl">
                 {cardScore}</h1>

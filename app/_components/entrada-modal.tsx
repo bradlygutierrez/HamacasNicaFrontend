@@ -1,4 +1,5 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from "@/app/_lib/api";
 import { todayLocalDate } from "@/app/_lib/date";
@@ -247,15 +248,14 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
     >
       <div className="flex max-h-[calc(100dvh-24px)] w-full min-w-0 max-w-3xl flex-col overflow-hidden rounded-[14px] bg-[#f0f4f8] shadow-xl">
         <div className="flex shrink-0 items-center justify-between bg-[#1a3a5c] px-4 py-4 sm:px-6">
-          <h2 className="text-[18px] font-semibold text-white">
-            Agregar Entrada
-          </h2>
+          <h2 className="text-[17px] font-semibold text-white">
+            {translateText("Agregar Entrada\n          ")}</h2>
 
           <button
             type="button"
             onClick={onClose}
             className="text-white/70 hover:text-white"
-            aria-label="Cerrar modal"
+            aria-label={translateText("Cerrar modal")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -263,22 +263,21 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
 
         <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 py-5 sm:px-6 md:grid-cols-2">
           <div className="min-w-0 md:col-span-2">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Buscar hamaca
-            </label>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Buscar hamaca\n            ")}</label>
 
             <input
               type="text"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por hamaca o color"
+              placeholder={translateText("Buscar por hamaca o color")}
               className="w-full min-w-0 rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             />
           </div>
 
           <div className="min-w-0 md:col-span-2">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Producto <span className="text-red-500">*</span>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Producto ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <select
@@ -287,19 +286,19 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               onChange={handleChange}
               className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
-              <option value="">Seleccionar hamaca...</option>
+              <option value="">{translateText("Seleccionar hamaca...")}</option>
 
               {filteredHamacas.map((hamaca) => (
                 <option key={hamaca.id} value={hamaca.id}>
-                  {hamaca.nombre} · {hamaca.colores.map((color) => color.nombre).join(" / ") || "Sin colores"}
+                  {hamaca.nombre} {translateText("· ")}{hamaca.colores.map((color) => color.nombre).join(" / ") || "Sin colores"}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="min-w-0">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Usuario <span className="text-red-500">*</span>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Usuario ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <select
@@ -308,7 +307,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               onChange={handleChange}
               className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
-              <option value="">Seleccionar usuario...</option>
+              <option value="">{translateText("Seleccionar usuario...")}</option>
               {usuarios.map((usuario) => (
                 <option key={usuario.id} value={usuario.id}>
                   {usuario.nombre}
@@ -318,8 +317,8 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           <div className="min-w-0">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Ubicación <span className="text-red-500">*</span>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Ubicación ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <select
@@ -328,7 +327,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
               onChange={handleChange}
               className="w-full min-w-0 max-w-full rounded-md border border-[#1a3a5c]/25 bg-white px-3 py-2 text-sm text-[#1a3a5c] outline-none"
             >
-              <option value="">Seleccionar ubicación...</option>
+              <option value="">{translateText("Seleccionar ubicación...")}</option>
               {ubicaciones.map((ubicacion) => (
                 <option key={ubicacion.id} value={ubicacion.id}>
                   {ubicacion.nombre}
@@ -338,8 +337,8 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           <div className="min-w-0">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Cantidad <span className="text-red-500">*</span>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Cantidad ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <input
@@ -353,8 +352,8 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           <div className="min-w-0">
-            <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-[#1a3a5c]">
-              Fecha <span className="text-red-500">*</span>
+            <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-[#1a3a5c]">
+              {translateText("Fecha ")}<span className="status-danger-text">{translateText("*")}</span>
             </label>
 
             <input
@@ -367,7 +366,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           {error ? (
-            <p className="min-w-0 break-words rounded-md bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 md:col-span-2">
+            <p className="min-w-0 break-words rounded-md status-danger px-3 py-2 text-sm font-semibold status-danger-text md:col-span-2">
               {error}
             </p>
           ) : null}
@@ -380,8 +379,7 @@ export default function EntradaModal({ isOpen, onClose, onSuccess }: Props) {
             disabled={loading}
             className="w-full rounded-[7px] border border-[#1a3a5c]/30 px-4 py-2 text-sm font-semibold text-[#1a3a5c] sm:w-auto"
           >
-            Cancelar
-          </button>
+            {translateText("Cancelar\n          ")}</button>
 
           <button
             type="button"

@@ -1,3 +1,4 @@
+import { translateText } from "@/app/_lib/localization";
 import ManagedCatalogPage from '@/app/_components/managed-catalog-page';
 
 const fields = [
@@ -35,7 +36,7 @@ const fields = [
 export default function ServiciosAdicionalesPage() {
   return (
     <ManagedCatalogPage
-      title="Servicios adicionales"
+      title={translateText("Servicios adicionales")}
       description="Administra servicios complementarios para productos y pedidos futuros."
       endpoint="/servicios-adicionales"
       screenPath="/servicios-adicionales"

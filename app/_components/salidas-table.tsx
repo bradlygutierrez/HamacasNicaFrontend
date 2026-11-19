@@ -1,7 +1,9 @@
+import { translateText } from "@/app/_lib/localization";
 import { Pencil } from 'lucide-react';
 
 export type SalidaRow = {
   id: number;
+  editable: boolean;
   producto: string;
   colores: string;
   usuario: string;
@@ -14,7 +16,10 @@ export type SalidaRow = {
 
 type Props = {
   rows: SalidaRow[];
+  onEdit: (row: SalidaRow) => void;
 };
+
+const stripedRow = "border-b border-[var(--color-table-border)] odd:bg-[var(--color-table-row-odd)] even:bg-[var(--color-table-row-even)]";
 
 function formatDate(value: string) {
   if (!value) return '';
@@ -37,44 +42,63 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-export default function SalidasTable({ rows }: Props) {
+function EditButton({ row, onEdit }: { row: SalidaRow; onEdit: (row: SalidaRow) => void }) {
+  const label = row.editable ? "Editar salida" : "Las salidas vinculadas a ventas o pedidos no se pueden editar";
+
   return (
-    <section className="w-full min-w-0 max-w-full overflow-hidden rounded-[4px] bg-[#f7f7f7] shadow-lg">
+    <button
+      type="button"
+      onClick={() => onEdit(row)}
+      disabled={!row.editable}
+      title={label}
+      aria-label={label}
+      className="inline-flex h-9 w-9 items-center justify-center rounded text-[#08264d] hover:bg-[#08264d]/10 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <Pencil className="h-5 w-5" />
+    </button>
+  );
+}
+
+export default function SalidasTable({ rows, onEdit }: Props) {
+  return (
+    <section className="w-full min-w-0 max-w-full overflow-hidden rounded-[4px] bg-[var(--color-table-background)] shadow-lg">
       <div className="space-y-3 p-3 md:hidden">
         {rows.length === 0 ? (
-          <div className="rounded-md bg-[#dcdcdc] px-4 py-8 text-center text-sm font-semibold text-[#08264d]">
-            No hay salidas registradas.
-          </div>
+          <div className="rounded-md bg-[var(--color-table-row-odd)] px-4 py-8 text-center text-sm font-semibold text-[#08264d]">
+            {translateText("No hay salidas registradas.\n          ")}</div>
         ) : rows.map((row) => (
-          <article key={row.id} className="min-w-0 rounded-md bg-white p-4 text-[#08264d] shadow-sm">
+          <article key={row.id} className="min-w-0 rounded-md border border-[var(--color-table-border)] bg-[var(--color-table-card)] p-4 text-[#08264d] shadow-sm">
             <h2 className="break-words text-base font-bold">{row.producto}</h2>
             <p className="mt-1 break-words text-sm text-slate-700">{row.colores}</p>
             <dl className="mt-3 grid min-w-0 grid-cols-2 gap-x-3 gap-y-3">
               <div className="min-w-0">
-                <dt className="text-xs text-slate-600">Usuario</dt>
+                <dt className="text-xs text-[var(--color-text-muted)]">{translateText("Usuario")}</dt>
                 <dd className="break-words text-sm font-medium">{row.usuario}</dd>
               </div>
               <div className="min-w-0">
-                <dt className="text-xs text-slate-600">Fecha</dt>
+                <dt className="text-xs text-[var(--color-text-muted)]">{translateText("Fecha")}</dt>
                 <dd className="break-words text-sm font-medium">{formatDate(row.fecha)}</dd>
               </div>
               <div className="min-w-0">
-                <dt className="text-xs text-slate-600">Cantidad</dt>
+                <dt className="text-xs text-[var(--color-text-muted)]">{translateText("Cantidad")}</dt>
                 <dd className="break-words text-sm font-medium">{row.cantidad}</dd>
               </div>
               <div className="min-w-0">
-                <dt className="text-xs text-slate-600">Ubicación</dt>
+                <dt className="text-xs text-[var(--color-text-muted)]">{translateText("Ubicación")}</dt>
                 <dd className="break-words text-sm font-medium">{row.ubicacion}</dd>
               </div>
               <div className="min-w-0">
-                <dt className="text-xs text-slate-600">Total</dt>
-                <dd className="break-words text-sm font-medium">C$ {formatMoney(row.total)}</dd>
+                <dt className="text-xs text-[var(--color-text-muted)]">{translateText("Total")}</dt>
+                <dd className="break-words text-sm font-medium">{translateText("C$ ")}{formatMoney(row.total)}</dd>
               </div>
             </dl>
             <div className="mt-3 flex justify-end">
-              <span className="inline-flex max-w-full justify-center break-words rounded-full bg-[#bf3549] px-3 py-1 text-xs font-semibold text-white">
-                {row.estatus}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`${row.estatus === "Aplicado" ? "status-success" : "status-danger"} inline-flex max-w-full justify-center break-words rounded-full px-3 py-1 text-xs font-semibold`}>
+                  {row.estatus}
+                </span>
+                <EditButton row={row} onEdit={onEdit} />
+              </div>
             </div>
           </article>
         ))}
@@ -83,22 +107,21 @@ export default function SalidasTable({ rows }: Props) {
       <div className="hidden w-full min-w-0 overflow-x-auto md:block">
         <table className="w-full min-w-[1120px] border-collapse text-[#08264d]">
           <thead>
-            <tr className="bg-[#f7f7f7] text-lg font-bold sm:text-2xl">
-              <th className="w-[54px] border-r border-[#08264d]/40 px-2 py-3" />
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">Producto</th>
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">Colores</th>
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">Usuario</th>
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">Fecha</th>
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">#Cantidad</th>
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">Ubicación</th>
-              <th className="border-r border-[#08264d]/40 px-4 py-3 text-center">Total</th>
-              <th className="px-4 py-3 text-center">Estatus</th>
+            <tr className="bg-[var(--color-table-header)] text-sm font-bold sm:text-base">
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Producto")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Colores")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Usuario")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Fecha")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("#Cantidad")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Ubicación")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Total")}</th>
+              <th className="border-r border-[var(--color-table-border)] px-4 py-3 text-center">{translateText("Estatus")}</th>
+              <th className="px-2 py-3 text-center">{translateText("Editar")}</th>
             </tr>
           </thead>
-          <tbody className="text-base sm:text-2xl">
-            {rows.map((row, index) => (
-              <tr key={row.id} className={index % 2 === 0 ? 'bg-[#dcdcdc]' : 'bg-[#f7f7f7]'}>
-                <td className="px-3 py-2"><Pencil className="h-6 w-6 text-[#08264d] sm:h-7 sm:w-7" /></td>
+          <tbody className="text-sm sm:text-base">
+            {rows.map((row) => (
+              <tr key={row.id} className={stripedRow}>
                 <td className="px-4 py-2">{row.producto}</td>
                 <td className="px-4 py-2">{row.colores}</td>
                 <td className="px-4 py-2">{row.usuario}</td>
@@ -107,15 +130,16 @@ export default function SalidasTable({ rows }: Props) {
                 <td className="px-4 py-2 text-center">{row.ubicacion}</td>
                 <td className="px-4 py-2 text-center">{formatMoney(row.total)}</td>
                 <td className="px-4 py-2 text-center">
-                  <span className="inline-flex min-w-[110px] justify-center rounded-full bg-[#bf3549] px-4 py-1 text-sm font-semibold text-white">{row.estatus}</span>
+                  <span className={`${row.estatus === "Aplicado" ? "status-success" : "status-danger"} inline-flex min-w-[110px] justify-center rounded-full px-4 py-1 text-sm font-semibold`}>{row.estatus}</span>
                 </td>
+                <td className="px-2 py-2 text-center"><EditButton row={row} onEdit={onEdit} /></td>
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={9} className="bg-[#dcdcdc] px-4 py-10 text-center text-lg font-semibold">No hay salidas registradas.</td></tr>
+              <tr><td colSpan={9} className="bg-[var(--color-table-row-odd)] px-4 py-10 text-center text-sm font-semibold">{translateText("No hay salidas registradas.")}</td></tr>
             )}
             {Array.from({ length: 8 }).map((_, index) => (
-              <tr key={`empty-${index}`} className={index % 2 === 0 ? 'bg-[#dcdcdc]' : 'bg-[#f7f7f7]'}>
+              <tr key={`empty-${index}`} className={stripedRow}>
                 <td colSpan={9} className="h-[46px]" />
               </tr>
             ))}

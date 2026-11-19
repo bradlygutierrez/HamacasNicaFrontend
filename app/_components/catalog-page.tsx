@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
 import {
@@ -166,14 +167,14 @@ export default function CatalogPage({
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+    <div className="w-full max-w-full overflow-x-hidden bg-[var(--page-background)] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
       <header className="mb-6 flex flex-col gap-4 lg:mb-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-[42px] font-extrabold leading-none text-white sm:text-[56px]">
-            {title}
+          <h1 className="text-[41px] font-extrabold leading-none text-white sm:text-[55px]">
+            {translateText(title)}
           </h1>
           <p className="max-w-3xl text-sm font-medium text-white/85 sm:text-base">
-            {description}
+            {translateText(description)}
           </p>
         </div>
 
@@ -195,8 +196,7 @@ export default function CatalogPage({
             className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#f7f7f7] px-5 text-base font-medium text-black shadow-md sm:w-fit sm:text-lg lg:ml-auto"
           >
             <Plus className="h-5 w-5" />
-            Nuevo
-          </button>
+            {translateText("Nuevo\n          ")}</button>
         </div>
       </header>
 
@@ -207,7 +207,7 @@ export default function CatalogPage({
         >
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
                 {editingItem ? 'Editar registro' : 'Crear registro'}
               </p>
               <h2 className="mt-1 text-2xl font-extrabold text-[#08264d]">
@@ -220,7 +220,7 @@ export default function CatalogPage({
                 type="button"
                 onClick={resetForm}
                 className="rounded-full p-2 text-[#08264d] transition hover:bg-[#123852]/10"
-                aria-label="Cancelar edición"
+                aria-label={translateText("Cancelar edición")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -229,25 +229,23 @@ export default function CatalogPage({
 
           <div className="space-y-4">
             <label className="block">
-              <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.12em] text-[#123852]">
-                Nombre
-              </span>
+              <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[#123852]">
+                {translateText("Nombre\n              ")}</span>
               <input
                 type="text"
                 value={form.nombre}
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, nombre: event.target.value }))
                 }
-                placeholder={namePlaceholder}
+                placeholder={translateText(namePlaceholder)}
                 className="h-11 w-full rounded-[8px] border border-[#123852]/20 bg-white px-3 text-sm text-[#08264d] outline-none focus:ring-2 focus:ring-[#123852]/20"
               />
             </label>
 
             {supportsDescription ? (
               <label className="block">
-                <span className="mb-1 block text-[11px] font-bold uppercase tracking-[0.12em] text-[#123852]">
-                  Descripción
-                </span>
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.12em] text-[#123852]">
+                  {translateText("Descripción\n                ")}</span>
                 <textarea
                   value={form.descripcion}
                   onChange={(event) =>
@@ -256,7 +254,7 @@ export default function CatalogPage({
                       descripcion: event.target.value,
                     }))
                   }
-                  placeholder={descriptionPlaceholder}
+                  placeholder={translateText(descriptionPlaceholder)}
                   rows={4}
                   className="w-full resize-y rounded-[8px] border border-[#123852]/20 bg-white px-3 py-2 text-sm text-[#08264d] outline-none focus:ring-2 focus:ring-[#123852]/20"
                 />
@@ -265,13 +263,13 @@ export default function CatalogPage({
           </div>
 
           {error ? (
-            <p className="mt-4 rounded-[8px] bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            <p className="mt-4 rounded-[8px] status-danger px-3 py-2 text-sm font-semibold status-danger-text">
               {error}
             </p>
           ) : null}
 
           {message ? (
-            <p className="mt-4 rounded-[8px] bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+            <p className="mt-4 rounded-[8px] status-success px-3 py-2 text-sm font-semibold status-success-text">
               {message}
             </p>
           ) : null}
@@ -293,31 +291,26 @@ export default function CatalogPage({
               className="flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#123852]/30 px-4 text-sm font-bold text-[#123852] transition hover:bg-[#123852]/10 disabled:opacity-60"
             >
               <RotateCcw className="h-4 w-4" />
-              Limpiar
-            </button>
+              {translateText("Limpiar\n            ")}</button>
           </div>
         </form>
 
         <section className="rounded-[8px] bg-[#e9eef1] p-4 shadow-lg sm:p-5">
           <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
-                Registros
-              </p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#456f89]">
+                {translateText("Registros\n              ")}</p>
               <h2 className="text-2xl font-extrabold text-[#08264d]">
-                {filteredItems.length} encontrados
-              </h2>
+                {filteredItems.length} {translateText("encontrados\n              ")}</h2>
             </div>
           </div>
 
           {loading ? (
             <div className="rounded-[8px] bg-white px-4 py-6 text-center text-sm font-semibold text-[#456f89]">
-              Cargando catálogo...
-            </div>
+              {translateText("Cargando catálogo...\n            ")}</div>
           ) : filteredItems.length === 0 ? (
             <div className="rounded-[8px] bg-white px-4 py-6 text-center text-sm font-semibold text-[#456f89]">
-              No hay registros para mostrar.
-            </div>
+              {translateText("No hay registros para mostrar.\n            ")}</div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
               {filteredItems.map((item) => (
@@ -348,7 +341,7 @@ export default function CatalogPage({
                   </div>
 
                   <div className="mt-4 flex items-center justify-between rounded-[8px] bg-[#123852] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white">
-                    <span>ID {item.id}</span>
+                    <span>{translateText("ID ")}{item.id}</span>
                     <span>{formatDate(item.created_at)}</span>
                   </div>
                 </article>

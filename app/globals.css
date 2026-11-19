@@ -2,12 +2,52 @@
 
 :root {
   --color-background: #234C6A;
+  --page-background-inventory: #2b5471;
+  --page-background-production: #315b78;
+  --page-background-commercial: #375f7a;
+  --page-background-catalogs: #2d526e;
+  --page-background-admin: #335975;
+  --page-background-proformas: #002060;
   --color-foreground: #0c2b4e;
   --color-background-secondary: #f4f4f4f3;
   --color-foreground-secondary: #f4f4f4;
   --color-buttons: #456882;
   --color-stats-bar: #d2c1b6;
   --color-buttons-secondary: #1d546c;
+  --color-page-surface: #f8fafc;
+  --color-surface-border: #d4dee5;
+  --color-text-muted: #475569;
+  --color-input-background: #fff;
+  --color-input-border: #cbd5e1;
+  --color-input-placeholder: #64748b;
+  --color-card-hover: #e8edf3;
+  --color-card-metric-background: #f0f4f6;
+  --color-status-success-background: #dcfce7;
+  --color-status-success-text: #166534;
+  --color-status-success-border: #86efac;
+  --color-status-success-hover: #bbf7d0;
+  --color-status-warning-background: #fef3c7;
+  --color-status-warning-text: #92400e;
+  --color-status-warning-border: #fcd34d;
+  --color-status-warning-hover: #fde68a;
+  --color-status-danger-background: #fee2e2;
+  --color-status-danger-text: #991b1b;
+  --color-status-danger-border: #fca5a5;
+  --color-status-danger-hover: #fecaca;
+  --color-status-info-background: #dbeafe;
+  --color-status-info-text: #1e40af;
+  --color-status-info-border: #93c5fd;
+  --color-status-info-hover: #bfdbfe;
+  --color-status-neutral-background: #f1f5f9;
+  --color-status-neutral-text: #334155;
+  --color-status-neutral-border: #cbd5e1;
+  --color-status-neutral-hover: #e2e8f0;
+  --color-table-background: #f7f7f7;
+  --color-table-card: #fff;
+  --color-table-header: #e9eef1;
+  --color-table-row-odd: #dcdcdc;
+  --color-table-row-even: #f7f7f7;
+  --color-table-border: #c5d0da;
 }
 
 
@@ -23,10 +63,188 @@ body {
 
 html {
   scroll-behavior: smooth;
+  font-size: 14px;
 }
 
 body {
   min-height: 100vh;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-background: #070d14;
+  --page-background-inventory: #080f18;
+  --page-background-production: #0b131d;
+  --page-background-commercial: #0c1621;
+  --page-background-catalogs: #09111b;
+  --page-background-admin: #0b141e;
+  --page-background-proformas: #080f18;
+  --color-foreground: #c5def8;
+  --color-background-secondary: #1d3348;
+  --color-foreground-secondary: #202226;
+  --color-buttons: #33495e;
+  --color-stats-bar: #55595f;
+  --color-buttons-secondary: #2d4054;
+  --color-page-surface: #080f18;
+  --color-surface-border: #304357;
+  --color-text-muted: #a9c9ed;
+  --color-input-background: #1d3348;
+  --color-input-border: #536e88;
+  --color-input-placeholder: #fff;
+  --color-card-hover: #2a435b;
+  --color-card-metric-background: #263849;
+  --color-status-success-background: #064e3b;
+  --color-status-success-text: #d1fae5;
+  --color-status-success-border: #34d399;
+  --color-status-success-hover: #065f46;
+  --color-status-warning-background: #713f12;
+  --color-status-warning-text: #fef3c7;
+  --color-status-warning-border: #fbbf24;
+  --color-status-warning-hover: #854d0e;
+  --color-status-danger-background: #7f1d1d;
+  --color-status-danger-text: #fee2e2;
+  --color-status-danger-border: #f87171;
+  --color-status-danger-hover: #991b1b;
+  --color-status-info-background: #1e3a5f;
+  --color-status-info-text: #dbeafe;
+  --color-status-info-border: #60a5fa;
+  --color-status-info-hover: #1e40af;
+  --color-status-neutral-background: #263849;
+  --color-status-neutral-text: #dbeafe;
+  --color-status-neutral-border: #52677b;
+  --color-status-neutral-hover: #33485d;
+  --color-table-background: #202226;
+  --color-table-card: #1d3348;
+  --color-table-header: #1d3348;
+  --color-table-row-odd: #263d53;
+  --color-table-row-even: #1d3348;
+  --color-table-border: #34495e;
+}
+
+html[data-theme="dark"] [class~="bg-[#f7f7f7]"],
+html[data-theme="dark"] [class~="bg-[#f0f4f8]"],
+html[data-theme="dark"] [class~="bg-[#e8edf3]"],
+html[data-theme="dark"] [class~="bg-[#e9eef1]"],
+html[data-theme="dark"] [class~="bg-[#f4f4f4]"] {
+  background-color: var(--color-foreground-secondary) !important;
+}
+
+html[data-theme="dark"] [class~="bg-white"],
+html[data-theme="dark"] [class~="bg-slate-50"],
+html[data-theme="dark"] [class~="bg-slate-100"],
+html[data-theme="dark"] [class~="bg-[#002060]"],
+html[data-theme="dark"] [class~="bg-[#1a3a5c]"],
+html[data-theme="dark"] [class~="bg-[#08264d]"],
+html[data-theme="dark"] [class*="bg-[var(--color-foreground)]"] {
+  background-color: var(--color-background-secondary) !important;
+}
+
+html[data-theme="dark"] [class~="text-[#08264d]"],
+html[data-theme="dark"] [class~="text-[#1a3a5c]"],
+html[data-theme="dark"] [class~="text-[#002060]"],
+html[data-theme="dark"] [class~="text-[#123852]"],
+html[data-theme="dark"] [class~="text-[#155b72]"],
+html[data-theme="dark"] [class~="text-[#4a6a8a]"],
+html[data-theme="dark"] [class~="text-[#456f89]"],
+html[data-theme="dark"] [class~="text-[#456882]"],
+html[data-theme="dark"] [class~="text-black"],
+html[data-theme="dark"] [class~="text-slate-900"],
+html[data-theme="dark"] [class~="text-slate-800"],
+html[data-theme="dark"] [class*="text-slate-"],
+html[data-theme="dark"] [class*="text-[var(--color-foreground-secondary)]"] {
+  color: var(--color-text-muted) !important;
+}
+
+html[data-theme="dark"] [class*="border-slate-"] {
+  border-color: var(--color-surface-border);
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--color-input-placeholder) !important;
+  opacity: 1;
+}
+
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="hidden"]):not([type="color"]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  border: 1px solid var(--color-input-border) !important;
+  background-color: var(--color-input-background) !important;
+  color: var(--color-foreground) !important;
+}
+
+.status-success,
+.status-warning,
+.status-danger,
+.status-info,
+.status-neutral {
+  border: 1px solid;
+}
+
+.status-success {
+  border-color: var(--color-status-success-border);
+  background-color: var(--color-status-success-background);
+  color: var(--color-status-success-text);
+}
+
+.status-warning {
+  border-color: var(--color-status-warning-border);
+  background-color: var(--color-status-warning-background);
+  color: var(--color-status-warning-text);
+}
+
+.status-danger {
+  border-color: var(--color-status-danger-border);
+  background-color: var(--color-status-danger-background);
+  color: var(--color-status-danger-text);
+}
+
+.status-info {
+  border-color: var(--color-status-info-border);
+  background-color: var(--color-status-info-background);
+  color: var(--color-status-info-text);
+}
+
+.status-neutral {
+  border-color: var(--color-status-neutral-border);
+  background-color: var(--color-status-neutral-background);
+  color: var(--color-status-neutral-text);
+}
+
+.status-success:hover {
+  background-color: var(--color-status-success-hover);
+}
+
+.status-warning:hover {
+  background-color: var(--color-status-warning-hover);
+}
+
+.status-danger:hover {
+  background-color: var(--color-status-danger-hover);
+}
+
+.status-info:hover {
+  background-color: var(--color-status-info-hover);
+}
+
+.status-neutral:hover {
+  background-color: var(--color-status-neutral-hover);
+}
+
+.status-success-text {
+  color: var(--color-status-success-text);
+}
+
+.status-warning-text {
+  color: var(--color-status-warning-text);
+}
+
+.status-danger-text {
+  color: var(--color-status-danger-text);
+}
+
+.status-info-text {
+  color: var(--color-status-info-text);
 }
 
 a {

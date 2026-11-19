@@ -1,3 +1,4 @@
+import { translateText } from "@/app/_lib/localization";
 import ManagedCatalogPage from '@/app/_components/managed-catalog-page';
 
 const fields = [
@@ -9,7 +10,7 @@ const fields = [
 export default function ProcesosProduccionPage() {
   return (
     <ManagedCatalogPage
-      title="Procesos de producción"
+      title={translateText("Procesos de producción")}
       description="Administra los procesos de producción y tipos de mano de obra disponibles. El costo de este proceso se define por hamaca dentro de la fórmula de producción."
       endpoint="/procesos-produccion"
       screenPath="/procesos-produccion"

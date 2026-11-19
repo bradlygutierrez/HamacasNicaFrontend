@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import CategoryDasboardSelector from "@/app/_components/category-dasboard-selector";
 import DashboardCard from "@/app/_components/dashboard-card";
@@ -136,18 +137,16 @@ export default function Dashboard() {
     }, [summary]);
 
     if (error) {
-        return <p className="text-sm font-semibold text-red-700">{error}</p>;
+        return <p className="text-sm font-semibold status-danger-text">{error}</p>;
     }
 
     return (
         <div className="flex flex-col gap-6">
             <header className="space-y-2">
                 <h1 className="text-3xl font-bold text-[var(--color-foreground-secondary)] md:text-5xl">
-                    Panel de Control de Inventario
-                </h1>
+                    {translateText("Panel de Control de Inventario\n                ")}</h1>
                 <p className="max-w-2xl text-sm text-[var(--color-foreground-secondary)]/80 md:text-base">
-                    Vista general de inventario, movimientos y categorías.
-                </p>
+                    {translateText("Vista general de inventario, movimientos y categorías.\n                ")}</p>
             </header>
 
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -160,9 +159,8 @@ export default function Dashboard() {
             <main className="grid gap-6 xl:grid-cols-2">
                 <section className="flex flex-col gap-4 rounded-2xl bg-[var(--color-background-secondary)] p-4 md:p-5">
                     <h2 className="text-xl font-bold text-[var(--color-foreground)] md:text-3xl">
-                        Análisis de Stock de Inventario
-                    </h2>
-                    <p className="text-sm text-[var(--color-foreground)]/70">Productos por categoría</p>
+                        {translateText("Análisis de Stock de Inventario\n                    ")}</h2>
+                    <p className="text-sm text-[var(--color-foreground)]/70">{translateText("Productos por categoría")}</p>
 
                     <div className="flex flex-wrap gap-2">
                         <button
@@ -170,8 +168,7 @@ export default function Dashboard() {
                             onClick={() => handleCategorySelect(null)}
                             className={`rounded-[7px] px-3 py-2 text-sm font-medium transition-all ${selectedCategory === null ? "bg-[var(--color-foreground)] text-[var(--color-foreground-secondary)]" : "bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)]"}`}
                         >
-                            Todas
-                        </button>
+                            {translateText("Todas\n                        ")}</button>
                         {categories.map((cat) => (
                             <CategoryDasboardSelector
                                 key={cat.categoria_id}
@@ -204,8 +201,7 @@ export default function Dashboard() {
 
                 <section className="rounded-2xl bg-[var(--color-background-secondary)] p-4 md:p-5">
                     <h2 className="text-xl font-bold text-[var(--color-foreground)] md:text-3xl">
-                        Entradas y Salidas del Mes
-                    </h2>
+                        {translateText("Entradas y Salidas del Mes\n                    ")}</h2>
                     <div className="mt-4 h-[320px] md:h-[420px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData}>

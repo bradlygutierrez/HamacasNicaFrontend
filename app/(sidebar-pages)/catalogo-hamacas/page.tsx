@@ -1,4 +1,5 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import CatalogoHamacaCard from "@/app/_components/catalogo-hamaca-card";
 import FotoHamacaModal from "@/app/_components/foto-hamaca-modal";
@@ -191,12 +192,11 @@ export default function CatalogoHamacasPage() {
   }, [availabilityFilter, catalogItems, searchTerm]);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+    <div className="w-full max-w-full overflow-x-hidden bg-[var(--page-background)] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
       <header className="mb-6 flex flex-col gap-4 lg:mb-10">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-          <h1 className="text-[42px] font-extrabold leading-none text-white sm:text-[56px]">
-            Catálogo
-          </h1>
+          <h1 className="text-[41px] font-extrabold leading-none text-white sm:text-[55px]">
+            {translateText("Catálogo\n          ")}</h1>
 
           <div className="relative h-[46px] w-full lg:max-w-[650px]">
             <Search className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-[#08264d]" />
@@ -204,7 +204,7 @@ export default function CatalogoHamacasPage() {
               type="text"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Buscar por hamaca, color, tamaño o ubicación"
+              placeholder={translateText("Buscar por hamaca, color, tamaño o ubicación")}
               className="h-full w-full rounded-[8px] bg-[#f7f7f7] pl-14 pr-4 text-lg text-[#08264d] outline-none sm:text-xl"
             />
           </div>
@@ -215,8 +215,7 @@ export default function CatalogoHamacasPage() {
             className="flex h-[46px] items-center justify-center gap-2 rounded-[8px] bg-[#f7f7f7] px-5 text-base font-semibold text-[#08264d] shadow-md sm:text-lg"
           >
             <Plus className="h-5 w-5" />
-            Nueva hamaca
-          </button>
+            {translateText("Nueva hamaca\n          ")}</button>
         </div>
 
         <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap">
@@ -240,13 +239,12 @@ export default function CatalogoHamacasPage() {
       </header>
 
       {loading ? (
-        <p className="text-xl font-semibold text-white">Cargando catálogo...</p>
+        <p className="text-xl font-semibold text-white">{translateText("Cargando catálogo...")}</p>
       ) : null}
 
       {!loading && filteredItems.length === 0 ? (
         <p className="text-xl font-semibold text-white">
-          No hay hamacas para mostrar. Crea una nueva hamaca.
-        </p>
+          {translateText("No hay hamacas para mostrar. Crea una nueva hamaca.\n        ")}</p>
       ) : null}
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">

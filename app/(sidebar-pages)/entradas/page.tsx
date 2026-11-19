@@ -1,6 +1,10 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import EntradaModal from '@/app/_components/entrada-modal';
+import EditMovimientoModal, {
+  type EditableMovimiento,
+} from '@/app/_components/edit-movimiento-modal';
 import EntradasTable from '@/app/_components/entradas-table';
 import { apiFetch } from '@/app/_lib/api';
 import { Plus, Search } from 'lucide-react';
@@ -13,6 +17,7 @@ type Movimiento = {
   tipo: 'entrada' | 'salida' | 'transferencia';
   cantidad: number;
   fecha: string;
+  editable: boolean;
 };
 
 type Inventario = {
@@ -36,6 +41,7 @@ type Inventario = {
 
 export type EntradaRow = {
   id: number;
+  editable: boolean;
   producto: string;
   usuario: string;
   fecha: string;
@@ -47,6 +53,7 @@ export type EntradaRow = {
 
 export default function EntradasPage() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingMovement, setEditingMovement] = useState<EditableMovimiento | null>(null);
   const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
   const [inventarios, setInventarios] = useState<Inventario[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,6 +99,7 @@ export default function EntradasPage() {
           ubicacion: inv?.ubicacion?.nombre ?? 'Sin ubicación',
           total,
           estatus: 'Aplicado',
+          editable: mov.editable,
         };
       });
   }, [movimientos, inventarios]);
@@ -109,11 +117,10 @@ export default function EntradasPage() {
   }, [rows, searchTerm]);
 
   return (
-    <div className="w-full max-w-full min-w-0 overflow-x-hidden bg-[#456f89] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
+    <div className="w-full max-w-full min-w-0 overflow-x-hidden bg-[var(--page-background)] px-3 py-4 text-[#08264d] sm:px-4 sm:py-7">
       <header className="mb-4 flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
-        <h1 className="text-[42px] font-extrabold leading-none text-white sm:text-[56px]">
-          Entradas
-        </h1>
+        <h1 className="text-[41px] font-extrabold leading-none text-white sm:text-[55px]">
+          {translateText("Entradas\n        ")}</h1>
 
         <div className="relative h-[46px] w-full min-w-0 lg:max-w-[650px]">
           <Search className="absolute left-4 top-1/2 h-6 w-6 -translate-y-1/2 text-[#08264d]" />
@@ -131,15 +138,27 @@ export default function EntradasPage() {
           className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[10px] bg-[#f7f7f7] px-5 text-base font-medium text-black shadow-md sm:w-fit sm:text-lg lg:ml-auto"
         >
           <Plus className="h-5 w-5" />
-          Agregar
-        </button>
+          {translateText("Agregar\n        ")}</button>
       </header>
 
-      <EntradasTable rows={filteredRows} />
+      <EntradasTable
+        rows={filteredRows}
+        onEdit={(row) => setEditingMovement({
+          id: row.id,
+          tipo: 'entrada',
+          cantidad: row.cantidad,
+          fecha: row.fecha,
+        })}
+      />
 
       <EntradaModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
+        onSuccess={loadData}
+      />
+      <EditMovimientoModal
+        movimiento={editingMovement}
+        onClose={() => setEditingMovement(null)}
         onSuccess={loadData}
       />
     </div>
