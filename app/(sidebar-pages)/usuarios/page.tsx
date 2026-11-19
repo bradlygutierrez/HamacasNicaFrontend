@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import AddUserCard from "@/app/_components/addUserCard";
 import UserCard from "@/app/_components/userCard";
@@ -220,11 +221,9 @@ export default function Usuarios() {
         <div className="flex flex-col gap-6">
             <header className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold text-[var(--color-foreground-secondary)] md:text-5xl">
-                    Usuarios
-                </h1>
+                    {translateText("Usuarios\n                ")}</h1>
                 <p className="max-w-2xl text-sm text-[var(--color-foreground-secondary)]/80 md:text-base">
-                    Administra accesos administrativos, roles y fotos del personal.
-                </p>
+                    {translateText("Administra accesos administrativos, roles y fotos del personal.\n                ")}</p>
             </header>
 
             <main className="grid gap-6 lg:grid-cols-[420px_minmax(0,1fr)]">
@@ -267,7 +266,7 @@ export default function Usuarios() {
                             handleChange={handleEditChange}
                             handleSubmit={handleEditSubmit}
                             response={editResponse}
-                            title="Editar usuario"
+                            title={translateText("Editar usuario")}
                             buttonText="Actualizar"
                             onClose={() => {
                                 setIsModalOpen(false);

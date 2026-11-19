@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
 import { todayLocalDate } from '@/app/_lib/date';
@@ -236,8 +237,7 @@ export default function TransferenciaModal({
     >
       <div className="max-h-[calc(100vh-32px)] w-full max-w-[620px] overflow-y-auto rounded-[10px] bg-[#f7f7f7] px-6 py-6 shadow-xl sm:px-9">
         <h2 className="mb-5 text-3xl font-medium text-black">
-          Reubicar hamaca
-        </h2>
+          {translateText("Reubicar hamaca\n        ")}</h2>
 
         <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
           <div className="flex flex-col gap-4">
@@ -247,7 +247,7 @@ export default function TransferenciaModal({
               onChange={handleChange}
               className="h-[46px] w-full border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none sm:px-7 sm:text-xl"
             >
-              <option value="">Producto en inventario</option>
+              <option value="">{translateText("Producto en inventario")}</option>
               {inventarios.map((inventario) => (
                 <option key={inventario.id} value={inventario.id}>
                   {formatInventarioLabel(inventario)}
@@ -261,7 +261,7 @@ export default function TransferenciaModal({
               onChange={handleChange}
               className="h-[46px] w-full border border-black bg-[#f7f7f7] px-4 text-base text-[#08264d] outline-none sm:px-7 sm:text-xl"
             >
-              <option value="">Ubicación destino</option>
+              <option value="">{translateText("Ubicación destino")}</option>
               {destinationOptions.map((ubicacion) => (
                 <option key={ubicacion.id} value={ubicacion.id}>
                   {ubicacion.nombre}
@@ -276,7 +276,7 @@ export default function TransferenciaModal({
               max={selectedInventario?.cantidad}
               value={form.cantidad}
               onChange={handleChange}
-              placeholder="Cantidad"
+              placeholder={translateText("Cantidad")}
               className="h-[46px] w-full border border-black bg-[#f7f7f7] px-7 text-xl text-[#08264d] outline-none"
             />
 
@@ -290,14 +290,14 @@ export default function TransferenciaModal({
 
             {selectedInventario && (
               <div className="rounded-md border border-[#08264d]/30 bg-white px-4 py-3 text-sm font-semibold text-[#08264d]">
-                Ubicación actual: {selectedInventario.ubicacion?.nombre ?? 'Sin ubicación'}
+                {translateText("Ubicación actual: ")}{selectedInventario.ubicacion?.nombre ?? 'Sin ubicación'}
                 <br />
-                Stock disponible: {selectedInventario.cantidad}
+                {translateText("Stock disponible: ")}{selectedInventario.cantidad}
               </div>
             )}
 
             {error && (
-              <p className="rounded-md bg-red-100 px-3 py-2 text-sm font-semibold text-red-700">
+              <p className="rounded-md status-danger px-3 py-2 text-sm font-semibold status-danger-text">
                 {error}
               </p>
             )}
@@ -321,8 +321,7 @@ export default function TransferenciaModal({
               className="flex h-[38px] flex-1 items-center justify-center gap-2 rounded-[10px] bg-[#08264d] px-4 text-base font-bold text-white disabled:opacity-60 sm:flex-none"
             >
               <X className="h-5 w-5" />
-              Cancelar
-            </button>
+              {translateText("Cancelar\n            ")}</button>
           </div>
         </div>
       </div>

@@ -1,70 +1,34 @@
 "use client";
+import { translateText } from "@/app/_lib/localization";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Fragment } from "react";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+
 import {
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  BookOpen,
-  Boxes,
-  BriefcaseBusiness,
-  ChevronDown,
-  CircleUserRound,
-  Hammer,
-  LayoutDashboard,
+  NavArrowDown as ChevronDown,
+  UserCircle as CircleUserRound,
   LogOut,
-  MapPin,
-  Menu,
-  Palette,
-  Package,
-  Ruler,
-  Settings2,
-  ShoppingCart,
-  Tags,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+} from "iconoir-react";
+import { Settings } from "lucide-react";
+
 import { apiFetch } from "../_lib/api";
+import { usePreferences } from "./preferences-provider";
 import type { NavItem, UsuarioActual } from "../_lib/permissions";
+import { AppHeader } from "./app-header";
+import { getNavIcon, getSectionIcon, SideBarSearch } from "./sideBarSearch";
 import { toast } from "react-toastify";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 const ICON_BOX = "flex h-10 w-10 shrink-0 items-center justify-center";
-const NAV_ICON_SIZE = "h-5 w-5 stroke-[1.8]";
-const SECTION_ICON_SIZE = "h-3.5 w-3.5 stroke-[1.8]";
+const NAV_ICON_SIZE = "h-5 w-5 stroke-[1.4]";
+const SECTION_ICON_SIZE = "h-4 w-4 stroke-[1.3]";
 const SIDEBAR_MIN_WIDTH = 64;
 const SIDEBAR_MAX_WIDTH = 320;
 const SIDEBAR_WIDTH_STORAGE_KEY = "hamacas:sidebar-width";
-
-const NAV_ICONS: Record<string, LucideIcon> = {
-  "/dashboard": LayoutDashboard,
-  "/inventario-hamacas": Boxes,
-  "/catalogo-hamacas": BookOpen,
-  "/entradas": ArrowDownToLine,
-  "/salidas": ArrowUpFromLine,
-  "/materiales": Package,
-  "/procesos-produccion": Hammer,
-  "/ventas": ShoppingCart,
-  "/servicios-adicionales": BriefcaseBusiness,
-  "/ubicacion": MapPin,
-  "/colores": Palette,
-  "/tamano": Ruler,
-  "/categoria": Tags,
-  "/usuarios": Users,
-};
-
-const SECTION_ICONS: Record<string, LucideIcon> = {
-  General: LayoutDashboard,
-  "Productos e inventario": Boxes,
-  Producción: Hammer,
-  Comercial: ShoppingCart,
-  "Catálogos / configuración": Settings2,
-  Administración: Users,
-};
 
 function imageUrl(path?: string | null) {
   if (!path) return "";
@@ -113,15 +77,60 @@ function SideBar({ usuario, navItems }: Props) {
 
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = usePreferences();
 
   const userPhoto = useMemo(() => getUserPhoto(usuario), [usuario]);
+  const localizedNavItems = useMemo(
+    () =>
+      navItems.map((item) => ({
+        ...item,
+        label: t(item.label),
+        alt: t(item.alt),
+        section: item.section ? t(item.section) : undefined,
+      })),
+    [navItems, t]
+  );
 
   useEffect(() => {
     const savedWidth = Number(window.localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY));
-    if (Number.isFinite(savedWidth) && savedWidth >= SIDEBAR_MIN_WIDTH && savedWidth <= SIDEBAR_MAX_WIDTH) {
+    const hasSavedWidth =
+      Number.isFinite(savedWidth) &&
+      savedWidth >= SIDEBAR_MIN_WIDTH &&
+      savedWidth <= SIDEBAR_MAX_WIDTH;
+
+    if (hasSavedWidth) {
       setDesktopWidth(savedWidth);
     }
+
+    if (window.innerWidth >= 768) {
+      setOpen(!hasSavedWidth || savedWidth > SIDEBAR_MIN_WIDTH + 8);
+    }
   }, []);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    let previousOverflow: string | null = null;
+
+    function syncBodyScroll() {
+      if (open && mobileQuery.matches && previousOverflow === null) {
+        previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+      } else if ((!open || !mobileQuery.matches) && previousOverflow !== null) {
+        document.body.style.overflow = previousOverflow;
+        previousOverflow = null;
+      }
+    }
+
+    syncBodyScroll();
+    mobileQuery.addEventListener("change", syncBodyScroll);
+
+    return () => {
+      mobileQuery.removeEventListener("change", syncBodyScroll);
+      if (previousOverflow !== null) {
+        document.body.style.overflow = previousOverflow;
+      }
+    };
+  }, [open]);
 
   useEffect(() => {
     window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(desktopWidth));
@@ -198,100 +207,51 @@ function SideBar({ usuario, navItems }: Props) {
 
   return (
     <>
+      <AppHeader
+        open={open}
+        sidebarWidth={open ? desktopWidth : SIDEBAR_MIN_WIDTH}
+        onToggle={toggleOpen}
+      />
+
       {open ? (
         <button
           type="button"
-          aria-label="Cerrar menú"
+          aria-label={translateText("Cerrar menú")}
           onClick={() => setOpen(false)}
           className="fixed inset-0 z-30 cursor-pointer bg-black/30 md:hidden"
         />
       ) : null}
 
-      {!open ? (
-        <button
-          type="button"
-          onClick={toggleOpen}
-          aria-label="Abrir menú"
-          aria-expanded={false}
-          className="fixed left-3 top-3 z-50 flex h-10 w-10 items-center justify-center rounded-md bg-[var(--color-foreground-secondary)] text-[var(--color-foreground)] shadow-[0_4px_16px_rgba(8,38,77,0.22)] md:hidden"
-        >
-          <Menu className={NAV_ICON_SIZE} aria-hidden="true" />
-        </button>
-      ) : null}
-
       <aside
         style={{ "--sidebar-width": `${desktopWidth}px` } as CSSProperties}
-        className={`relative z-40 flex flex-none flex-col overflow-hidden rounded-r-xl bg-[var(--color-foreground-secondary)] font-[var(--font-poppins)] shadow-[8px_0_24px_rgba(8,38,77,0.12)] transition-[width,background-color,border-radius] duration-200 md:my-2 md:top-2 md:h-[calc(100vh-1rem)] md:rounded-xl md:border md:border-white/10 md:bg-[var(--color-foreground-secondary)]/95 md:backdrop-blur-xl md:overflow-visible ${
+        className={`relative z-40 flex flex-none flex-col overflow-hidden rounded-none bg-[var(--color-foreground-secondary)] font-[var(--font-poppins)] shadow-[8px_0_24px_rgba(8,38,77,0.12)] transition-[width,background-color,border-radius] duration-200 md:my-0 md:top-0 md:h-screen md:rounded-tr-3xl md:border md:border-white/10 md:bg-[var(--color-foreground-secondary)]/95 md:backdrop-blur-xl md:overflow-visible ${
           open
-            ? "fixed inset-y-0 left-0 h-screen w-screen p-2 md:sticky md:bottom-auto md:top-2 md:left-auto md:h-[calc(100vh-1rem)] md:w-[var(--sidebar-width)] md:p-2"
-            : "hidden fixed left-0 top-0 h-auto w-11 p-0.5 md:sticky md:flex md:h-[calc(100vh-1rem)] md:w-16 md:p-1"
+            ? "fixed inset-y-0 left-0 h-screen w-screen p-2 pt-12 md:sticky md:bottom-auto md:left-auto md:w-[var(--sidebar-width)] md:p-2"
+            : "hidden fixed left-0 top-0 h-auto w-11 p-0.5 md:sticky md:flex md:w-16 md:p-1"
         }`}
       >
-        <button
-          type="button"
-          onClick={toggleOpen}
-          className="mb-1 flex min-h-9 w-full cursor-pointer items-center gap-2 rounded-md px-0 transition hover:bg-white/10 md:mb-0 md:min-h-[44px] md:px-1"
-          aria-label={open ? "Cerrar menú" : "Abrir menú"}
-          aria-expanded={open}
-        >
-          <span className={`${ICON_BOX} h-8 w-8 md:h-10 md:w-10`}>
-            <Menu className={NAV_ICON_SIZE} aria-hidden="true" />
-          </span>
-
-          <span
-            className={`whitespace-nowrap text-sm font-semibold text-[var(--color-foreground)] transition-all duration-200 ${
-              open
-                ? "translate-x-0 opacity-100"
-                : "pointer-events-none -translate-x-2 opacity-0"
-            }`}
-          >
-            Menú
-          </span>
-        </button>
-
-        <div
-          className={`${open ? "flex" : "hidden md:flex"} mt-3 min-h-[52px] w-full items-center gap-2 rounded-md bg-white/5 px-1`}
-        >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10">
-            {userPhoto && !photoError ? (
-              <img
-                src={userPhoto}
-                alt={usuario?.nombre ?? "Usuario"}
-                onError={() => setPhotoError(true)}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <CircleUserRound className="h-6 w-6 stroke-[1.7]" aria-hidden="true" />
-            )}
+        {open ? (
+          <div className="mt-3 w-full md:ml-1 md:border-l-2 md:border-transparent md:pl-2">
+            <SideBarSearch
+              navItems={localizedNavItems}
+              onNavigate={() => {
+                if (window.innerWidth < 768) setOpen(false);
+              }}
+            />
           </div>
-
-          <div
-            className={`min-w-0 transition-all duration-200 ${
-              open
-                ? "translate-x-0 opacity-100"
-                : "pointer-events-none -translate-x-2 opacity-0"
-            }`}
-          >
-            <p className="truncate text-xs font-semibold text-[var(--color-foreground)]">
-              {usuario?.nombre ?? "Usuario"}
-            </p>
-
-            {usuario?.rol ? (
-              <p className="truncate text-[11px] capitalize text-[var(--color-foreground)]/70">
-                {usuario.rol}
-              </p>
-            ) : null}
-          </div>
-        </div>
+        ) : null}
 
         <nav
-          className={`${open ? "flex" : "hidden md:flex"} mt-3 flex-1 flex-col gap-1.5 overflow-y-auto overflow-x-hidden pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
+          className={`${open ? "flex" : "hidden md:flex"} mt-3 flex-1 flex-col gap-1 overflow-y-auto overflow-x-hidden overscroll-contain pr-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}
         >
-          {navItems.map((item, index) => {
+          {localizedNavItems.map((item, index) => {
             const active =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
             const previousItem = navItems[index - 1];
             const showSection = item.section && item.section !== previousItem?.section;
+            const lastInSection = Boolean(
+              item.section && item.section !== navItems[index + 1]?.section
+            );
             const sectionCollapsed = item.section ? collapsedSections[item.section] === true : false;
 
             return (
@@ -300,14 +260,16 @@ function SideBar({ usuario, navItems }: Props) {
                   <button
                     type="button"
                     onClick={() => toggleSection(item.section ?? "")}
-                    className="flex w-full items-center justify-between px-2 pt-3 pb-1 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--color-foreground)]/50 transition hover:text-[var(--color-foreground)]"
+                    className="flex w-full items-center justify-between px-1 pt-3 pb-1 text-left text-sm font-medium text-[var(--color-foreground)]/65 transition hover:text-[var(--color-foreground)] md:ml-1 md:border-l-2 md:border-transparent md:pl-2"
                     aria-expanded={!sectionCollapsed}
                   >
                     <span className="flex items-center gap-1.5">
-                      {(() => {
-                        const SectionIcon = SECTION_ICONS[item.section ?? ""] ?? Settings2;
-                        return <SectionIcon className={SECTION_ICON_SIZE} aria-hidden="true" />;
-                      })()}
+                      <span className="flex h-5 w-10 shrink-0 items-center justify-center">
+                        {(() => {
+                          const SectionIcon = getSectionIcon(item.section ?? "");
+                          return <SectionIcon className={SECTION_ICON_SIZE} aria-hidden="true" />;
+                        })()}
+                      </span>
                       <span>{item.section}</span>
                     </span>
                     <ChevronDown className={`h-3.5 w-3.5 stroke-[1.8] transition-transform ${sectionCollapsed ? "-rotate-90" : ""}`} />
@@ -319,20 +281,21 @@ function SideBar({ usuario, navItems }: Props) {
                     onClick={() => {
                       if (window.innerWidth < 768) setOpen(false);
                     }}
-                    className={`flex min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-lg px-1 text-sm transition-colors duration-200 hover:bg-white/10 md:ml-1 md:border-l-2 md:border-transparent md:pl-2 ${
+                    className={`flex min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-lg px-1 text-base transition-colors duration-200 hover:bg-white/10 md:ml-1 md:border-l-2 md:border-transparent md:pl-2 ${
                       active ? "border-l-[#e3b72e] bg-white/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]" : ""
-                    }`}
+                    } ${lastInSection ? "mb-3" : ""}`}
                     aria-label={item.alt}
+                    title={!open && item.section ? item.section : item.label}
                   >
                     <span className={`${ICON_BOX} text-[var(--color-foreground)]`}>
                       {(() => {
-                        const NavIcon = NAV_ICONS[item.href] ?? Package;
+                        const NavIcon = getNavIcon(item.href);
                         return <NavIcon className={NAV_ICON_SIZE} aria-hidden="true" />;
                       })()}
                     </span>
 
                     <span
-                      className={`whitespace-nowrap text-sm font-medium text-[var(--color-foreground)] transition-all duration-200 ${
+                      className={`whitespace-nowrap text-base font-medium text-[var(--color-foreground)] transition-all duration-200 ${
                         open
                           ? "translate-x-0 opacity-100"
                           : "pointer-events-none -translate-x-2 opacity-0"
@@ -347,29 +310,67 @@ function SideBar({ usuario, navItems }: Props) {
           })}
         </nav>
 
+        <div className={`${open ? "flex" : "hidden md:flex"} mt-auto w-full flex-col gap-1 border-t border-white/10 pt-2`}>
+          <Link
+            href="/preferencias"
+            onClick={() => {
+              if (window.innerWidth < 768) setOpen(false);
+            }}
+            className={`flex min-h-[46px] w-full items-center gap-2 rounded-md px-1 text-[var(--color-foreground)] transition hover:bg-white/10 md:ml-1 md:pl-2 ${
+              pathname === "/preferencias" ? "bg-white/10" : ""
+            }`}
+            aria-label={t("Usuario y preferencias")}
+            title={t("Usuario y preferencias")}
+          >
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10">
+              {userPhoto && !photoError ? (
+                <img
+                  src={userPhoto}
+                  alt={usuario?.nombre ?? t("Usuario")}
+                  onError={() => setPhotoError(true)}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <CircleUserRound className="h-6 w-6 stroke-[1.7]" aria-hidden="true" />
+              )}
+            </span>
+            <span
+              className={`min-w-0 flex-1 whitespace-nowrap text-left text-sm font-medium transition-all duration-200 ${
+                open ? "translate-x-0 opacity-100" : "pointer-events-none -translate-x-2 opacity-0"
+              }`}
+            >
+              <span className="block truncate">{usuario?.nombre ?? t("Usuario")}</span>
+              <span className="block truncate text-xs text-[var(--color-foreground)]/70">
+                {t("Usuario y preferencias")}
+              </span>
+            </span>
+            {open ? <Settings className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" /> : null}
+          </Link>
+
         <button
           type="button"
           onClick={handleLogout}
-          className={`${open ? "flex" : "hidden md:flex"} mt-2 min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-md px-1 text-sm transition hover:bg-white/10`}
-          aria-label="Cerrar sesión"
+          className={`${open ? "flex" : "hidden md:flex"} mt-2 min-h-[42px] w-full cursor-pointer items-center gap-2 rounded-md px-1 text-base transition hover:bg-white/10 md:ml-1 md:border-l-2 md:border-transparent md:pl-2`}
+          aria-label={t("Cerrar sesión")}
         >
           <span className={ICON_BOX}>
             <LogOut className={NAV_ICON_SIZE} aria-hidden="true" />
           </span>
 
           <span
-            className={`whitespace-nowrap text-sm font-medium text-[var(--color-foreground)] transition-all duration-200 ${
+            className={`whitespace-nowrap text-base font-medium text-[var(--color-foreground)] transition-all duration-200 ${
               open
                 ? "translate-x-0 opacity-100"
                 : "pointer-events-none -translate-x-2 opacity-0"
             }`}
           >
-            Cerrar sesión
+            {t("Cerrar sesión")}
           </span>
         </button>
+        </div>
         <div
           role="separator"
-          aria-label="Ajustar ancho del menú"
+          aria-label={translateText("Ajustar ancho del menú")}
           aria-orientation="vertical"
           aria-valuemin={SIDEBAR_MIN_WIDTH}
           aria-valuemax={SIDEBAR_MAX_WIDTH}

@@ -1,3 +1,4 @@
+import { translateText } from "@/app/_lib/localization";
 import ManagedCatalogPage from '@/app/_components/managed-catalog-page';
 
 const fields = [
@@ -14,7 +15,7 @@ const fields = [
 export default function MaterialesPage() {
   return (
     <ManagedCatalogPage
-      title="Materiales"
+      title={translateText("Materiales")}
       description="Administra materiales, unidades de compra, consumo, precios y merma para futuras recetas de producción."
       endpoint="/materiales"
       screenPath="/materiales"

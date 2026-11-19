@@ -1,3 +1,4 @@
+import { translateText } from "@/app/_lib/localization";
 import { ArrowRightLeft, Camera, LogOut } from "lucide-react";
 
 type InventarioHamacaCardProps = {
@@ -48,34 +49,34 @@ export default function InventarioHamacaCard({
         </div>
 
         <div className="rounded-[8px] bg-[#456f89] px-4 py-2 text-center text-lg font-bold text-white">
-          Disponible: {cantidad}
+          {translateText("Disponible: ")}{cantidad}
         </div>
 
         <div>
-          <p className="mb-1 text-lg font-bold text-[#155b72]">Colores:</p>
+          <p className="mb-1 text-lg font-bold text-[#155b72]">{translateText("Colores:")}</p>
           <div className="rounded-[8px] bg-[#155b72] px-4 py-2 text-white">
             {colores.length > 0 ? colores.join(", ") : "Sin color"}
           </div>
         </div>
 
         <div>
-          <p className="mb-1 text-lg font-bold text-[#155b72]">Propietario:</p>
+          <p className="mb-1 text-lg font-bold text-[#155b72]">{translateText("Propietario:")}</p>
           <div className="rounded-[8px] bg-[#155b72] px-4 py-2 text-white">
             {propietario}
           </div>
         </div>
 
         <div>
-          <p className="mb-1 text-lg font-bold text-[#155b72]">Ubicación:</p>
+          <p className="mb-1 text-lg font-bold text-[#155b72]">{translateText("Ubicación:")}</p>
           <div className="rounded-[8px] bg-[#155b72] px-4 py-2 text-white">
             {ubicacion}
           </div>
         </div>
 
         <div>
-          <p className="mb-1 text-lg font-bold text-[#155b72]">Precio:</p>
+          <p className="mb-1 text-lg font-bold text-[#155b72]">{translateText("Precio:")}</p>
           <div className="rounded-[8px] bg-[#155b72] px-4 py-2 text-white">
-            C$ {precio}
+            {translateText("C$ ")}{precio}
           </div>
         </div>
       </div>
@@ -86,8 +87,7 @@ export default function InventarioHamacaCard({
           onClick={onViewPhotos}
           className="flex items-center justify-center gap-2 rounded-[8px] bg-white px-3 py-2 font-semibold text-[#08264d] shadow"
         >
-          Fotos
-        </button>
+          {translateText("Fotos\n        ")}</button>
 
         <button
           type="button"
@@ -95,8 +95,7 @@ export default function InventarioHamacaCard({
           className="flex items-center justify-center gap-2 rounded-[8px] bg-[#e8edf3] px-3 py-2 font-semibold text-[#08264d] shadow"
         >
           <ArrowRightLeft className="h-5 w-5" />
-          Reubicar
-        </button>
+          {translateText("Reubicar\n        ")}</button>
 
         <button
           type="button"
@@ -104,8 +103,7 @@ export default function InventarioHamacaCard({
           className="flex items-center justify-center gap-2 rounded-[8px] bg-[#123852] px-3 py-2 font-semibold text-white shadow"
         >
           <LogOut className="h-5 w-5" />
-          Salida
-        </button>
+          {translateText("Salida\r\n        ")}</button>
       </div>
     </article>
   );

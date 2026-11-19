@@ -1,4 +1,5 @@
 'use client';
+import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
 import { useEffect, useState } from 'react';
@@ -43,8 +44,8 @@ export default function AsyncCatalogSelector({ endpoint, placeholder, excludedId
     <div className="relative space-y-1">
       <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={placeholder} className="h-10 w-full rounded bg-white px-3 text-sm" />
       <div className="max-h-40 overflow-y-auto rounded bg-white shadow-sm">
-        {loading ? <p className="p-2 text-xs text-[#456f89]">Buscando...</p> : null}
-        {!loading && available.length === 0 ? <p className="p-2 text-xs text-[#456f89]">Sin resultados.</p> : null}
+        {loading ? <p className="p-2 text-xs text-[#456f89]">{translateText("Buscando...")}</p> : null}
+        {!loading && available.length === 0 ? <p className="p-2 text-xs text-[#456f89]">{translateText("Sin resultados.")}</p> : null}
         {available.map((item) => (
           <button key={item.id} type="button" onClick={() => { onSelect(item); setSearch(''); }} className="block w-full rounded bg-[#123852] px-3 py-2 text-left text-sm text-white hover:bg-[#456f89]">
             {item.nombre}{item.unidad_consumo ? ` · ${item.unidad_consumo}` : ''}

@@ -1,3 +1,4 @@
+import { translateText } from "@/app/_lib/localization";
 import type { ReactNode } from "react";
 
 type SectionPageProps = {
@@ -11,11 +12,11 @@ export default function SectionPage({ title, description, children }: SectionPag
         <div className="space-y-4">
             <header className="space-y-2">
                 <h1 className="text-3xl font-bold text-[var(--color-foreground-secondary)] md:text-5xl">
-                    {title}
+                    {translateText(title)}
                 </h1>
                 {description ? (
                     <p className="max-w-2xl text-sm text-[var(--color-foreground-secondary)]/80 md:text-base">
-                        {description}
+                        {translateText(description)}
                     </p>
                 ) : null}
             </header>
@@ -23,8 +24,7 @@ export default function SectionPage({ title, description, children }: SectionPag
             <section className="rounded-2xl bg-[var(--color-background-secondary)] p-5 text-[var(--color-foreground)]">
                 {children ?? (
                     <p className="text-sm md:text-base">
-                        Módulo en construcción. La navegación ya está activa y esta sección puede conectarse al backend cuando se necesite CRUD completo.
-                    </p>
+                        {translateText("Módulo en construcción. La navegación ya está activa y esta sección puede conectarse al backend cuando se necesite CRUD completo.\n                    ")}</p>
                 )}
             </section>
         </div>
