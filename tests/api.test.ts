@@ -3,6 +3,33 @@ import assert from 'node:assert/strict';
 
 import { authHeaders, csrfCookie } from '../app/_lib/api.ts';
 
+test('requires an API URL in production', async () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+  const originalApiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  try {
+    process.env.NODE_ENV = 'production';
+    process.env.NEXT_PUBLIC_API_URL = '';
+
+    await assert.rejects(
+      import('../app/_lib/api.ts?production-validation'),
+      /NEXT_PUBLIC_API_URL debe estar configurada para producción/
+    );
+  } finally {
+    if (originalNodeEnv === undefined) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+
+    if (originalApiUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_API_URL;
+    } else {
+      process.env.NEXT_PUBLIC_API_URL = originalApiUrl;
+    }
+  }
+});
+
 test('requests the standard Sanctum csrf cookie endpoint', async () => {
   const originalFetch = globalThis.fetch;
   const requestedUrls: string[] = [];

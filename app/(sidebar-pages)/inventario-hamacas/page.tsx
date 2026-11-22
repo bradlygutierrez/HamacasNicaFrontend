@@ -3,6 +3,7 @@ import { translateText } from "@/app/_lib/localization";
 
 import InventarioHamacaCard from "@/app/_components/inventario-hamaca-card";
 import { apiFetch } from "@/app/_lib/api";
+import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import SalidaModal from "@/app/_components/salida-modal";
@@ -89,10 +90,8 @@ export default function InventarioHamacasPage() {
         setLoading(true);
 
         try {
-            const response = await apiFetch("/inventario-hamacas?per_page=100");
-            const data = await response.json();
-
-            setItems(data.data ?? []);
+                const data = await fetchAllCatalogItems("/inventario-hamacas", apiFetch);
+                setItems(data as unknown as Inventario[]);
         } catch (error) {
             console.error("Error cargando inventario:", error);
         } finally {

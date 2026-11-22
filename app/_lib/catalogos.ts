@@ -39,3 +39,49 @@ export function getApiValidationMessage(data: unknown, fallback: string) {
 
   return String(firstError ?? fallback);
 }
+
+type CatalogListResponse = {
+  data?: unknown[];
+  meta?: {
+    last_page?: unknown;
+  };
+};
+
+type CatalogPageFetcher = (path: string) => Promise<{
+  ok: boolean;
+  status: number;
+  json: () => Promise<unknown>;
+}>;
+
+export async function fetchAllCatalogItems(
+  endpoint: string,
+  fetchPage: CatalogPageFetcher
+): Promise<unknown[]> {
+  const items: unknown[] = [];
+  let page = 1;
+
+  while (page <= 1000) {
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const response = await fetchPage(`${endpoint}${separator}page=${page}`);
+    const data = await response.json().catch(() => null) as CatalogListResponse | null;
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    if (Array.isArray(data?.data)) {
+      items.push(...data.data);
+    }
+
+    const lastPage = Number(data?.meta?.last_page);
+    if (Number.isInteger(lastPage) && lastPage >= page) {
+      if (page >= lastPage) break;
+    } else if (!Array.isArray(data?.data) || data.data.length === 0) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return items;
+}

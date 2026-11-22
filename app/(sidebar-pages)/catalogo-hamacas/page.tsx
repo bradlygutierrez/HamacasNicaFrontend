@@ -6,6 +6,7 @@ import FotoHamacaModal from "@/app/_components/foto-hamaca-modal";
 import HamacaModal from "@/app/_components/hamaca-modal";
 import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 import { apiFetch } from "@/app/_lib/api";
+import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -111,12 +112,13 @@ export default function CatalogoHamacasPage() {
     setLoading(true);
 
     try {
-      const [response, formulaResponse] = await Promise.all([apiFetch("/hamacas/detalles?per_page=100"), apiFetch("/formulas?per_page=100")]);
-      const data = await response.json();
-      const formulaData = await formulaResponse.json().catch(() => null);
+      const [hamacas, formulas] = await Promise.all([
+        fetchAllCatalogItems("/hamacas/detalles", apiFetch),
+        fetchAllCatalogItems("/formulas", apiFetch),
+      ]);
 
-      setHamacas(data.data ?? []);
-      setFormulaByHamaca(Object.fromEntries((Array.isArray(formulaData?.data) ? formulaData.data : []).map((item: FormulaSummary) => [item.hamaca?.id ?? item.hamaca_id ?? item.id, item])));
+      setHamacas(hamacas as Hamaca[]);
+      setFormulaByHamaca(Object.fromEntries((formulas as FormulaSummary[]).map((item) => [item.hamaca?.id ?? item.hamaca_id ?? item.id, item])));
     } catch (error) {
       console.error("Error cargando catálogo:", error);
       toast.error("No se pudo cargar el catálogo.");

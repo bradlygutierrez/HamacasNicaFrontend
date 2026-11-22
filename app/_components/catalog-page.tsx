@@ -4,6 +4,7 @@ import { translateText } from "@/app/_lib/localization";
 import { apiFetch } from '@/app/_lib/api';
 import {
   buildCatalogPayload,
+  fetchAllCatalogItems,
   getApiValidationMessage,
 } from '@/app/_lib/catalogos';
 import { Check, Pencil, Plus, RotateCcw, Search, X } from 'lucide-react';
@@ -65,14 +66,8 @@ export default function CatalogPage({
     setError('');
 
     try {
-      const response = await apiFetch(endpoint);
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      setItems(data?.data ?? []);
+      const catalogItems = await fetchAllCatalogItems(endpoint, apiFetch);
+      setItems(catalogItems as CatalogItem[]);
     } catch (err) {
       console.error(err);
       setError('No se pudo cargar el catálogo.');

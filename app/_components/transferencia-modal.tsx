@@ -2,6 +2,7 @@
 import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
+import { fetchAllCatalogItems } from '@/app/_lib/catalogos';
 import { todayLocalDate } from '@/app/_lib/date';
 import { buildTransferenciaPayload } from '@/app/_lib/transferencias';
 import { ArrowRightLeft, X } from 'lucide-react';
@@ -91,19 +92,17 @@ export default function TransferenciaModal({
 
     async function loadCatalogos() {
       try {
-        const [inventariosRes, ubicacionesRes] = await Promise.all([
-          apiFetch('/inventario-hamacas'),
-          apiFetch('/ubicaciones'),
+        const [inventarios, ubicaciones] = await Promise.all([
+          fetchAllCatalogItems('/inventario-hamacas', apiFetch),
+          fetchAllCatalogItems('/ubicaciones', apiFetch),
         ]);
 
-        const inventariosData = await inventariosRes.json();
-        const ubicacionesData = await ubicacionesRes.json();
-        const availableInventarios = (inventariosData.data ?? []).filter(
+        const availableInventarios = inventarios.filter(
           (inventario: Inventario) => Number(inventario.cantidad) > 0
         );
 
         setInventarios(availableInventarios);
-        setUbicaciones(ubicacionesData.data ?? []);
+        setUbicaciones(ubicaciones as Ubicacion[]);
         setError('');
         setForm({
           ...EMPTY_FORM,
