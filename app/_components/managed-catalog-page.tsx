@@ -2,7 +2,7 @@
 import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from '@/app/_lib/api';
-import { getApiValidationMessage } from '@/app/_lib/catalogos';
+import { fetchAllCatalogItems, getApiValidationMessage } from '@/app/_lib/catalogos';
 import { useCatalogCapabilities } from '@/app/_components/catalog-permissions-provider';
 import Link from 'next/link';
 import { Check, Pencil, Plus, RotateCcw, Search, X } from 'lucide-react';
@@ -70,12 +70,8 @@ export default function ManagedCatalogPage({
     setError('');
 
     try {
-      const response = await apiFetch(endpoint);
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      setItems(Array.isArray(data?.data) ? data.data : []);
+      const catalogItems = await fetchAllCatalogItems(endpoint, apiFetch);
+      setItems(catalogItems as CatalogItem[]);
     } catch (err) {
       console.error(err);
       setError('No se pudo cargar el catálogo. Verificá tu sesión y rol.');

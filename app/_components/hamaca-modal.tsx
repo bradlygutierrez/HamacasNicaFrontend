@@ -2,6 +2,7 @@
 import { translateText } from "@/app/_lib/localization";
 
 import { apiFetch } from "@/app/_lib/api";
+import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { buildHamacaPayload, suggestHamacaName } from "@/app/_lib/hamacas";
 import HamacaPhotoPicker from "@/app/_components/hamaca-photo-picker";
 import { useEffect, useState } from "react";
@@ -102,22 +103,17 @@ export default function HamacaModal({
 
     async function loadCatalogos() {
       try {
-        const [catRes, tamRes, hamRes, colorRes] = await Promise.all([
-          apiFetch("/categorias"),
-          apiFetch("/tamanos"),
-          apiFetch("/hamacas"),
-          apiFetch("/colores"),
+        const [categorias, tamanos, hamacas, colores] = await Promise.all([
+          fetchAllCatalogItems("/categorias", apiFetch),
+          fetchAllCatalogItems("/tamanos", apiFetch),
+          fetchAllCatalogItems("/hamacas", apiFetch),
+          fetchAllCatalogItems("/colores", apiFetch),
         ]);
 
-        const catData = await catRes.json();
-        const tamData = await tamRes.json();
-        const hamData = await hamRes.json();
-        const colorData = await colorRes.json();
-
-        setCategorias(catData.data ?? []);
-        setTamanos(tamData.data ?? []);
-        setHamacas(hamData.data ?? []);
-        setColores(colorData.data ?? []);
+        setCategorias(categorias as Categoria[]);
+        setTamanos(tamanos as Tamano[]);
+        setHamacas(hamacas as Hamaca[]);
+        setColores(colores as Color[]);
       } catch (err) {
         console.error("Error cargando catálogos:", err);
         setGeneralError("No se pudieron cargar los datos del formulario.");

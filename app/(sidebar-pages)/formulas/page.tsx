@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { apiFetch } from "@/app/_lib/api";
+import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { getFormulaUiState, type FormulaUiState } from "@/app/_lib/formula-ui";
 import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 
@@ -56,9 +57,8 @@ export default function FormulasPage() {
   }, [search, page]);
 
   useEffect(() => {
-    void apiFetch("/formulas?per_page=100")
-      .then((response) => response.json().catch(() => null))
-      .then((data) => setFormulaCandidates(Array.isArray(data?.data) ? data.data : []))
+    void fetchAllCatalogItems("/formulas", apiFetch)
+      .then((data) => setFormulaCandidates(data as FormulaSummary[]))
       .catch(() => setFormulaCandidates([]));
   }, []);
 

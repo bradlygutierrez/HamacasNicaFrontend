@@ -1,4 +1,8 @@
 const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+if (process.env.NODE_ENV === "production" && !configuredApiUrl) {
+  throw new Error("NEXT_PUBLIC_API_URL debe estar configurada para producción.");
+}
+
 export const API_BASE_URL = (configuredApiUrl || "http://localhost:8000/api/v1").replace(
   /\/$/,
   ""

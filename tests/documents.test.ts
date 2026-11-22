@@ -20,8 +20,13 @@ test("document helper uses authenticated blobs and supports view/download", () =
 test("PDF actions are available in proforma and factura detail", () => {
   const proforma = readFileSync(resolve("app/(sidebar-pages)/proformas/[id]/page.tsx"), "utf8");
   const ventas = readFileSync(resolve("app/(sidebar-pages)/ventas/page.tsx"), "utf8");
+  const pdfActions = readFileSync(resolve("app/_components/pdf-actions.tsx"), "utf8");
   assert.match(proforma, /PdfActions/);
   assert.match(proforma, /\/proformas\/\$\{id\}\/pdf/);
   assert.match(ventas, /PdfActions/);
   assert.match(ventas, /\/facturas\/\$\{selected\.id\}\/pdf/);
+  assert.match(pdfActions, /Idioma de la factura/);
+  assert.match(pdfActions, /Español/);
+  assert.match(pdfActions, /English/);
+  assert.match(pdfActions, /lang=" \+ invoiceLanguage/);
 });

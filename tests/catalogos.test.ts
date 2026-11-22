@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   buildCatalogPayload,
+  fetchAllCatalogItems,
   getApiValidationMessage,
 } from '../app/_lib/catalogos.ts';
 
@@ -40,4 +41,25 @@ test('gets the first validation message from an API error payload', () => {
   );
 
   assert.equal(message, 'El nombre es obligatorio.');
+});
+
+test('fetches every page of a paginated catalog', async () => {
+  const pages = new Map([
+    [1, { data: [{ id: 20, nombre: 'Azul' }], meta: { last_page: 2 } }],
+    [2, { data: [{ id: 1, nombre: 'Azulina' }], meta: { last_page: 2 } }],
+  ]);
+
+  const items = await fetchAllCatalogItems('/colores', async (path) => {
+    const page = Number(new URL(path, 'http://localhost').searchParams.get('page'));
+    return {
+      ok: true,
+      status: 200,
+      json: async () => pages.get(page),
+    };
+  });
+
+  assert.deepEqual(items, [
+    { id: 20, nombre: 'Azul' },
+    { id: 1, nombre: 'Azulina' },
+  ]);
 });

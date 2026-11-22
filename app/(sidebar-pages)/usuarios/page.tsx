@@ -4,6 +4,7 @@ import { translateText } from "@/app/_lib/localization";
 import AddUserCard from "@/app/_components/addUserCard";
 import UserCard from "@/app/_components/userCard";
 import { apiFetch } from "@/app/_lib/api";
+import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { toast } from "react-toastify";
 import { useEffect, useRef, useState } from "react";
 
@@ -48,17 +49,15 @@ export default function Usuarios() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const loadUsers = async () => {
-        const res = await apiFetch("/usuarios");
-        const data = await res.json();
-        setUsers(data.data ?? []);
+        const data = await fetchAllCatalogItems("/usuarios", apiFetch);
+        setUsers(data as unknown as UsuarioApi[]);
     };
 
     useEffect(() => {
         void (async () => {
             try {
-                const res = await apiFetch("/usuarios");
-                const data = await res.json();
-                setUsers(data.data ?? []);
+                const data = await fetchAllCatalogItems("/usuarios", apiFetch);
+                setUsers(data as unknown as UsuarioApi[]);
             } catch (error) {
                 console.error(error);
             }
