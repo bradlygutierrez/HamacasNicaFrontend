@@ -90,8 +90,8 @@ export default function InventarioHamacasPage() {
         setLoading(true);
 
         try {
-                const data = await fetchAllCatalogItems("/inventario-hamacas", apiFetch);
-                setItems(data as unknown as Inventario[]);
+            const data = await fetchAllCatalogItems<InventarioHamaca>("/inventario-hamacas", apiFetch);
+            setItems(data);
         } catch (error) {
             console.error("Error cargando inventario:", error);
         } finally {

@@ -70,8 +70,8 @@ export default function ManagedCatalogPage({
     setError('');
 
     try {
-      const catalogItems = await fetchAllCatalogItems(endpoint, apiFetch);
-      setItems(catalogItems as CatalogItem[]);
+      const catalogItems = await fetchAllCatalogItems<CatalogItem>(endpoint, apiFetch);
+      setItems(catalogItems);
     } catch (err) {
       console.error(err);
       setError('No se pudo cargar el catálogo. Verificá tu sesión y rol.');

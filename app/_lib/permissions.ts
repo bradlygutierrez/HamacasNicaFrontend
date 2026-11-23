@@ -52,9 +52,24 @@ export function getCatalogCapabilities(
     };
   }
 
+  const inventoryRoutes = new Set([
+    "/inventario-hamacas",
+    "/catalogo-hamacas",
+    "/entradas",
+    "/salidas",
+    "/transferencias",
+    "/ubicacion",
+    "/colores",
+    "/tamano",
+    "/categoria",
+  ]);
+  const allowedRoutes = new Set([
+    pathname,
+    ...(inventoryRoutes.has(pathname) ? ["/inventario"] : []),
+  ]);
   const allowed = new Set(
     permissions
-      .filter((item) => item.pantalla?.ruta === pathname)
+      .filter((item) => allowedRoutes.has(item.pantalla?.ruta ?? ""))
       .map((item) => item.permiso?.slug)
       .filter((slug): slug is string => Boolean(slug))
   );

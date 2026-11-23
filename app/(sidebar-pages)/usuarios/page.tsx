@@ -2,6 +2,7 @@
 import { translateText } from "@/app/_lib/localization";
 
 import AddUserCard from "@/app/_components/addUserCard";
+import RolePermissionsPanel, { type RoleOption } from "@/app/_components/rolePermissionsPanel";
 import UserCard from "@/app/_components/userCard";
 import { apiFetch } from "@/app/_lib/api";
 import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
@@ -40,6 +41,7 @@ export default function Usuarios() {
     const [createSelectedFile, setCreateSelectedFile] = useState<File | null>(null);
     const [createResponse, setCreateResponse] = useState<string | null>(null);
     const [users, setUsers] = useState<UsuarioApi[]>([]);
+    const [roles, setRoles] = useState<RoleOption[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUserId, setEditingUserId] = useState<number | null>(null);
     const [editUserData, setEditUserData] = useState<UsuarioForm>(emptyUserData);
@@ -49,15 +51,15 @@ export default function Usuarios() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const loadUsers = async () => {
-        const data = await fetchAllCatalogItems("/usuarios", apiFetch);
-        setUsers(data as unknown as UsuarioApi[]);
+        const data = await fetchAllCatalogItems<UsuarioApi>("/usuarios", apiFetch);
+        setUsers(data);
     };
 
     useEffect(() => {
         void (async () => {
             try {
-                const data = await fetchAllCatalogItems("/usuarios", apiFetch);
-                setUsers(data as unknown as UsuarioApi[]);
+                const data = await fetchAllCatalogItems<UsuarioApi>("/usuarios", apiFetch);
+                setUsers(data);
             } catch (error) {
                 console.error(error);
             }
@@ -235,6 +237,7 @@ export default function Usuarios() {
                     handleChange={handleCreateChange}
                     handleSubmit={handleCreateSubmit}
                     response={createResponse}
+                    roles={roles}
                     buttonText="Crear usuario"
                 />
 
@@ -265,6 +268,7 @@ export default function Usuarios() {
                             handleChange={handleEditChange}
                             handleSubmit={handleEditSubmit}
                             response={editResponse}
+                            roles={roles}
                             title={translateText("Editar usuario")}
                             buttonText="Actualizar"
                             onClose={() => {
@@ -275,6 +279,8 @@ export default function Usuarios() {
                     </div>
                 </div>
             )}
+
+            <RolePermissionsPanel onRolesChange={setRoles} />
         </div>
     );
 }

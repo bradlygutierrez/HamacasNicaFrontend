@@ -40,8 +40,8 @@ export function getApiValidationMessage(data: unknown, fallback: string) {
   return String(firstError ?? fallback);
 }
 
-type CatalogListResponse = {
-  data?: unknown[];
+type CatalogListResponse<T> = {
+  data?: T[];
   meta?: {
     last_page?: unknown;
   };
@@ -53,24 +53,36 @@ type CatalogPageFetcher = (path: string) => Promise<{
   json: () => Promise<unknown>;
 }>;
 
-export async function fetchAllCatalogItems(
+export async function fetchAllCatalogItems<T = unknown>(
   endpoint: string,
   fetchPage: CatalogPageFetcher
-): Promise<unknown[]> {
-  const items: unknown[] = [];
+): Promise<T[]> {
+  const items: T[] = [];
+  const seenIds = new Set<string>();
   let page = 1;
 
   while (page <= 1000) {
     const separator = endpoint.includes('?') ? '&' : '?';
     const response = await fetchPage(`${endpoint}${separator}page=${page}`);
-    const data = await response.json().catch(() => null) as CatalogListResponse | null;
+    const data = await response.json().catch(() => null) as CatalogListResponse<T> | null;
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
     if (Array.isArray(data?.data)) {
-      items.push(...data.data);
+      for (const item of data.data) {
+        if (item && typeof item === 'object' && 'id' in item) {
+          const id = (item as { id?: unknown }).id;
+          if (typeof id === 'string' || typeof id === 'number') {
+            const normalizedId = String(id);
+            if (seenIds.has(normalizedId)) continue;
+            seenIds.add(normalizedId);
+          }
+        }
+
+        items.push(item);
+      }
     }
 
     const lastPage = Number(data?.meta?.last_page);

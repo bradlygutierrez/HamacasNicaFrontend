@@ -157,7 +157,14 @@ function SideBar({ usuario, navItems }: Props) {
       const response = await apiFetch("/logout", {
         method: "POST",
       });
-      if (response.ok) toast.success("Sesión cerrada correctamente.");
+      let logoutCompleted = response.ok || response.status === 401;
+
+      if (!logoutCompleted) {
+        const sessionResponse = await apiFetch("/me");
+        logoutCompleted = sessionResponse.status === 401;
+      }
+
+      if (logoutCompleted) toast.success("Sesión cerrada correctamente.");
       else toast.error("No se pudo cerrar la sesión correctamente.");
     } catch (error) {
       console.error(error);
@@ -224,7 +231,7 @@ function SideBar({ usuario, navItems }: Props) {
 
       <aside
         style={{ "--sidebar-width": `${desktopWidth}px` } as CSSProperties}
-        className={`relative z-40 flex flex-none flex-col overflow-hidden rounded-none bg-[var(--color-foreground-secondary)] font-[var(--font-poppins)] shadow-[8px_0_24px_rgba(8,38,77,0.12)] transition-[width,background-color,border-radius] duration-200 md:my-0 md:top-0 md:h-screen md:rounded-tr-3xl md:border md:border-white/10 md:bg-[var(--color-foreground-secondary)]/95 md:backdrop-blur-xl md:overflow-visible ${
+        className={`z-40 flex flex-none flex-col overflow-hidden rounded-none bg-[var(--color-foreground-secondary)] font-[var(--font-poppins)] shadow-[8px_0_24px_rgba(8,38,77,0.12)] transition-[width,background-color,border-radius] duration-200 md:my-0 md:top-0 md:h-screen md:rounded-tr-3xl md:border md:border-white/10 md:bg-[var(--color-foreground-secondary)]/95 md:backdrop-blur-xl md:overflow-visible ${
           open
             ? "fixed inset-y-0 left-0 h-screen w-screen p-2 pt-12 md:sticky md:bottom-auto md:left-auto md:w-[var(--sidebar-width)] md:p-2"
             : "hidden fixed left-0 top-0 h-auto w-11 p-0.5 md:sticky md:flex md:w-16 md:p-1"

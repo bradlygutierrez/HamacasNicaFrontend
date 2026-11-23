@@ -118,7 +118,7 @@ export default function SidebarLayout({
     }
 
     return (
-        <div className="flex min-h-screen w-full min-w-0 gap-2 overflow-x-clip">
+        <div className="flex min-h-screen w-full min-w-0 gap-2 md:overflow-x-clip">
             <SideBar usuario={usuario} navItems={navItems} />
             <main
                 style={{

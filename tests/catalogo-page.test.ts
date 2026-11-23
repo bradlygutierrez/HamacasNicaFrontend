@@ -11,10 +11,13 @@ test('catalog cards expose edit action wired to hamaca modal', () => {
   assert.match(page, /hamacaToEdit=\{selectedHamacaToEdit\}/);
 });
 
-test('catalog lists direct Hamacas and routes inventory with the Hamaca ID', () => {
+test('catalog requests one server-paginated page of Hamacas and routes inventory with the Hamaca ID', () => {
   const page = readFileSync('app/(sidebar-pages)/catalogo-hamacas/page.tsx', 'utf8');
   assert.match(page, /hamacas\.map\(\(hamaca\)/);
-  assert.match(page, /hamacas\/detalles\?per_page=100/);
+  assert.match(page, /page: String\(page\)/);
+  assert.match(page, /per_page: String\(PAGE_SIZE\)/);
+  assert.match(page, /meta\.last_page/);
+  assert.match(page, /setPage\(\(current\) => current \+ 1\)/);
   assert.match(page, /router\.push\(`\/inventario-hamacas\?hamacaId=\$\{item\.hamacaId\}`\)/);
   assert.doesNotMatch(page, /hamaca-variantes|variante/);
 });

@@ -63,3 +63,24 @@ test('fetches every page of a paginated catalog', async () => {
     { id: 1, nombre: 'Azulina' },
   ]);
 });
+
+test('removes records repeated across catalog pages by id', async () => {
+  const pages = new Map([
+    [1, { data: [{ id: 48, nombre: 'Hamaca' }], meta: { last_page: 2 } }],
+    [2, { data: [{ id: '48', nombre: 'Hamaca repetida' }, { id: 49, nombre: 'Otra hamaca' }], meta: { last_page: 2 } }],
+  ]);
+
+  const items = await fetchAllCatalogItems('/hamacas/detalles', async (path) => {
+    const page = Number(new URL(path, 'http://localhost').searchParams.get('page'));
+    return {
+      ok: true,
+      status: 200,
+      json: async () => pages.get(page),
+    };
+  });
+
+  assert.deepEqual(items, [
+    { id: 48, nombre: 'Hamaca' },
+    { id: 49, nombre: 'Otra hamaca' },
+  ]);
+});

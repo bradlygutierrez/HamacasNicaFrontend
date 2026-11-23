@@ -6,7 +6,6 @@ import FotoHamacaModal from "@/app/_components/foto-hamaca-modal";
 import HamacaModal from "@/app/_components/hamaca-modal";
 import { useCatalogCapabilities } from "@/app/_components/catalog-permissions-provider";
 import { apiFetch } from "@/app/_lib/api";
-import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -59,6 +58,8 @@ type FormulaSummary = {
 };
 
 type AvailabilityFilter = "todas" | "disponibles" | "agotadas";
+type CatalogMeta = { current_page: number; last_page: number; total: number };
+const PAGE_SIZE = 15;
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
@@ -94,6 +95,8 @@ export default function CatalogoHamacasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [availabilityFilter, setAvailabilityFilter] =
     useState<AvailabilityFilter>("todas");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<CatalogMeta>({ current_page: 1, last_page: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [formulaByHamaca, setFormulaByHamaca] = useState<Record<number, FormulaSummary>>({});
 
@@ -112,23 +115,46 @@ export default function CatalogoHamacasPage() {
     setLoading(true);
 
     try {
-      const [hamacas, formulas] = await Promise.all([
-        fetchAllCatalogItems("/hamacas/detalles", apiFetch),
-        fetchAllCatalogItems("/formulas", apiFetch),
-      ]);
+      const params = new URLSearchParams({
+        page: String(page),
+        per_page: String(PAGE_SIZE),
+        search: searchTerm,
+        disponibilidad: availabilityFilter,
+      });
+      const response = await apiFetch(`/hamacas/detalles?${params.toString()}`);
+      const data = await response.json().catch(() => null);
 
-      setHamacas(hamacas as Hamaca[]);
-      setFormulaByHamaca(Object.fromEntries((formulas as FormulaSummary[]).map((item) => [item.hamaca?.id ?? item.hamaca_id ?? item.id, item])));
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const currentHamacas = Array.isArray(data?.data) ? data.data as Hamaca[] : [];
+      setHamacas(currentHamacas);
+      setMeta(data?.meta ?? { current_page: page, last_page: 1, total: currentHamacas.length });
+
+      if (canViewFormula && currentHamacas.length > 0) {
+        const formulaResults = await Promise.all(currentHamacas.map(async (hamaca) => {
+          const formulaResponse = await apiFetch(`/formulas?hamaca_id=${hamaca.id}&per_page=1`);
+          const formulaData = await formulaResponse.json().catch(() => null);
+          if (!formulaResponse.ok) throw new Error(`HTTP ${formulaResponse.status}`);
+          return [hamaca.id, Array.isArray(formulaData?.data) ? formulaData.data[0] : undefined] as const;
+        }));
+        setFormulaByHamaca(Object.fromEntries(formulaResults.filter(([, formula]) => formula)));
+      } else {
+        setFormulaByHamaca({});
+      }
     } catch (error) {
       console.error("Error cargando catálogo:", error);
       toast.error("No se pudo cargar el catálogo.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [availabilityFilter, canViewFormula, page, searchTerm]);
 
   useEffect(() => {
-    loadData();
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, searchTerm.trim() ? 250 : 0);
+
+    return () => window.clearTimeout(timer);
   }, [loadData]);
 
   const catalogItems = useMemo(() => {
@@ -168,31 +194,6 @@ export default function CatalogoHamacasPage() {
       });
   }, [hamacas]);
 
-  const filteredItems = useMemo(() => {
-    const query = searchTerm.toLowerCase().trim();
-
-    return catalogItems.filter((item) => {
-      const matchesAvailability =
-        availabilityFilter === "todas" ||
-        (availabilityFilter === "disponibles" && item.disponible > 0) ||
-        (availabilityFilter === "agotadas" && item.disponible <= 0);
-
-      const searchableText = `
-        ${item.nombre}
-        ${item.descripcion ?? ""}
-        ${item.categoria ?? ""}
-        ${item.tamano ?? ""}
-        ${item.colores.join(" ")}
-        ${item.ubicaciones.join(" ")}
-        ${item.propietarios.join(" ")}
-      `.toLowerCase();
-
-      const matchesSearch = !query || searchableText.includes(query);
-
-      return matchesAvailability && matchesSearch;
-    });
-  }, [availabilityFilter, catalogItems, searchTerm]);
-
   return (
     <div className="w-full max-w-full overflow-x-hidden bg-[var(--page-background)] px-3 py-4 text-[#08264d] sm:px-8 sm:py-7">
       <header className="mb-6 flex flex-col gap-4 lg:mb-10">
@@ -205,7 +206,10 @@ export default function CatalogoHamacasPage() {
             <input
               type="text"
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
               placeholder={translateText("Buscar por hamaca, color, tamaño o ubicación")}
               className="h-full w-full rounded-[8px] bg-[#f7f7f7] pl-14 pr-4 text-lg text-[#08264d] outline-none sm:text-xl"
             />
@@ -226,7 +230,10 @@ export default function CatalogoHamacasPage() {
               <button
                 key={filter}
                 type="button"
-                onClick={() => setAvailabilityFilter(filter)}
+                onClick={() => {
+                  setAvailabilityFilter(filter);
+                  setPage(1);
+                }}
                 className={`h-[42px] rounded-[8px] px-4 text-sm font-semibold capitalize shadow-md sm:min-w-[170px] sm:text-base ${
                   availabilityFilter === filter
                     ? "bg-[#123852] text-white"
@@ -244,13 +251,13 @@ export default function CatalogoHamacasPage() {
         <p className="text-xl font-semibold text-white">{translateText("Cargando catálogo...")}</p>
       ) : null}
 
-      {!loading && filteredItems.length === 0 ? (
+      {!loading && catalogItems.length === 0 ? (
         <p className="text-xl font-semibold text-white">
           {translateText("No hay hamacas para mostrar. Crea una nueva hamaca.\n        ")}</p>
       ) : null}
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {filteredItems.map((item) => (
+        {catalogItems.map((item) => (
           <CatalogoHamacaCard
             key={item.key}
             nombre={item.nombre}
@@ -306,6 +313,30 @@ export default function CatalogoHamacasPage() {
           />
         ))}
       </section>
+
+      {meta.last_page > 1 ? (
+        <nav className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-[8px] bg-[#e9eef1] p-3 text-xs font-bold text-[#08264d] sm:flex sm:justify-between sm:text-sm">
+          <button
+            type="button"
+            disabled={page <= 1 || loading}
+            onClick={() => setPage((current) => current - 1)}
+            className="justify-self-start rounded bg-white px-3 py-2 disabled:opacity-40"
+          >
+            {translateText("Anterior")}
+          </button>
+          <span className="whitespace-nowrap text-center">
+            {translateText("Página ")}{meta.current_page} {translateText("de ")}{meta.last_page} · {meta.total} {translateText("hamacas")}
+          </span>
+          <button
+            type="button"
+            disabled={page >= meta.last_page || loading}
+            onClick={() => setPage((current) => current + 1)}
+            className="justify-self-end rounded bg-white px-3 py-2 disabled:opacity-40"
+          >
+            {translateText("Siguiente")}
+          </button>
+        </nav>
+      ) : null}
 
       <HamacaModal
         isOpen={hamacaModalOpen}

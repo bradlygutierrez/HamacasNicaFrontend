@@ -104,16 +104,16 @@ export default function HamacaModal({
     async function loadCatalogos() {
       try {
         const [categorias, tamanos, hamacas, colores] = await Promise.all([
-          fetchAllCatalogItems("/categorias", apiFetch),
-          fetchAllCatalogItems("/tamanos", apiFetch),
-          fetchAllCatalogItems("/hamacas", apiFetch),
-          fetchAllCatalogItems("/colores", apiFetch),
+          fetchAllCatalogItems<Categoria>("/categorias", apiFetch),
+          fetchAllCatalogItems<Tamano>("/tamanos", apiFetch),
+          fetchAllCatalogItems<Hamaca>("/hamacas", apiFetch),
+          fetchAllCatalogItems<Color>("/colores", apiFetch),
         ]);
 
-        setCategorias(categorias as Categoria[]);
-        setTamanos(tamanos as Tamano[]);
-        setHamacas(hamacas as Hamaca[]);
-        setColores(colores as Color[]);
+        setCategorias(categorias);
+        setTamanos(tamanos);
+        setHamacas(hamacas);
+        setColores(colores);
       } catch (err) {
         console.error("Error cargando catálogos:", err);
         setGeneralError("No se pudieron cargar los datos del formulario.");

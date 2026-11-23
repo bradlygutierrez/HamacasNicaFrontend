@@ -83,8 +83,6 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = language;
     document.documentElement.dataset.theme = theme;
     document.documentElement.dataset.preferencesReady = "true";
-    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [language, theme]);
 
   const setLanguage = useCallback((nextLanguage: AppLanguage) => {

@@ -13,7 +13,7 @@ test('inventory cards expose relocation action wired to transfer modal', () => {
   assert.match(page, /initialInventarioId=\{selectedTransferInventarioId\}/);
 });
 
-test('inventory view requests up to 100 rows instead of hiding later pages', () => {
+test('inventory view loads all pages instead of hiding later rows', () => {
   const page = readFileSync('app/(sidebar-pages)/inventario-hamacas/page.tsx', 'utf8');
-  assert.match(page, /inventario-hamacas\?per_page=100/);
+  assert.match(page, /fetchAllCatalogItems<InventarioHamaca>\("\/inventario-hamacas", apiFetch\)/);
 });

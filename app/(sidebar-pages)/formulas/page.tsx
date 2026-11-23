@@ -57,8 +57,8 @@ export default function FormulasPage() {
   }, [search, page]);
 
   useEffect(() => {
-    void fetchAllCatalogItems("/formulas", apiFetch)
-      .then((data) => setFormulaCandidates(data as FormulaSummary[]))
+    void fetchAllCatalogItems<FormulaSummary>("/formulas", apiFetch)
+      .then(setFormulaCandidates)
       .catch(() => setFormulaCandidates([]));
   }, []);
 

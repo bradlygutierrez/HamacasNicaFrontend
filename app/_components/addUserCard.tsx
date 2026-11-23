@@ -2,6 +2,7 @@
 import { translateText } from "@/app/_lib/localization";
 import { Camera } from "lucide-react";
 import CustomInput from "./customInput";
+import type { RoleOption } from "./rolePermissionsPanel";
 
 export interface UserFormData {
     imgUrl: string | null;
@@ -21,17 +22,11 @@ interface AddUserCardProps {
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     handleSubmit: (e: React.FormEvent) => void;
     response: string | null;
+    roles: RoleOption[];
     title?: string;
     buttonText?: string;
     onClose?: () => void;
 }
-
-const ROLES = [
-    { value: "admin", label: "Admin" },
-    { value: "vendedor", label: "Vendedor" },
-    { value: "almacenista", label: "Almacenista" },
-    { value: "socio", label: "Socio" }
-];
 
 export default function AddUserCard({
     onClick,
@@ -42,6 +37,7 @@ export default function AddUserCard({
     handleChange,
     handleSubmit,
     response,
+    roles,
     title = "Crear usuario",
     buttonText = "Crear",
     onClose,
@@ -142,11 +138,12 @@ export default function AddUserCard({
                     value={formData.rol}
                     onChange={handleChange}
                     className="w-full p-3 rounded-md border border-gray-300"
+                    required
                 >
                     <option value="">{translateText("Seleccionar rol")}</option>
-                    {ROLES.map((rol) => (
-                        <option key={rol.value} value={rol.value}>
-                            {rol.label}
+                    {roles.map((role) => (
+                        <option key={role.slug} value={role.slug}>
+                            {role.nombre}
                         </option>
                     ))}
                 </select>

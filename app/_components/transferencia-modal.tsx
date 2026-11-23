@@ -93,8 +93,8 @@ export default function TransferenciaModal({
     async function loadCatalogos() {
       try {
         const [inventarios, ubicaciones] = await Promise.all([
-          fetchAllCatalogItems('/inventario-hamacas', apiFetch),
-          fetchAllCatalogItems('/ubicaciones', apiFetch),
+          fetchAllCatalogItems<Inventario>('/inventario-hamacas', apiFetch),
+          fetchAllCatalogItems<Ubicacion>('/ubicaciones', apiFetch),
         ]);
 
         const availableInventarios = inventarios.filter(
@@ -102,7 +102,7 @@ export default function TransferenciaModal({
         );
 
         setInventarios(availableInventarios);
-        setUbicaciones(ubicaciones as Ubicacion[]);
+        setUbicaciones(ubicaciones);
         setError('');
         setForm({
           ...EMPTY_FORM,

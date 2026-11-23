@@ -53,6 +53,30 @@ test('catalog capabilities distinguish read-only users from administrators', () 
   assert.deepEqual(admin, { canView: true, canCreate: true, canEdit: true, canDelete: true });
 });
 
+test('inventory screen permissions also control inventory catalog mutations', () => {
+  const capabilities = getCatalogCapabilities(
+    '/colores',
+    { id: 3, nombre: 'Gestor', rol: 'gestor' },
+    [
+      { pantalla: { ruta: '/inventario' }, permiso: { slug: 'ver' } },
+      { pantalla: { ruta: '/inventario' }, permiso: { slug: 'crear' } },
+    ]
+  );
+
+  assert.deepEqual(capabilities, { canView: true, canCreate: true, canEdit: false, canDelete: false });
+});
+
+test('users page provides dynamic role creation and per-screen permission controls', () => {
+  const panel = readFileSync(resolve(root, 'app/_components/rolePermissionsPanel.tsx'), 'utf8');
+  const userForm = readFileSync(resolve(root, 'app/_components/addUserCard.tsx'), 'utf8');
+
+  assert.match(panel, /apiFetch\("\/roles"/);
+  assert.match(panel, /pantalla-permiso-roles\?rol=/);
+  assert.match(panel, /aria-label=\{translateText\(\`\$\{permission\.nombre\} - \$\{screen\.nombre\}\`\)\}/);
+  assert.match(userForm, /roles\.map\(\(role\)/);
+  assert.doesNotMatch(userForm, /const ROLES =/);
+});
+
 test('sidebar groups catalog links without adding future broken routes', () => {
   const source = readFileSync(resolve(root, 'app/_lib/permissions.ts'), 'utf8');
   const sidebar = readFileSync(resolve(root, 'app/_components/sideBar.tsx'), 'utf8');
@@ -74,4 +98,15 @@ test('sidebar groups catalog links without adding future broken routes', () => {
   assert.match(sidebar, /<SectionIcon/);
   assert.match(sidebar, /<NavIcon/);
   assert.match(sidebar, /<LogOut/);
+});
+
+test('mobile sidebar header remains fixed outside layout overflow clipping', () => {
+  const layout = readFileSync(resolve(root, 'app/(sidebar-pages)/layout.tsx'), 'utf8');
+  const sidebar = readFileSync(resolve(root, 'app/_components/app-header.tsx'), 'utf8');
+  const sidebarComponent = readFileSync(resolve(root, 'app/_components/sideBar.tsx'), 'utf8');
+
+  assert.match(layout, /min-h-screen w-full min-w-0 gap-2 md:overflow-x-clip/);
+  assert.match(sidebar, /className="fixed inset-x-0 top-0 z-50/);
+  assert.doesNotMatch(sidebarComponent, /className=\{\`relative z-40/);
+  assert.match(sidebarComponent, /"fixed inset-y-0 left-0 h-screen w-screen/);
 });
