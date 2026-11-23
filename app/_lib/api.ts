@@ -8,6 +8,8 @@ export const API_BASE_URL = (configuredApiUrl || "http://localhost:8000/api/v1")
   ""
 );
 
+export const BACKEND_BASE_URL = new URL(API_BASE_URL).origin;
+
 export function apiUrl(path: string): string {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   let baseUrl = API_BASE_URL;

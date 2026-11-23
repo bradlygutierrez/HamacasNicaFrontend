@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import SalidaModal from "@/app/_components/salida-modal";
 import FotoHamacaModal from "@/app/_components/foto-hamaca-modal";
 import TransferenciaModal from "@/app/_components/transferencia-modal";
+import { BACKEND_BASE_URL } from "@/app/_lib/api";
 
 type Color = {
     id: number;
@@ -54,8 +55,6 @@ type InventarioHamaca = {
     colores: Color[];
 };
 
-const BACKEND_URL =
-    process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 function imageUrl(path?: string) {
     if (!path) return "";
@@ -65,10 +64,10 @@ function imageUrl(path?: string) {
     }
 
     if (path.startsWith("/storage/")) {
-        return `${BACKEND_URL}${path}`;
+        return `${BACKEND_BASE_URL}${path}`;
     }
 
-    return `${BACKEND_URL}/storage/${path}`;
+    return `${BACKEND_BASE_URL}/storage/${path}`;
 }
 
 export default function InventarioHamacasPage() {

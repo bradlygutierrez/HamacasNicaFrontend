@@ -1,7 +1,7 @@
 "use client";
 import { translateText } from "@/app/_lib/localization";
 
-import { apiFetch } from "@/app/_lib/api";
+import { apiFetch, BACKEND_BASE_URL } from "@/app/_lib/api";
 import { fetchAllCatalogItems } from "@/app/_lib/catalogos";
 import { buildHamacaPayload, suggestHamacaName } from "@/app/_lib/hamacas";
 import HamacaPhotoPicker from "@/app/_components/hamaca-photo-picker";
@@ -59,11 +59,10 @@ const EMPTY_FORM: HamacaFormData = {
   precio: "",
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 function imageUrl(path: string) {
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  return `${BACKEND_URL}${path.startsWith("/storage/") ? path : `/storage/${path}`}`;
+  return `${BACKEND_BASE_URL}${path.startsWith("/storage/") ? path : `/storage/${path}`}`;
 }
 
 export default function HamacaModal({

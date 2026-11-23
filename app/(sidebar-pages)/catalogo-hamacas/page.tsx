@@ -10,7 +10,7 @@ import { Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-
+import { BACKEND_BASE_URL } from "@/app/_lib/api";
 type Color = {
   id: number;
   nombre: string;
@@ -61,8 +61,6 @@ type AvailabilityFilter = "todas" | "disponibles" | "agotadas";
 type CatalogMeta = { current_page: number; last_page: number; total: number };
 const PAGE_SIZE = 15;
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 function imageUrl(path?: string) {
   if (!path) return "";
@@ -72,10 +70,10 @@ function imageUrl(path?: string) {
   }
 
   if (path.startsWith("/storage/")) {
-    return `${BACKEND_URL}${path}`;
+    return `${BACKEND_BASE_URL}${path}`;
   }
 
-  return `${BACKEND_URL}/storage/${path}`;
+  return `${BACKEND_BASE_URL}/storage/${path}`;
 }
 
 function uniqueValues(values: Array<string | null | undefined>): string[] {

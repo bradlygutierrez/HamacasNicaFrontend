@@ -1,7 +1,7 @@
 "use client";
 import { translateText } from "@/app/_lib/localization";
 
-import { apiFetch } from "@/app/_lib/api";
+import { apiFetch, BACKEND_BASE_URL } from "@/app/_lib/api";
 import {
   buildHamacaFotoPayload,
   normalizePhotoRoutes,
@@ -25,8 +25,6 @@ type FotoHamacaModalProps = {
   initialFotos?: Foto[];
 };
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 function imageUrl(path?: string) {
   if (!path) return "";
@@ -36,10 +34,10 @@ function imageUrl(path?: string) {
   }
 
   if (path.startsWith("/storage/")) {
-    return `${BACKEND_URL}${path}`;
+    return `${BACKEND_BASE_URL}${path}`;
   }
 
-  return `${BACKEND_URL}/storage/${path}`;
+  return `${BACKEND_BASE_URL}/storage/${path}`;
 }
 
 function openImage(url: string) {

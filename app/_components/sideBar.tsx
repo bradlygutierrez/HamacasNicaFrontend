@@ -13,15 +13,13 @@ import {
 } from "iconoir-react";
 import { Settings } from "lucide-react";
 
-import { apiFetch } from "../_lib/api";
+import { apiFetch, BACKEND_BASE_URL } from "@/app/_lib/api";
 import { usePreferences } from "./preferences-provider";
 import type { NavItem, UsuarioActual } from "../_lib/permissions";
 import { AppHeader } from "./app-header";
 import { getNavIcon, getSectionIcon, SideBarSearch } from "./sideBarSearch";
 import { toast } from "react-toastify";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://127.0.0.1:8000";
 
 const ICON_BOX = "flex h-10 w-10 shrink-0 items-center justify-center";
 const NAV_ICON_SIZE = "h-5 w-5 stroke-[1.4]";
@@ -38,14 +36,14 @@ function imageUrl(path?: string | null) {
   }
 
   if (path.startsWith("/storage/")) {
-    return `${BACKEND_URL}${path}`;
+    return `${BACKEND_BASE_URL}${path}`;
   }
 
   if (path.startsWith("storage/")) {
-    return `${BACKEND_URL}/${path}`;
+    return `${BACKEND_BASE_URL}/${path}`;
   }
 
-  return `${BACKEND_URL}/storage/${path}`;
+  return `${BACKEND_BASE_URL}/storage/${path}`;
 }
 
 function getUserPhoto(usuario: UsuarioActual | null) {

@@ -1,4 +1,4 @@
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, UserRound } from "lucide-react";
 
 interface UserCardProps {
     username: string;
@@ -51,11 +51,18 @@ export default function UserCard({
                 overflow-hidden
                 bg-[var(--color-foreground)]
             ">
-                <img
-                    src={imgUrl || "/assets/default-user.png"}
-                    className="w-full h-full object-cover"
-                    alt={username}
-                />
+                {imgUrl ? (
+                    <img
+                        src={imgUrl}
+                        className="w-full h-full object-cover"
+                        alt={username}
+                    />
+                ) : (
+                    <UserRound
+                        className="h-12 w-12 text-[var(--color-foreground-secondary)]"
+                        aria-hidden="true"
+                    />
+                )}
             </div>
 
             {/* INFO */}
