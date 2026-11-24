@@ -26,14 +26,23 @@ export function apiUrl(path: string): string {
   return `${baseUrl}${cleanPath}`;
 }
 
-export function authHeaders(init?: HeadersInit, includeAccept = true): Headers {
+
+export function authHeaders(
+  init?: HeadersInit,
+  includeAccept = true,
+  method = "GET"
+): Headers {
   const headers = new Headers(init);
 
   if (includeAccept && !headers.has("Accept")) {
     headers.set("Accept", "application/json");
   }
 
-  if (typeof document !== "undefined") {
+  const methodRequiresCsrf = !["GET", "HEAD", "OPTIONS"].includes(
+    method.toUpperCase()
+  );
+
+  if (methodRequiresCsrf && typeof document !== "undefined") {
     const xsrfCookie = document.cookie
       .split("; ")
       .find((cookie) => cookie.startsWith("XSRF-TOKEN="));
@@ -48,6 +57,7 @@ export function authHeaders(init?: HeadersInit, includeAccept = true): Headers {
 
   return headers;
 }
+
 
 export async function csrfCookie(): Promise<void> {
   const csrfUrl = `${new URL(apiUrl("/")).origin}/sanctum/csrf-cookie`;
@@ -68,8 +78,8 @@ export async function apiFetch(
   const isFormData =
     typeof FormData !== "undefined" && init.body instanceof FormData;
 
-  const headers = authHeaders(init.headers, true);
-
+  const headers = authHeaders(init.headers, true, init.method ?? "GET");
+  
   if (isFormData) {
     headers.delete("Content-Type");
   }

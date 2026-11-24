@@ -26,7 +26,7 @@ test("ventas POS exposes the direct sale flow and permission gate", () => {
   assert.match(source, /canal: channel/);
   assert.match(source, /role="dialog"/);
   assert.match(source, /aria-modal="true"/);
-  assert.match(source, /aria-label="Cerrar nueva venta"/);
+  assert.match(source, /aria-label=\{translateText\("Cerrar nueva venta"\)\}/);
   assert.match(source, /max-w-6xl/);
   assert.match(source, /overflow-y-auto/);
   assert.match(source, /\{error \? <p role="alert"/);

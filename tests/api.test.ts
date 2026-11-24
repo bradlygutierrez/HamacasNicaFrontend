@@ -49,7 +49,7 @@ test('requests the standard Sanctum csrf cookie endpoint', async () => {
   }
 });
 
-test('sends the XSRF cookie with the Laravel encrypted cookie header', () => {
+test('sends the XSRF cookie only with state-changing requests', () => {
   const originalDocument = Object.getOwnPropertyDescriptor(globalThis, 'document');
 
   try {
@@ -58,10 +58,12 @@ test('sends the XSRF cookie with the Laravel encrypted cookie header', () => {
       value: { cookie: 'theme=dark; XSRF-TOKEN=encoded%3Dtoken' },
     });
 
-    const headers = authHeaders();
+    const getHeaders = authHeaders();
+    const postHeaders = authHeaders(undefined, true, 'POST');
 
-    assert.equal(headers.get('X-XSRF-TOKEN'), 'encoded=token');
-    assert.equal(headers.has('X-CSRF-TOKEN'), false);
+    assert.equal(getHeaders.has('X-XSRF-TOKEN'), false);
+    assert.equal(postHeaders.get('X-XSRF-TOKEN'), 'encoded=token');
+    assert.equal(postHeaders.has('X-CSRF-TOKEN'), false);
   } finally {
     if (originalDocument) {
       Object.defineProperty(globalThis, 'document', originalDocument);

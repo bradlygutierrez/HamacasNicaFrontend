@@ -28,7 +28,8 @@ test("pedido frontend uses conversion, billing and no PDF actions", () => {
   assert.match(detail, /\/usuarios\?per_page=100/);
   assert.match(detail, /role === "admin"/);
   assert.doesNotMatch(detail, /role === "vendedor".*usuario_inventario_id/s);
-  assert.doesNotMatch(detail, /PDF|pdf|Descargar/);
+  assert.match(detail, /PdfActions/);
+  assert.match(detail, /\/pedidos\/\$\{id\}\/materiales\/pdf/);
   assert.doesNotMatch(permissionsSource(), /href: "\/pedidos\/nuevo"/);
 });
 
@@ -50,7 +51,7 @@ test("pedido frontend separates internal analysis and operational controls", () 
   assert.match(conversion, /toast\.(success|error)/);
   assert.match(detail, /Cantidad que realmente fue comprada o recibida/);
   assert.match(detail, /Monto total realmente pagado por este material/);
-  assert.match(detail, /aria-label="Navegación del pedido"/);
+  assert.match(detail, /aria-label=\{translateText\("Navegación del pedido"\)\}/);
   assert.match(detail, /Confirmar facturación/);
   assert.match(detail, /Motivo de cancelación/);
   assert.match(detail, /id="materiales"/);

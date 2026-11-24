@@ -91,10 +91,10 @@ test('sidebar groups catalog links without adding future broken routes', () => {
   assert.match(sidebar, /aria-expanded/);
   assert.match(sidebar, /toggleSection/);
   assert.match(sidebar, /font-\[var\(--font-poppins\)\]/);
-  assert.match(sidebar, /md:ml-2 md:border-l/);
+  assert.match(sidebar, /md:ml-1 md:border-l/);
   assert.match(sidebar, /text-sm font-medium/);
-  assert.match(sidebar, /NAV_ICONS/);
-  assert.match(sidebar, /SECTION_ICONS/);
+  assert.match(sidebar, /getNavIcon/);
+  assert.match(sidebar, /getSectionIcon/);
   assert.match(sidebar, /<SectionIcon/);
   assert.match(sidebar, /<NavIcon/);
   assert.match(sidebar, /<LogOut/);
